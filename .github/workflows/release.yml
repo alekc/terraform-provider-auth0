@@ -1,5 +1,5 @@
 name: Release
-on: 
+on:
   push:
     tags: ['*']
 
@@ -20,10 +20,13 @@ jobs:
 
     - name: Determine version
       run: echo VERSION=$(echo $GITHUB_REF | cut -d / -f 3 | sed -e "s/^v//") >> $GITHUB_ENV
-    
+
     - name: Import GPG key
       id: gpg
-      uses: crazy-max/ghaction-import-gpg@v2
+      uses: crazy-max/ghaction-import-gpg@v4
+      with:
+        gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+        passphrase: ${{ secrets.PASSPHRASE }}
       env:
         GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
