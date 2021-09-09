@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/alekc/terraform-provider-auth0/version"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/meta"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 
 	"gopkg.in/auth0.v5"
 	"gopkg.in/auth0.v5/management"

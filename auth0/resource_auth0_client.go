@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"gopkg.in/auth0.v5"
 	"gopkg.in/auth0.v5/management"
@@ -551,35 +551,35 @@ func readClient(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	d.Set("client_id", c.ClientID)
-	d.Set("client_secret", c.ClientSecret)
-	d.Set("name", c.Name)
-	d.Set("description", c.Description)
-	d.Set("app_type", c.AppType)
-	d.Set("logo_uri", c.LogoURI)
-	d.Set("is_first_party", c.IsFirstParty)
-	d.Set("is_token_endpoint_ip_header_trusted", c.IsTokenEndpointIPHeaderTrusted)
-	d.Set("oidc_conformant", c.OIDCConformant)
-	d.Set("callbacks", c.Callbacks)
-	d.Set("allowed_logout_urls", c.AllowedLogoutURLs)
-	d.Set("allowed_origins", c.AllowedOrigins)
-	d.Set("grant_types", c.GrantTypes)
-	d.Set("web_origins", c.WebOrigins)
-	d.Set("sso", c.SSO)
-	d.Set("sso_disabled", c.SSODisabled)
-	d.Set("cross_origin_auth", c.CrossOriginAuth)
-	d.Set("cross_origin_loc", c.CrossOriginLocation)
-	d.Set("custom_login_page_on", c.CustomLoginPageOn)
-	d.Set("custom_login_page", c.CustomLoginPage)
-	d.Set("form_template", c.FormTemplate)
-	d.Set("token_endpoint_auth_method", c.TokenEndpointAuthMethod)
-	d.Set("jwt_configuration", flattenClientJwtConfiguration(c.JWTConfiguration))
-	d.Set("refresh_token", flattenClientRefreshTokenConfiguration(c.RefreshToken))
-	d.Set("encryption_key", c.EncryptionKey)
-	d.Set("addons", c.Addons)
-	d.Set("client_metadata", c.ClientMetadata)
-	d.Set("mobile", c.Mobile)
-	d.Set("initiate_login_uri", c.InitiateLoginURI)
+	_ = d.Set("client_id", c.ClientID)
+	_ = d.Set("client_secret", c.ClientSecret)
+	_ = d.Set("name", c.Name)
+	_ = d.Set("description", c.Description)
+	_ = d.Set("app_type", c.AppType)
+	_ = d.Set("logo_uri", c.LogoURI)
+	_ = d.Set("is_first_party", c.IsFirstParty)
+	_ = d.Set("is_token_endpoint_ip_header_trusted", c.IsTokenEndpointIPHeaderTrusted)
+	_ = d.Set("oidc_conformant", c.OIDCConformant)
+	_ = d.Set("callbacks", c.Callbacks)
+	_ = d.Set("allowed_logout_urls", c.AllowedLogoutURLs)
+	_ = d.Set("allowed_origins", c.AllowedOrigins)
+	_ = d.Set("grant_types", c.GrantTypes)
+	_ = d.Set("web_origins", c.WebOrigins)
+	_ = d.Set("sso", c.SSO)
+	_ = d.Set("sso_disabled", c.SSODisabled)
+	_ = d.Set("cross_origin_auth", c.CrossOriginAuth)
+	_ = d.Set("cross_origin_loc", c.CrossOriginLocation)
+	_ = d.Set("custom_login_page_on", c.CustomLoginPageOn)
+	_ = d.Set("custom_login_page", c.CustomLoginPage)
+	_ = d.Set("form_template", c.FormTemplate)
+	_ = d.Set("token_endpoint_auth_method", c.TokenEndpointAuthMethod)
+	_ = d.Set("jwt_configuration", flattenClientJwtConfiguration(c.JWTConfiguration))
+	_ = d.Set("refresh_token", flattenClientRefreshTokenConfiguration(c.RefreshToken))
+	_ = d.Set("encryption_key", c.EncryptionKey)
+	_ = d.Set("addons", c.Addons)
+	_ = d.Set("client_metadata", c.ClientMetadata)
+	_ = d.Set("mobile", c.Mobile)
+	_ = d.Set("initiate_login_uri", c.InitiateLoginURI)
 
 	return nil
 }
@@ -691,25 +691,25 @@ func expandClient(d *schema.ResourceData) *management.Client {
 
 			m := make(MapData)
 
-			m.Set("audience", String(d, "audience"))
-			m.Set("authnContextClassRef", String(d, "authn_context_class_ref"))
-			m.Set("binding", String(d, "binding"))
-			m.Set("createUpnClaim", Bool(d, "create_upn_claim"))
-			m.Set("destination", String(d, "destination"))
-			m.Set("digestAlgorithm", String(d, "digest_algorithm"))
-			m.Set("includeAttributeNameFormat", Bool(d, "include_attribute_name_format"))
-			m.Set("lifetimeInSeconds", Int(d, "lifetime_in_seconds"))
-			m.Set("logout", buildClientAddon(Map(d, "logout")))
-			m.Set("mapIdentities", Bool(d, "map_identities"))
-			m.Set("mappings", Map(d, "mappings"))
-			m.Set("mapUnknownClaimsAsIs", Bool(d, "map_unknown_claims_as_is"))
-			m.Set("nameIdentifierFormat", String(d, "name_identifier_format"))
-			m.Set("nameIdentifierProbes", Slice(d, "name_identifier_probes"))
-			m.Set("passthroughClaimsWithNoMapping", Bool(d, "passthrough_claims_with_no_mapping"))
-			m.Set("recipient", String(d, "recipient"))
-			m.Set("signatureAlgorithm", String(d, "signature_algorithm"))
-			m.Set("signResponse", Bool(d, "sign_response"))
-			m.Set("typedAttributes", Bool(d, "typed_attributes"))
+			_ = m.Set("audience", String(d, "audience"))
+			_ = m.Set("authnContextClassRef", String(d, "authn_context_class_ref"))
+			_ = m.Set("binding", String(d, "binding"))
+			_ = m.Set("createUpnClaim", Bool(d, "create_upn_claim"))
+			_ = m.Set("destination", String(d, "destination"))
+			_ = m.Set("digestAlgorithm", String(d, "digest_algorithm"))
+			_ = m.Set("includeAttributeNameFormat", Bool(d, "include_attribute_name_format"))
+			_ = m.Set("lifetimeInSeconds", Int(d, "lifetime_in_seconds"))
+			_ = m.Set("logout", buildClientAddon(Map(d, "logout")))
+			_ = m.Set("mapIdentities", Bool(d, "map_identities"))
+			_ = m.Set("mappings", Map(d, "mappings"))
+			_ = m.Set("mapUnknownClaimsAsIs", Bool(d, "map_unknown_claims_as_is"))
+			_ = m.Set("nameIdentifierFormat", String(d, "name_identifier_format"))
+			_ = m.Set("nameIdentifierProbes", Slice(d, "name_identifier_probes"))
+			_ = m.Set("passthroughClaimsWithNoMapping", Bool(d, "passthrough_claims_with_no_mapping"))
+			_ = m.Set("recipient", String(d, "recipient"))
+			_ = m.Set("signatureAlgorithm", String(d, "signature_algorithm"))
+			_ = m.Set("signResponse", Bool(d, "sign_response"))
+			_ = m.Set("typedAttributes", Bool(d, "typed_attributes"))
 
 			c.Addons["samlp"] = m
 		})
@@ -728,16 +728,16 @@ func expandClient(d *schema.ResourceData) *management.Client {
 
 		List(d, "android").Elem(func(d ResourceData) {
 			m := make(MapData)
-			m.Set("app_package_name", String(d, "app_package_name"))
-			m.Set("sha256_cert_fingerprints", Slice(d, "sha256_cert_fingerprints"))
+			_ = m.Set("app_package_name", String(d, "app_package_name"))
+			_ = m.Set("sha256_cert_fingerprints", Slice(d, "sha256_cert_fingerprints"))
 
 			c.Mobile["android"] = m
 		})
 
 		List(d, "ios").Elem(func(d ResourceData) {
 			m := make(MapData)
-			m.Set("team_id", String(d, "team_id"))
-			m.Set("app_bundle_identifier", String(d, "app_bundle_identifier"))
+			_ = m.Set("team_id", String(d, "team_id"))
+			_ = m.Set("app_bundle_identifier", String(d, "app_bundle_identifier"))
 
 			c.Mobile["ios"] = m
 		})
@@ -785,9 +785,9 @@ func rotateClientSecret(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
-		d.Set("client_secret", c.ClientSecret)
+		_ = d.Set("client_secret", c.ClientSecret)
 	}
-	d.SetPartial("client_secret_rotation_trigger")
+	// d.SetPartial("client_secret_rotation_trigger")
 	return nil
 }
 
