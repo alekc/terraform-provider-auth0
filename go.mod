@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/hashicorp/terraform-plugin-sdk/v2 v2.4.3
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.7.1
+	github.com/zclconf/go-cty v1.8.4
 	gopkg.in/auth0.v5 v5.19.2
 )

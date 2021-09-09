@@ -1,10 +1,12 @@
 package auth0
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -14,13 +16,12 @@ import (
 
 func newConnection() *schema.Resource {
 	return &schema.Resource{
-
-		Create: createConnection,
-		Read:   readConnection,
-		Update: updateConnection,
-		Delete: deleteConnection,
+		CreateContext: createConnection,
+		ReadContext:   readConnection,
+		UpdateContext: updateConnection,
+		DeleteContext: deleteConnection,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema:        connectionSchema,
 		SchemaVersion: 2,
@@ -82,6 +83,7 @@ var connectionSchema = map[string]*schema.Schema{
 	"options": {
 		Type:     schema.TypeList,
 		Optional: true,
+		Computed: true,
 		MaxItems: 1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -231,6 +233,9 @@ var connectionSchema = map[string]*schema.Schema{
 					Sensitive:   true,
 					Optional:    true,
 					Description: "",
+					// DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					// 	return false
+					// },
 				},
 				"client_id": {
 					Type:        schema.TypeString,
@@ -394,6 +399,7 @@ var connectionSchema = map[string]*schema.Schema{
 					Type:     schema.TypeList,
 					MaxItems: 1,
 					Optional: true,
+					Computed: true,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"active": {
@@ -628,8 +634,7 @@ func connectionSchemaV1() *schema.Resource {
 	return &schema.Resource{Schema: s}
 }
 
-func connectionSchemaUpgradeV0(state map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
-
+func connectionSchemaUpgradeV0(ctx context.Context, state map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
 	o, ok := state["options"]
 	if !ok {
 		return state, nil
@@ -665,7 +670,7 @@ func connectionSchemaUpgradeV0(state map[string]interface{}, meta interface{}) (
 	return state, nil
 }
 
-func connectionSchemaUpgradeV1(state map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+func connectionSchemaUpgradeV1(ctx context.Context, state map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
 
 	o, ok := state["options"]
 	if !ok {
@@ -682,11 +687,11 @@ func connectionSchemaUpgradeV1(state map[string]interface{}, meta interface{}) (
 			return state, nil
 		}
 
-		validation := v.(interface{})
+		validator := v.(interface{})
 
 		m["validation"] = []map[string][]interface{}{
 			{
-				"username": []interface{}{validation},
+				"username": []interface{}{validator},
 			},
 		}
 
@@ -698,17 +703,17 @@ func connectionSchemaUpgradeV1(state map[string]interface{}, meta interface{}) (
 	return state, nil
 }
 
-func createConnection(d *schema.ResourceData, m interface{}) error {
+func createConnection(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := expandConnection(d)
 	api := m.(*management.Management)
 	if err := api.Connection.Create(c); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(c.ID))
-	return readConnection(d, m)
+	return readConnection(nil, d, m)
 }
 
-func readConnection(d *schema.ResourceData, m interface{}) error {
+func readConnection(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
 	c, err := api.Connection.Read(d.Id())
 	if err != nil {
@@ -718,40 +723,42 @@ func readConnection(d *schema.ResourceData, m interface{}) error {
 				return nil
 			}
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(auth0.StringValue(c.ID))
-	d.Set("name", c.Name)
-	d.Set("display_name", c.DisplayName)
-	d.Set("is_domain_connection", c.IsDomainConnection)
-	d.Set("strategy", c.Strategy)
-	d.Set("options", flattenConnectionOptions(d, c.Options))
-	d.Set("enabled_clients", c.EnabledClients)
-	d.Set("realms", c.Realms)
+	_ = d.Set("name", c.Name)
+	_ = d.Set("display_name", c.DisplayName)
+	_ = d.Set("is_domain_connection", c.IsDomainConnection)
+	_ = d.Set("strategy", c.Strategy)
+	_ = d.Set("options", flattenConnectionOptions(d, c.Options))
+	_ = d.Set("enabled_clients", c.EnabledClients)
+	_ = d.Set("realms", c.Realms)
 	return nil
 }
 
-func updateConnection(d *schema.ResourceData, m interface{}) error {
+func updateConnection(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := expandConnection(d)
 	api := m.(*management.Management)
 	err := api.Connection.Update(d.Id(), c)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return readConnection(d, m)
+	return readConnection(nil, d, m)
 }
 
-func deleteConnection(d *schema.ResourceData, m interface{}) error {
+func deleteConnection(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
 	err := api.Connection.Delete(d.Id())
 	if err != nil {
 		if mErr, ok := err.(management.Error); ok {
+			// if resource doesn't exist already, just return ok
 			if mErr.Status() == http.StatusNotFound {
 				d.SetId("")
 				return nil
 			}
 		}
+		return diag.FromErr(err)
 	}
-	return err
+	return nil
 }

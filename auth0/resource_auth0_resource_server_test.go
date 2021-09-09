@@ -1,37 +1,32 @@
 package auth0
 
 import (
-	"log"
-	"strings"
 	"testing"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/random"
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"gopkg.in/auth0.v5/management"
 )
 
 func init() {
-	resource.AddTestSweepers("auth0_resource_server", &resource.Sweeper{
-		Name: "auth0_resource_server",
-		F: func(_ string) error {
-			api, err := Auth0()
-			if err != nil {
-				return err
-			}
-			fn := func(rs *management.ResourceServer) {
-				log.Printf("[DEBUG] ➝ %s", rs.GetName())
-				if strings.Contains(rs.GetName(), "Test") {
-					if e := api.ResourceServer.Delete(rs.GetID()); e != nil {
-						multierror.Append(err, e)
-					}
-					log.Printf("[DEBUG] ✗ %s", rs.GetName())
-				}
-			}
-			return api.ResourceServer.Stream(fn, management.IncludeFields("id", "name"))
-		},
-	})
+	// resource.AddTestSweepers("auth0_resource_server", &resource.Sweeper{
+	// 	Name: "auth0_resource_server",
+	// 	F: func(_ string) error {
+	// 		api, err := Auth0()
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		fn := func(rs *management.ResourceServer) {
+	// 			log.Printf("[DEBUG] ➝ %s", rs.GetName())
+	// 			if strings.Contains(rs.GetName(), "Test") {
+	// 				if e := api.ResourceServer.Delete(rs.GetID()); e != nil {
+	// 					multierror.Append(err, e)
+	// 				}
+	// 				log.Printf("[DEBUG] ✗ %s", rs.GetName())
+	// 			}
+	// 		}
+	// 		return api.ResourceServer.Stream(fn, management.IncludeFields("id", "name"))
+	// 	},
+	// })
 }
 
 func TestAccResourceServer(t *testing.T) {
@@ -39,9 +34,7 @@ func TestAccResourceServer(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(testAccResourceServerConfigCreate, rand),

@@ -1,58 +1,52 @@
 package auth0
 
 import (
-	"log"
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"gopkg.in/auth0.v5/management"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/random"
 )
 
 func init() {
-	resource.AddTestSweepers("auth0_user", &resource.Sweeper{
-		Name: "auth0_user",
-		F: func(_ string) error {
-			api, err := Auth0()
-			if err != nil {
-				return err
-			}
-			var page int
-			for {
-				l, err := api.User.Search(
-					management.Page(page),
-					management.Query(`email.domain:"acceptance.test.com"`))
-				if err != nil {
-					return err
-				}
-				for _, user := range l.Users {
-					log.Printf("[DEBUG] ✗ %s", user.GetName())
-					if e := api.User.Delete(user.GetID()); e != nil {
-						multierror.Append(err, e)
-					}
-				}
-				if err != nil {
-					return err
-				}
-				if !l.HasNext() {
-					break
-				}
-				page++
-			}
-			return nil
-		},
-	})
+	// resource.AddTestSweepers("auth0_user", &resource.Sweeper{
+	// 	Name: "auth0_user",
+	// 	F: func(_ string) error {
+	// 		api, err := Auth0()
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		var page int
+	// 		for {
+	// 			l, err := api.User.Search(
+	// 				management.Page(page),
+	// 				management.Query(`email.domain:"acceptance.test.com"`))
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 			for _, user := range l.Users {
+	// 				log.Printf("[DEBUG] ✗ %s", user.GetName())
+	// 				if e := api.User.Delete(user.GetID()); e != nil {
+	// 					multierror.Append(err, e)
+	// 				}
+	// 			}
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 			if !l.HasNext() {
+	// 				break
+	// 			}
+	// 			page++
+	// 		}
+	// 		return nil
+	// 	},
+	// })
 }
 
 func TestAccUserMissingRequiredParams(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      "resource auth0_user user {}",
@@ -67,9 +61,7 @@ func TestAccUser(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(testAccUserCreate, rand),
@@ -209,9 +201,7 @@ func TestAccUserIssue218(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(testAccUserIssue218, rand),
@@ -245,9 +235,7 @@ func TestAccUserChangeUsername(t *testing.T) {
 	rand := random.String(4)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(testAccUserChangeUsernameCreate, rand),

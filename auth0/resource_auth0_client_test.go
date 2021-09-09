@@ -1,63 +1,56 @@
 package auth0
 
 import (
-	"log"
 	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/random"
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-
-	"gopkg.in/auth0.v5/management"
 )
 
-func init() {
-	resource.AddTestSweepers("auth0_client", &resource.Sweeper{
-		Name: "auth0_client",
-		F: func(_ string) error {
-			api, err := Auth0()
-			if err != nil {
-				return err
-			}
-			var page int
-			for {
-				l, err := api.Client.List(management.Page(page))
-				if err != nil {
-					return err
-				}
-				for _, client := range l.Clients {
-					log.Printf("[DEBUG] ➝ %s", client.GetName())
-					if strings.Contains(client.GetName(), "Test") {
-						if e := api.Client.Delete(client.GetClientID()); e != nil {
-							multierror.Append(err, e)
-						}
-						log.Printf("[DEBUG] ✗ %s", client.GetName())
-					}
-				}
-				if err != nil {
-					return err
-				}
-				if !l.HasNext() {
-					break
-				}
-				page++
-			}
-			return nil
-		},
-	})
-}
+// func init() {
+// 	resource.AddTestSweepers("auth0_client", &resource.Sweeper{
+// 		Name: "auth0_client",
+// 		F: func(_ string) error {
+// 			api, err := Auth0()
+// 			if err != nil {
+// 				return err
+// 			}
+// 			var page int
+// 			for {
+// 				l, err := api.Client.List(management.Page(page))
+// 				if err != nil {
+// 					return err
+// 				}
+// 				for _, client := range l.Clients {
+// 					log.Printf("[DEBUG] ➝ %s", client.GetName())
+// 					if strings.Contains(client.GetName(), "Test") {
+// 						if e := api.Client.Delete(client.GetClientID()); e != nil {
+// 							multierror.Append(err, e)
+// 						}
+// 						log.Printf("[DEBUG] ✗ %s", client.GetName())
+// 					}
+// 				}
+// 				if err != nil {
+// 					return err
+// 				}
+// 				if !l.HasNext() {
+// 					break
+// 				}
+// 				page++
+// 			}
+// 			return nil
+// 		},
+// 	})
+// }
 
 func TestAccClient(t *testing.T) {
 
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(testAccClientConfig, rand),
@@ -166,9 +159,7 @@ func TestAccClientZeroValueCheck(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(testAccClientConfigCreate, rand),
@@ -222,9 +213,7 @@ func TestAccClientRotateSecret(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(testAccClientConfigRotateSecret, rand),
@@ -266,9 +255,7 @@ func TestAccClientInitiateLoginUri(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      random.Template(testAccClientConfigInitiateLoginUriHttp, rand),
@@ -303,9 +290,7 @@ func TestAccClientJwtScopes(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(testAccClientConfigJwtScopes, rand),
@@ -364,9 +349,7 @@ func TestAccClientMobile(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(testAccClientConfigMobile, rand),
@@ -420,9 +403,7 @@ func TestAccClientMobileValidationError(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      random.Template(testAccClientConfigMobileUpdateError, rand),

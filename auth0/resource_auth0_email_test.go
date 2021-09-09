@@ -4,28 +4,25 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func init() {
-	resource.AddTestSweepers("auth0_email", &resource.Sweeper{
-		Name: "auth0_email",
-		F: func(_ string) error {
-			api, err := Auth0()
-			if err != nil {
-				return err
-			}
-			return api.Email.Delete()
-		},
-	})
+	// resource.AddTestSweepers("auth0_email", &resource.Sweeper{
+	// 	Name: "auth0_email",
+	// 	F: func(_ string) error {
+	// 		api, err := Auth0()
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		return api.Email.Delete()
+	// 	},
+	// })
 }
 
 func TestAccEmail(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: `

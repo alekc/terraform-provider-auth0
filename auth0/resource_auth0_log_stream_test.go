@@ -1,52 +1,46 @@
 package auth0
 
 import (
-	"log"
-	"strings"
 	"testing"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/random"
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func init() {
-	resource.AddTestSweepers("auth0_log_stream", &resource.Sweeper{
-		Name: "auth0_log_stream",
-		F: func(_ string) error {
-			api, err := Auth0()
-			if err != nil {
-				return err
-			}
-			l, err := api.LogStream.List()
-			if err != nil {
-				return err
-			}
-			for _, logstream := range l {
-				log.Printf("[DEBUG] ➝ %s", logstream.GetName())
-				if strings.Contains(logstream.GetName(), "Test") {
-					if e := api.LogStream.Delete(logstream.GetID()); e != nil {
-						multierror.Append(err, e)
-					}
-					log.Printf("[DEBUG] ✗ %v\n", logstream.GetName())
-				}
-			}
-			if err != nil {
-				return err
-			}
-			return nil
-		},
-	})
+	// resource.AddTestSweepers("auth0_log_stream", &resource.Sweeper{
+	// 	Name: "auth0_log_stream",
+	// 	F: func(_ string) error {
+	// 		api, err := Auth0()
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		l, err := api.LogStream.List()
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		for _, logstream := range l {
+	// 			log.Printf("[DEBUG] ➝ %s", logstream.GetName())
+	// 			if strings.Contains(logstream.GetName(), "Test") {
+	// 				if e := api.LogStream.Delete(logstream.GetID()); e != nil {
+	// 					multierror.Append(err, e)
+	// 				}
+	// 				log.Printf("[DEBUG] ✗ %v\n", logstream.GetName())
+	// 			}
+	// 		}
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		return nil
+	// 	},
+	// })
 }
 
 func TestAccLogStreamHTTP(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(testAccLogStreamHTTPConfig, rand),
@@ -127,9 +121,7 @@ resource "auth0_log_stream" "my_log_stream" {
 func TestAccLogStreamEventBridge(t *testing.T) {
 	rand := random.String(6)
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(logStreamAwsEventBridgeConfig, rand),
@@ -201,9 +193,7 @@ func TestAccLogStreamEventGrid(t *testing.T) {
 	t.Skip("this test requires an active subscription")
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(logStreamAzureEventGridConfig, rand),
@@ -256,9 +246,7 @@ func TestAccLogStreamDatadog(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(logStreamDatadogConfig, rand),
@@ -326,9 +314,7 @@ func TestAccLogStreamSplunk(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(logStreamSplunkConfig, rand),
@@ -385,9 +371,7 @@ func TestAccLogStreamSumo(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(logStreamSumoConfig, rand),

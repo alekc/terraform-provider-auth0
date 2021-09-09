@@ -90,13 +90,13 @@ func newUser() *schema.Resource {
 			"user_metadata": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ValidateFunc:     validation.ValidateJsonString,
+				ValidateFunc:     validation.StringIsJSON,
 				DiffSuppressFunc: structure.SuppressJsonDiff,
 			},
 			"app_metadata": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ValidateFunc:     validation.ValidateJsonString,
+				ValidateFunc:     validation.StringIsJSON,
 				DiffSuppressFunc: structure.SuppressJsonDiff,
 			},
 			"blocked": {
@@ -351,7 +351,6 @@ func assignUserRoles(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	d.SetPartial("roles")
 	return nil
 }
 

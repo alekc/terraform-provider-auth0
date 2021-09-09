@@ -10,9 +10,7 @@ import (
 
 func TestAccGlobalClient(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccGlobalClientConfigWithCustomLogin,

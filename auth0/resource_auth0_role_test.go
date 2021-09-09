@@ -1,51 +1,46 @@
 package auth0
 
 import (
-	"log"
-	"strings"
 	"testing"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/random"
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"gopkg.in/auth0.v5/management"
 )
 
 func init() {
-	resource.AddTestSweepers("auth0_role", &resource.Sweeper{
-		Name: "auth0_role",
-		F: func(_ string) error {
-			api, err := Auth0()
-			if err != nil {
-				return err
-			}
-			var page int
-			for {
-				l, err := api.Role.List(management.Page(page))
-				if err != nil {
-					return err
-				}
-				for _, role := range l.Roles {
-					log.Printf("[DEBUG] ➝ %s", role.GetName())
-					if strings.Contains(role.GetName(), "Test") {
-						if e := api.Role.Delete(role.GetID()); e != nil {
-							multierror.Append(err, e)
-						}
-						log.Printf("[DEBUG] ✗ %s", role.GetName())
-					}
-				}
-				if err != nil {
-					return err
-				}
-				if !l.HasNext() {
-					break
-				}
-				page++
-			}
-			return nil
-		},
-	})
+	// resource.AddTestSweepers("auth0_role", &resource.Sweeper{
+	// 	Name: "auth0_role",
+	// 	F: func(_ string) error {
+	// 		api, err := Auth0()
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		var page int
+	// 		for {
+	// 			l, err := api.Role.List(management.Page(page))
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 			for _, role := range l.Roles {
+	// 				log.Printf("[DEBUG] ➝ %s", role.GetName())
+	// 				if strings.Contains(role.GetName(), "Test") {
+	// 					if e := api.Role.Delete(role.GetID()); e != nil {
+	// 						multierror.Append(err, e)
+	// 					}
+	// 					log.Printf("[DEBUG] ✗ %s", role.GetName())
+	// 				}
+	// 			}
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 			if !l.HasNext() {
+	// 				break
+	// 			}
+	// 			page++
+	// 		}
+	// 		return nil
+	// 	},
+	// })
 }
 
 func TestAccRole(t *testing.T) {
@@ -53,9 +48,7 @@ func TestAccRole(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(testAccRoleCreate, rand),
@@ -124,9 +117,7 @@ func TestAccRolePermissions(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(testAccRolePermissions, rand),

@@ -70,22 +70,37 @@ func flattenConnectionOptionsWindowsLive(o *management.ConnectionOptionsWindowsL
 
 func flattenConnectionOptionsAuth0(d ResourceData, o *management.ConnectionOptions) interface{} {
 	return map[string]interface{}{
-		"validation":                     o.Validation,
+		"validation":                     flattenMap(o.Validation),
 		"password_policy":                o.GetPasswordPolicy(),
-		"password_history":               o.PasswordHistory,
-		"password_no_personal_info":      o.PasswordNoPersonalInfo,
-		"password_dictionary":            o.PasswordDictionary,
-		"password_complexity_options":    o.PasswordComplexityOptions,
+		"password_history":               flattenMap(o.PasswordHistory),
+		"password_no_personal_info":      flattenMap(o.PasswordNoPersonalInfo),
+		"password_dictionary":            flattenMap(o.PasswordDictionary),
+		"password_complexity_options":    flattenMap(o.PasswordComplexityOptions),
 		"enabled_database_customization": o.GetEnabledDatabaseCustomization(),
 		"brute_force_protection":         o.GetBruteForceProtection(),
 		"import_mode":                    o.GetImportMode(),
 		"disable_signup":                 o.GetDisableSignup(),
 		"requires_username":              o.GetRequiresUsername(),
 		"custom_scripts":                 o.CustomScripts,
-		"mfa":                            o.MFA,
-		"configuration":                  Map(d, "configuration"), // does not get read back
+		"mfa":                            flattenMap(o.MFA),
+		"configuration":                  Map(d, "options.0.configuration"), // does not get read back
 		"non_persistent_attrs":           o.GetNonPersistentAttrs(),
 	}
+}
+
+// flattenMap fixes the issue "source data must be an array or slice, got map"
+//
+func flattenMap(input map[string]interface{}) interface{} {
+	if len(input) == 0 {
+		return nil
+	}
+	for k, v := range input {
+		switch castedVal := v.(type) {
+		case map[string]interface{}:
+			input[k] = flattenMap(castedVal)
+		}
+	}
+	return []interface{}{input}
 }
 
 func flattenConnectionOptionsGoogleOAuth2(o *management.ConnectionOptionsGoogleOAuth2) interface{} {

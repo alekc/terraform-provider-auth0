@@ -1,40 +1,36 @@
 package auth0
 
 import (
-	"log"
-	"strings"
 	"testing"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/random"
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func init() {
-	resource.AddTestSweepers("auth0_rule_config", &resource.Sweeper{
-		Name: "auth0_rule_config",
-		F: func(_ string) error {
-			api, err := Auth0()
-			if err != nil {
-				return err
-			}
-			configurations, err := api.RuleConfig.List()
-			if err != nil {
-				return err
-			}
-			for _, c := range configurations {
-				log.Printf("[DEBUG] ➝ %s", c.GetKey())
-				if strings.Contains(c.GetKey(), "test") {
-					if e := api.RuleConfig.Delete(c.GetKey()); e != nil {
-						multierror.Append(err, e)
-					}
-					log.Printf("[DEBUG] ✗ %s", c.GetKey())
-				}
-			}
-			return err
-		},
-	})
+	// resource.AddTestSweepers("auth0_rule_config", &resource.Sweeper{
+	// 	Name: "auth0_rule_config",
+	// 	F: func(_ string) error {
+	// 		api, err := Auth0()
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		configurations, err := api.RuleConfig.List()
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		for _, c := range configurations {
+	// 			log.Printf("[DEBUG] ➝ %s", c.GetKey())
+	// 			if strings.Contains(c.GetKey(), "test") {
+	// 				if e := api.RuleConfig.Delete(c.GetKey()); e != nil {
+	// 					multierror.Append(err, e)
+	// 				}
+	// 				log.Printf("[DEBUG] ✗ %s", c.GetKey())
+	// 			}
+	// 		}
+	// 		return err
+	// 	},
+	// })
 }
 
 func TestAccRuleConfig(t *testing.T) {
@@ -42,9 +38,7 @@ func TestAccRuleConfig(t *testing.T) {
 	rand := random.String(4)
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(testAccRuleConfigCreate, rand),

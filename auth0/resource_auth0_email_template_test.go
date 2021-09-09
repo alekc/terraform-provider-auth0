@@ -4,33 +4,28 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"gopkg.in/auth0.v5"
-	"gopkg.in/auth0.v5/management"
 )
 
 func init() {
-	resource.AddTestSweepers("auth0_email_template", &resource.Sweeper{
-		Name: "auth0_email_template",
-		F: func(_ string) (err error) {
-			api, err := Auth0()
-			if err != nil {
-				return
-			}
-			err = api.EmailTemplate.Update("welcome_email", &management.EmailTemplate{
-				Enabled: auth0.Bool(false),
-			})
-			return
-		},
-	})
+	// resource.AddTestSweepers("auth0_email_template", &resource.Sweeper{
+	// 	Name: "auth0_email_template",
+	// 	F: func(_ string) (err error) {
+	// 		api, err := Auth0()
+	// 		if err != nil {
+	// 			return
+	// 		}
+	// 		err = api.EmailTemplate.Update("welcome_email", &management.EmailTemplate{
+	// 			Enabled: auth0.Bool(false),
+	// 		})
+	// 		return
+	// 	},
+	// })
 }
 
 func TestAccEmailTemplate(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccEmailTemplateConfig,
