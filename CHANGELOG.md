@@ -1,4 +1,7 @@
-## Unreleased
+## 0.21.1
+
+FIXES: 
+* resource/auth0_branding: Fixed issue "template 404 not found" [#380](https://github.com/alexkappa/terraform-provider-auth0/issues/380)
 
 ENHANCEMENTS:
 
