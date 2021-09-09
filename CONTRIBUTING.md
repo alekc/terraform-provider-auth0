@@ -43,7 +43,7 @@ successfully run.
 
 ## Releasing
 
-The Auth0 provider folloows the [Versioning and Changelog](https://www.terraform.io/docs/extend/best-practices/versioning.html) guidelines from HashiCorp.
+The Auth0 provider follows the [Versioning and Changelog](https://www.terraform.io/docs/extend/best-practices/versioning.html) guidelines from HashiCorp.
 
 Prepare for the release by updating the [CHANGELOG](CHANGELOG.md). 
 
