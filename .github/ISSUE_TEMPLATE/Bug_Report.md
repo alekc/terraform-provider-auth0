@@ -5,10 +5,10 @@ about: If something isn't working as expected 🤔.
 ---
 
 <!---
-**IMPORTANT:** Please submit issues or pull requests to [alexkappa/terraform-provider-auth0](https://github.com/alexkappa/terraform-provider-auth0). This helps maintainers organize work more efficiently.
+**IMPORTANT:** Please submit issues or pull requests to [alekc/terraform-provider-auth0](https://github.com/alekc/terraform-provider-auth0). This helps maintainers organize work more efficiently.
 
 Use the link below if you are not certain:
-https://github.com/alexkappa/terraform-provider-auth0/issues/new
+https://github.com/alekc/terraform-provider-auth0/issues/new
 --->
 
 ### Description

@@ -1,4 +1,4 @@
-module github.com/alexkappa/terraform-provider-auth0
+module github.com/alekc/terraform-provider-auth0
 
 go 1.16
 

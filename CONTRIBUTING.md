@@ -54,4 +54,4 @@ git tag -a vX.Y.Z
 git push origin vX.Y.Z
 ```
 
-This will trigger the [Release](https://github.com/alexkappa/terraform-provider-auth0/actions/workflows/release.yml) GitHub Action which creates a new release.
+This will trigger the [Release](https://github.com/alekc/terraform-provider-auth0/actions/workflows/release.yml) GitHub Action which creates a new release.

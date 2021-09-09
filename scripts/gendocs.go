@@ -1,3 +1,4 @@
+//go:build ignore
 // +build ignore
 
 package main
@@ -10,7 +11,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/alexkappa/terraform-provider-auth0/auth0"
+	"github.com/alekc/terraform-provider-auth0/auth0"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
