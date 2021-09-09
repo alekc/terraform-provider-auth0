@@ -9,7 +9,7 @@ import (
 
 	"gopkg.in/auth0.v5/management"
 
-	v "github.com/alexkappa/terraform-provider-auth0/auth0/internal/validation"
+	v "github.com/alekc/terraform-provider-auth0/auth0/internal/validation"
 )
 
 func newTenant() *schema.Resource {

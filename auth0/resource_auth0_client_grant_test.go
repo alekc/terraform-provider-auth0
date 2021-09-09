@@ -3,7 +3,7 @@ package auth0
 import (
 	"testing"
 
-	"github.com/alexkappa/terraform-provider-auth0/auth0/internal/random"
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/random"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
