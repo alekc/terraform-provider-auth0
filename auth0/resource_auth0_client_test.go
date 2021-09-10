@@ -1,48 +1,49 @@
 package auth0
 
 import (
+	"log"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/random"
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"gopkg.in/auth0.v5/management"
 )
 
-// func init() {
-// 	resource.AddTestSweepers("auth0_client", &resource.Sweeper{
-// 		Name: "auth0_client",
-// 		F: func(_ string) error {
-// 			api, err := Auth0()
-// 			if err != nil {
-// 				return err
-// 			}
-// 			var page int
-// 			for {
-// 				l, err := api.Client.List(management.Page(page))
-// 				if err != nil {
-// 					return err
-// 				}
-// 				for _, client := range l.Clients {
-// 					log.Printf("[DEBUG] ➝ %s", client.GetName())
-// 					if strings.Contains(client.GetName(), "Test") {
-// 						if e := api.Client.Delete(client.GetClientID()); e != nil {
-// 							multierror.Append(err, e)
-// 						}
-// 						log.Printf("[DEBUG] ✗ %s", client.GetName())
-// 					}
-// 				}
-// 				if err != nil {
-// 					return err
-// 				}
-// 				if !l.HasNext() {
-// 					break
-// 				}
-// 				page++
-// 			}
-// 			return nil
-// 		},
-// 	})
-// }
+func init() {
+	resource.AddTestSweepers("auth0_client", &resource.Sweeper{
+		Name: "auth0_client",
+		F: func(_ string) error {
+			api := testAuth0ApiClient()
+			var page int
+			for {
+				l, err := api.Client.List(management.Page(page))
+				if err != nil {
+					return err
+				}
+				for _, client := range l.Clients {
+					log.Printf("[DEBUG] ➝ %s", client.GetName())
+					if strings.Contains(client.GetName(), "Test") {
+						if e := api.Client.Delete(client.GetClientID()); e != nil {
+							multierror.Append(err, e)
+						}
+						log.Printf("[DEBUG] ✗ %s", client.GetName())
+					}
+				}
+				if err != nil {
+					return err
+				}
+				if !l.HasNext() {
+					break
+				}
+				page++
+			}
+			return nil
+		},
+	})
+}
 
 func TestAccClient(t *testing.T) {
 

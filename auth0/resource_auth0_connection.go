@@ -199,6 +199,7 @@ var connectionSchema = map[string]*schema.Schema{
 					Type:        schema.TypeBool,
 					Optional:    true,
 					Description: "Indicates whether or not to enable brute force protection, which will limit the number of signups and failed logins from a suspicious IP address",
+					Default:     false,
 				},
 				"import_mode": {
 					Type:        schema.TypeBool,
@@ -233,9 +234,6 @@ var connectionSchema = map[string]*schema.Schema{
 					Sensitive:   true,
 					Optional:    true,
 					Description: "",
-					// DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					// 	return false
-					// },
 				},
 				"client_id": {
 					Type:        schema.TypeString,
@@ -316,8 +314,11 @@ var connectionSchema = map[string]*schema.Schema{
 					Description: "",
 				},
 				"ips": {
-					Type:        schema.TypeSet,
-					Elem:        &schema.Schema{Type: schema.TypeString},
+					Type: schema.TypeSet,
+					Elem: &schema.Schema{
+						Type:         schema.TypeString,
+						ValidateFunc: validation.IsIPAddress,
+					},
 					Optional:    true,
 					Description: "",
 				},

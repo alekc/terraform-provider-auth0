@@ -51,7 +51,7 @@ func TestAccConnection(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -61,7 +61,7 @@ func TestAccConnection(t *testing.T) {
 				strategy = "auth0"
 			}
 			`, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.my_connection", "name", "Acceptance-Test-Connection-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "strategy", "auth0"),
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.mfa.0.active", "true"),
@@ -118,7 +118,7 @@ func TestAccConnection(t *testing.T) {
 				}
 			}
 			`, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.my_connection", "name", "Acceptance-Test-Connection-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "is_domain_connection", "true"),
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "strategy", "auth0"),
@@ -173,7 +173,7 @@ func TestAccConnection(t *testing.T) {
 				}
 			}
 			`, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.brute_force_protection", "false"),
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.mfa.0.return_enroll_settings", "false"),
 				),
@@ -186,12 +186,11 @@ func TestAccConnectionAD(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(`
-
 resource "auth0_connection" "ad" {
 	name = "Acceptance-Test-AD-{{.random}}"
 	strategy = "ad"
@@ -207,19 +206,20 @@ resource "auth0_connection" "ad" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.ad", "name", "Acceptance-Test-AD-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.ad", "strategy", "ad"),
 					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.domain_aliases.#", "2"),
 					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.tenant_domain", "example.com"),
 					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.use_kerberos", "false"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.ips.3011009788", "192.168.1.2"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.ips.2555711295", "192.168.1.1"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.domain_aliases.3506632655", "example.com"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.domain_aliases.3154807651", "api.example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.ips.1", "192.168.1.2"),
+					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.ips.0", "192.168.1.1"),
+					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.domain_aliases.1", "example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.domain_aliases.0",
+						"api.example.com"),
 					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.set_user_root_attributes", "on_each_login"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.non_persistent_attrs.180730300", "ethnicity"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.non_persistent_attrs.4212941087", "gender"),
+					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.non_persistent_attrs.0", "ethnicity"),
+					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.non_persistent_attrs.1", "gender"),
 				),
 			},
 		},
@@ -230,7 +230,7 @@ func TestAccConnectionAzureAD(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -262,7 +262,7 @@ resource "auth0_connection" "azure_ad" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.azure_ad", "name", "Acceptance-Test-Azure-AD-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "strategy", "waad"),
 					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.client_id", "123456"),
@@ -270,12 +270,12 @@ resource "auth0_connection" "azure_ad" {
 					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.tenant_domain", "example.onmicrosoft.com"),
 					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.domain", "example.onmicrosoft.com"),
 					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.domain_aliases.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.domain_aliases.3506632655", "example.com"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.domain_aliases.3154807651", "api.example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.domain_aliases.1", "example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.domain_aliases.0", "api.example.com"),
 					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.scopes.#", "3"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.scopes.370042894", "basic_profile"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.scopes.1268340351", "ext_profile"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.scopes.541325467", "ext_groups"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.scopes.0", "basic_profile"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.scopes.2", "ext_profile"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.scopes.1", "ext_groups"),
 					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.set_user_root_attributes", "on_each_login"),
 					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.should_trust_email_verified_connection", "never_set_emails_as_verified"),
 				),
@@ -318,14 +318,14 @@ resource "auth0_connection" "oidc" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.oidc", "name", "Acceptance-Test-OIDC-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "strategy", "oidc"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.client_id", "123456"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.client_secret", "123456"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.domain_aliases.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.domain_aliases.3506632655", "example.com"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.domain_aliases.3154807651", "api.example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.domain_aliases.1", "example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.domain_aliases.0", "api.example.com"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.type", "back_channel"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.issuer", "https://api.login.yahoo.com"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.jwks_uri", "https://api.login.yahoo.com/openid/v1/certs"),
@@ -334,12 +334,14 @@ resource "auth0_connection" "oidc" {
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.userinfo_endpoint", "https://api.login.yahoo.com/openid/v1/userinfo"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.authorization_endpoint", "https://api.login.yahoo.com/oauth2/request_auth"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.#", "3"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.2517049750", "openid"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.4080487570", "profile"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.881205744", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.1", "openid"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.2", "profile"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.0", "email"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.set_user_root_attributes", "on_each_login"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.non_persistent_attrs.4212941087", "gender"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.non_persistent_attrs.2145794573", "hair_color"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.non_persistent_attrs.0",
+						"gender"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.non_persistent_attrs.1",
+						"hair_color"),
 				),
 			},
 			{
@@ -367,11 +369,11 @@ resource "auth0_connection" "oidc" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.client_id", "1234567"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.client_secret", "1234567"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.domain_aliases.#", "1"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.domain_aliases.3506632655", "example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.domain_aliases.0", "example.com"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.type", "front_channel"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.issuer", "https://www.paypalobjects.com"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.jwks_uri", "https://api.paypal.com/v1/oauth2/certs"),
@@ -380,8 +382,8 @@ resource "auth0_connection" "oidc" {
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.userinfo_endpoint", "https://api.paypal.com/v1/oauth2/token/userinfo"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.authorization_endpoint", "https://www.paypal.com/signin/authorize"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.2517049750", "openid"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.881205744", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.1", "openid"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.0", "email"),
 					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.set_user_root_attributes", "on_first_login"),
 				),
 			},
@@ -393,12 +395,11 @@ func TestAccConnectionOAuth2(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(`
-
 resource "auth0_connection" "oauth2" {
 	name     = "Acceptance-Test-OAuth2-{{.random}}"
 	strategy = "oauth2"
@@ -416,7 +417,7 @@ resource "auth0_connection" "oauth2" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.oauth2", "name", "Acceptance-Test-OAuth2-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "strategy", "oauth2"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.client_id", "123456"),
@@ -424,9 +425,9 @@ resource "auth0_connection" "oauth2" {
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.token_endpoint", "https://api.login.yahoo.com/oauth2/get_token"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.authorization_endpoint", "https://api.login.yahoo.com/oauth2/request_auth"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.scopes.#", "3"),
-					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.scopes.2517049750", "openid"),
-					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.scopes.4080487570", "profile"),
-					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.scopes.881205744", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.scopes.1", "openid"),
+					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.scopes.2", "profile"),
+					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.scopes.0", "email"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.scripts.fetchUserProfile", "function( { return callback(null) }"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.set_user_root_attributes", "on_each_login"),
 				),
@@ -451,14 +452,14 @@ resource "auth0_connection" "oauth2" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.client_id", "1234567"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.client_secret", "1234567"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.token_endpoint", "https://api.paypal.com/v1/oauth2/token"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.authorization_endpoint", "https://www.paypal.com/signin/authorize"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.scopes.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.scopes.2517049750", "openid"),
-					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.scopes.881205744", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.scopes.1", "openid"),
+					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.scopes.0", "email"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.scripts.fetchUserProfile", "function( { return callback(null) }"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "options.0.set_user_root_attributes", "on_first_login"),
 				),
@@ -467,7 +468,7 @@ resource "auth0_connection" "oauth2" {
 	})
 }
 
-func TestAccConnectionWithEnbledClients(t *testing.T) {
+func TestAccConnectionWithEnabledClients(t *testing.T) {
 
 	rand := random.String(6)
 
@@ -513,7 +514,7 @@ resource "auth0_connection" "my_connection" {
 	]
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.my_connection", "name", "Acceptance-Test-Connection-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "enabled_clients.#", "4"),
 				),
@@ -526,12 +527,11 @@ func TestAccConnectionSMS(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(`
-
 resource "auth0_connection" "sms" {
 	name = "Acceptance-Test-SMS-{{.random}}"
 	is_domain_connection = false
@@ -555,7 +555,7 @@ resource "auth0_connection" "sms" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.sms", "name", "Acceptance-Test-SMS-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.sms", "strategy", "sms"),
 					resource.TestCheckResourceAttr("auth0_connection.sms", "options.0.twilio_sid", "ABC123"),
@@ -573,7 +573,7 @@ func TestAccConnectionEmail(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -602,7 +602,7 @@ resource "auth0_connection" "email" {
 }
 
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.email", "name", "Acceptance-Test-Email-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.email", "strategy", "email"),
 					resource.TestCheckResourceAttr("auth0_connection.email", "options.0.from", "Magic Password <password@example.com>"),
@@ -637,7 +637,7 @@ resource "auth0_connection" "email" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_connection.email", "options.0.totp.#", "1"),
 					resource.TestCheckResourceAttr("auth0_connection.email", "options.0.totp.0.time_step", "360"),
 					resource.TestCheckResourceAttr("auth0_connection.email", "options.0.totp.0.length", "4"),
@@ -651,7 +651,7 @@ func TestAccConnectionSalesforce(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -669,7 +669,7 @@ resource "auth0_connection" "salesforce_community" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.salesforce_community", "name", "Acceptance-Test-Salesforce-Connection-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.salesforce_community", "strategy", "salesforce-community"),
 					resource.TestCheckResourceAttr("auth0_connection.salesforce_community", "options.0.community_base_url", "https://salesforce.example.com"),
@@ -680,7 +680,6 @@ resource "auth0_connection" "salesforce_community" {
 }
 
 func TestAccConnectionGoogleOAuth2(t *testing.T) {
-
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
@@ -702,17 +701,21 @@ resource "auth0_connection" "google_oauth2" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.google_oauth2", "name", "Acceptance-Test-Google-OAuth2-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "strategy", "google-oauth2"),
 					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.client_id", ""),
 					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.client_secret", ""),
 					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.allowed_audiences.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.allowed_audiences.3506632655", "example.com"),
-					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.allowed_audiences.3154807651", "api.example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.allowed_audiences.1",
+						"example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.allowed_audiences.0",
+						"api.example.com"),
 					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.scopes.#", "4"),
-					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.scopes.881205744", "email"),
-					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.scopes.4080487570", "profile"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.scopes.0", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.scopes.2", "profile"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.scopes.1", "gmail"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.scopes.3", "youtube"),
 					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.set_user_root_attributes", "on_each_login"),
 				),
 			},
@@ -724,7 +727,7 @@ func TestAccConnectionFacebook(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -741,14 +744,17 @@ resource "auth0_connection" "facebook" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.facebook", "name", "Acceptance-Test-Facebook-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.facebook", "strategy", "facebook"),
 					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.client_id", "client_id"),
 					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.client_secret", "client_secret"),
 					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.#", "4"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.3590537325", "public_profile"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.881205744", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.2", "public_profile"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.0", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.1",
+						"groups_access_member_info"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.3", "user_birthday"),
 				),
 			},
 			{
@@ -765,14 +771,14 @@ resource "auth0_connection" "facebook" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.facebook", "name", "Acceptance-Test-Facebook-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.facebook", "strategy", "facebook"),
 					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.client_id", "client_id_update"),
 					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.client_secret", "client_secret_update"),
 					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.3590537325", "public_profile"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.881205744", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.1", "public_profile"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.0", "email"),
 				),
 			},
 		},
@@ -802,7 +808,7 @@ resource "auth0_connection" "apple" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.apple", "name", "Acceptance-Test-Apple-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.apple", "strategy", "apple"),
 					resource.TestCheckResourceAttr("auth0_connection.apple", "options.0.client_id", "client_id"),
@@ -810,8 +816,8 @@ resource "auth0_connection" "apple" {
 					resource.TestCheckResourceAttr("auth0_connection.apple", "options.0.team_id", "team_id"),
 					resource.TestCheckResourceAttr("auth0_connection.apple", "options.0.key_id", "key_id"),
 					resource.TestCheckResourceAttr("auth0_connection.apple", "options.0.scopes.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.apple", "options.0.scopes.2318696674", "name"),
-					resource.TestCheckResourceAttr("auth0_connection.apple", "options.0.scopes.881205744", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.apple", "options.0.scopes.0", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.apple", "options.0.scopes.1", "name"),
 					resource.TestCheckResourceAttr("auth0_connection.apple", "options.0.set_user_root_attributes", "on_each_login"),
 				),
 			},
@@ -832,11 +838,11 @@ resource "auth0_connection" "apple" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_connection.apple", "options.0.team_id", "team_id_update"),
 					resource.TestCheckResourceAttr("auth0_connection.apple", "options.0.key_id", "key_id_update"),
 					resource.TestCheckResourceAttr("auth0_connection.apple", "options.0.scopes.#", "1"),
-					resource.TestCheckResourceAttr("auth0_connection.apple", "options.0.scopes.881205744", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.apple", "options.0.scopes.0", "email"),
 					resource.TestCheckResourceAttr("auth0_connection.apple", "options.0.set_user_root_attributes", "on_first_login"),
 				),
 			},
@@ -866,15 +872,16 @@ resource "auth0_connection" "linkedin" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.linkedin", "name", "Acceptance-Test-Linkedin-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.linkedin", "strategy", "linkedin"),
 					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.client_id", "client_id"),
 					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.client_secret", "client_secret"),
 					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.strategy_version", "2"),
 					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.#", "3"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.370042894", "basic_profile"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.881205744", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.0", "basic_profile"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.1", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.2", "profile"),
 				),
 			},
 			{
@@ -892,10 +899,11 @@ resource "auth0_connection" "linkedin" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.client_id", "client_id_update"),
 					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.client_secret", "client_secret_update"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.370042894", "basic_profile"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.0", "basic_profile"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.1", "profile"),
 					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.#", "2"),
 				),
 			},
@@ -907,7 +915,7 @@ func TestAccConnectionGitHub(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -926,32 +934,32 @@ resource "auth0_connection" "github" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.github", "name", "Acceptance-Test-GitHub-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.github", "strategy", "github"),
 					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.client_id", "client-id"),
 					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.client_secret", "client-secret"),
 					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.#", "20"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.881205744", "email"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.4080487570", "profile"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.862208977", "follow"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.347111084", "read_repo_hook"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.718177942", "admin_public_key"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.2480957806", "write_public_key"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.356496889", "write_repo_hook"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.3006585776", "write_org"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.855904415", "read_user"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.1560560783", "admin_repo_hook"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.2933527251", "admin_org"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.1314370975", "repo"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.2175618052", "repo_status"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.188173322", "read_org"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.133261078", "gist"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.1820025999", "repo_deployment"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.3220703903", "public_repo"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.2092139895", "notifications"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.672436223", "delete_repo"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.2296398814", "read_public_key"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.0", "admin_org"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.1", "admin_public_key"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.2", "admin_repo_hook"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.3", "delete_repo"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.4", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.5", "follow"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.6", "gist"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.7", "notifications"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.8", "profile"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.9", "public_repo"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.10", "read_org"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.11", "read_public_key"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.12", "read_repo_hook"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.13", "read_user"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.14", "repo"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.15", "repo_deployment"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.16", "repo_status"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.17", "write_org"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.18", "write_public_key"),
+					resource.TestCheckResourceAttr("auth0_connection.github", "options.0.scopes.19", "write_repo_hook"),
 				),
 			},
 		},
@@ -980,15 +988,15 @@ resource "auth0_connection" "windowslive" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.windowslive", "name", "Acceptance-Test-Windowslive-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "strategy", "windowslive"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.client_id", "client_id"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.client_secret", "client_secret"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.strategy_version", "2"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.2458861461", "signin"),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.3904585843", "graph_user"),
+					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.1", "signin"),
+					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.0", "graph_user"),
 				),
 			},
 			{
@@ -1006,14 +1014,14 @@ resource "auth0_connection" "windowslive" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.windowslive", "name", "Acceptance-Test-Windowslive-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "strategy", "windowslive"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.client_id", "client_id_update"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.client_secret", "client_secret_update"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.strategy_version", "2"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.#", "1"),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.2458861461", "signin"),
+					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.0", "signin"),
 				),
 			},
 		},
@@ -1042,7 +1050,7 @@ resource "auth0_connection" "my_connection" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.configuration.%", "2"),
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.configuration.foo", "xxx"),
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.configuration.bar", "zzz"),
@@ -1064,7 +1072,7 @@ resource "auth0_connection" "my_connection" {
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.configuration.%", "3"),
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.configuration.foo", "xxx"),
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.configuration.bar", "yyy"),
@@ -1198,7 +1206,7 @@ func TestConnectionInstanceStateUpgradeV1(t *testing.T) {
 func TestAccConnectionSAML(t *testing.T) {
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -1255,7 +1263,7 @@ EOF
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.my_connection", "name", "Acceptance-Test-SAML-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "strategy", "samlp"),
 					random.TestCheckResourceAttr("auth0_connection.my_connection", "display_name", "Acceptance-Test-SAML-{{.random}}", rand),
@@ -1312,7 +1320,7 @@ EOF
 	}
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.idp_initiated.0.client_authorize_query", "type=code&timeout=60"),
 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.sign_out_endpoint", ""),
 				),

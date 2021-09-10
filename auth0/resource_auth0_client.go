@@ -576,9 +576,9 @@ func readClient(d *schema.ResourceData, m interface{}) error {
 	_ = d.Set("jwt_configuration", flattenClientJwtConfiguration(c.JWTConfiguration))
 	_ = d.Set("refresh_token", flattenClientRefreshTokenConfiguration(c.RefreshToken))
 	_ = d.Set("encryption_key", c.EncryptionKey)
-	_ = d.Set("addons", c.Addons)
+	_ = d.Set("addons", flattenMap(c.Addons))
 	_ = d.Set("client_metadata", c.ClientMetadata)
-	_ = d.Set("mobile", c.Mobile)
+	_ = d.Set("mobile", flattenMap(c.Mobile))
 	_ = d.Set("initiate_login_uri", c.InitiateLoginURI)
 
 	return nil
