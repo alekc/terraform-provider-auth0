@@ -20,7 +20,7 @@ func newPrompt() *schema.Resource {
 		Update: updatePrompt,
 		Delete: deletePrompt,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{

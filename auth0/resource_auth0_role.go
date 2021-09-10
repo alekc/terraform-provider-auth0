@@ -17,7 +17,7 @@ func newRole() *schema.Resource {
 		Read:   readRole,
 		Delete: deleteRole,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{

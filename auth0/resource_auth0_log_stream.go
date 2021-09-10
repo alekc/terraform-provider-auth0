@@ -18,7 +18,7 @@ func newLogStream() *schema.Resource {
 		Update: updateLogStream,
 		Delete: deleteLogStream,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {

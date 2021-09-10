@@ -21,7 +21,7 @@ func newUser() *schema.Resource {
 		Update: updateUser,
 		Delete: deleteUser,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{

@@ -17,7 +17,7 @@ func newCustomDomain() *schema.Resource {
 		Read:   readCustomDomain,
 		Delete: deleteCustomDomain,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{

@@ -711,7 +711,7 @@ func createConnection(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(c.ID))
-	return readConnection(nil, d, m)
+	return readConnection(ctx, d, m)
 }
 
 func readConnection(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -745,7 +745,7 @@ func updateConnection(ctx context.Context, d *schema.ResourceData, m interface{}
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return readConnection(nil, d, m)
+	return readConnection(ctx, d, m)
 }
 
 func deleteConnection(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

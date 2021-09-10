@@ -7,20 +7,16 @@ import (
 )
 
 func init() {
-	// resource.AddTestSweepers("auth0_email", &resource.Sweeper{
-	// 	Name: "auth0_email",
-	// 	F: func(_ string) error {
-	// 		api, err := Auth0()
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 		return api.Email.Delete()
-	// 	},
-	// })
+	resource.AddTestSweepers("auth0_email", &resource.Sweeper{
+		Name: "auth0_email",
+		F: func(_ string) error {
+			api := testAuth0ApiClient()
+			return api.Email.Delete()
+		},
+	})
 }
 
 func TestAccEmail(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{

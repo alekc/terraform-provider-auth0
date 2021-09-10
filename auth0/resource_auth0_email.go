@@ -1,8 +1,10 @@
 package auth0
 
 import (
+	"context"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"gopkg.in/auth0.v5"
@@ -12,12 +14,12 @@ import (
 func newEmail() *schema.Resource {
 	return &schema.Resource{
 
-		Create: createEmail,
-		Read:   readEmail,
-		Update: updateEmail,
-		Delete: deleteEmail,
+		CreateContext: createEmail,
+		ReadContext:   readEmail,
+		UpdateContext: updateEmail,
+		DeleteContext: deleteEmail,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -94,19 +96,19 @@ func newEmail() *schema.Resource {
 	}
 }
 
-func createEmail(d *schema.ResourceData, m interface{}) error {
+func createEmail(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	e := buildEmail(d)
 	api := m.(*management.Management)
-	if err := api.Email.Create(e); err != nil {
-		return err
+	if err := api.Email.Create(e, management.Context(ctx)); err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(e.Name))
-	return readEmail(d, m)
+	return readEmail(ctx, d, m)
 }
 
-func readEmail(d *schema.ResourceData, m interface{}) error {
+func readEmail(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	e, err := api.Email.Read()
+	e, err := api.Email.Read(management.Context(ctx))
 	if err != nil {
 		if mErr, ok := err.(management.Error); ok {
 			if mErr.Status() == http.StatusNotFound {
@@ -114,13 +116,13 @@ func readEmail(d *schema.ResourceData, m interface{}) error {
 				return nil
 			}
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(auth0.StringValue(e.Name))
-	d.Set("name", e.Name)
-	d.Set("enabled", e.Enabled)
-	d.Set("default_from_address", e.DefaultFromAddress)
+	_ = d.Set("name", e.Name)
+	_ = d.Set("enabled", e.Enabled)
+	_ = d.Set("default_from_address", e.DefaultFromAddress)
 
 	if credentials := e.Credentials; credentials != nil {
 		credentialsMap := make(map[string]interface{})
@@ -134,25 +136,25 @@ func readEmail(d *schema.ResourceData, m interface{}) error {
 		credentialsMap["smtp_port"] = credentials.SMTPPort
 		credentialsMap["smtp_user"] = credentials.SMTPUser
 		credentialsMap["smtp_pass"] = d.Get("credentials.0.smtp_pass")
-		d.Set("credentials", []map[string]interface{}{credentialsMap})
+		_ = d.Set("credentials", []map[string]interface{}{credentialsMap})
 	}
 
 	return nil
 }
 
-func updateEmail(d *schema.ResourceData, m interface{}) error {
+func updateEmail(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	e := buildEmail(d)
 	api := m.(*management.Management)
-	err := api.Email.Update(e)
+	err := api.Email.Update(e, management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return readEmail(d, m)
+	return readEmail(ctx, d, m)
 }
 
-func deleteEmail(d *schema.ResourceData, m interface{}) error {
+func deleteEmail(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	err := api.Email.Delete()
+	err := api.Email.Delete(management.Context(ctx))
 	if err != nil {
 		if mErr, ok := err.(management.Error); ok {
 			if mErr.Status() == http.StatusNotFound {
@@ -161,7 +163,7 @@ func deleteEmail(d *schema.ResourceData, m interface{}) error {
 			}
 		}
 	}
-	return err
+	return diag.FromErr(err)
 }
 
 func buildEmail(d *schema.ResourceData) *management.Email {

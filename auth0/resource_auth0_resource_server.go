@@ -20,7 +20,7 @@ func newResourceServer() *schema.Resource {
 		Delete: deleteResourceServer,
 
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{

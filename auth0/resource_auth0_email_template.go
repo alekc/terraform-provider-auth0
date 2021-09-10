@@ -19,7 +19,7 @@ func newEmailTemplate() *schema.Resource {
 		Update: updateEmailTemplate,
 		Delete: deleteEmailTemplate,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
