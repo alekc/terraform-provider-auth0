@@ -12,6 +12,7 @@ import (
 	"gopkg.in/auth0.v5"
 	"gopkg.in/auth0.v5/management"
 
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
 	v "github.com/alekc/terraform-provider-auth0/auth0/internal/validation"
 )
 
@@ -546,13 +547,7 @@ func readClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 	api := m.(*management.Management)
 	c, err := api.Client.Read(d.Id())
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return diag.FromErr(err)
+		return flow.DefaultManagementError(err, d)
 	}
 
 	_ = d.Set("client_id", c.ClientID)

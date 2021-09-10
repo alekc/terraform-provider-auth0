@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -110,13 +111,7 @@ func readEmail(ctx context.Context, d *schema.ResourceData, m interface{}) diag.
 	api := m.(*management.Management)
 	e, err := api.Email.Read(management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return diag.FromErr(err)
+		return flow.DefaultManagementError(err, d)
 	}
 
 	d.SetId(auth0.StringValue(e.Name))

@@ -12,11 +12,17 @@ func TestAccRule(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: random.Template(testAccRule, rand),
+			{
+				Config: random.Template(`
+resource "auth0_rule" "my_rule" {
+  name = "acceptance-test-{{.random}}"
+  script = "function (user, context, callback) { callback(null, user, context); }"
+  enabled = true
+}
+`, rand),
 				Check: resource.ComposeTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_rule.my_rule", "name", "acceptance-test-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_rule.my_rule", "script", "function (user, context, callback) { callback(null, user, context); }"),
@@ -26,15 +32,6 @@ func TestAccRule(t *testing.T) {
 		},
 	})
 }
-
-const testAccRule = `
-
-resource "auth0_rule" "my_rule" {
-  name = "acceptance-test-{{.random}}"
-  script = "function (user, context, callback) { callback(null, user, context); }"
-  enabled = true
-}
-`
 
 func TestRuleNameRegexp(t *testing.T) {
 

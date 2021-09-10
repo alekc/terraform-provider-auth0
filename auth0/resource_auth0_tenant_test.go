@@ -7,7 +7,6 @@ import (
 )
 
 func TestAccTenant(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{

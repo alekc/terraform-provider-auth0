@@ -1,8 +1,12 @@
 package auth0
 
 import (
-	"net/http"
+	"context"
 	"regexp"
+
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -16,10 +20,10 @@ var ruleNameRegexp = regexp.MustCompile("^[^\\s-][\\w -]+[^\\s-]$")
 func newRule() *schema.Resource {
 	return &schema.Resource{
 
-		Create: createRule,
-		Read:   readRule,
-		Update: updateRule,
-		Delete: deleteRule,
+		CreateContext: createRule,
+		ReadContext:   readRule,
+		UpdateContext: updateRule,
+		DeleteContext: deleteRule,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -50,59 +54,47 @@ func newRule() *schema.Resource {
 	}
 }
 
-func createRule(d *schema.ResourceData, m interface{}) error {
+func createRule(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := buildRule(d)
 	api := m.(*management.Management)
-	if err := api.Rule.Create(c); err != nil {
-		return err
+	if err := api.Rule.Create(c, management.Context(ctx)); err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(c.ID))
-	return readRule(d, m)
+	return readRule(ctx, d, m)
 }
 
-func readRule(d *schema.ResourceData, m interface{}) error {
+func readRule(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	c, err := api.Rule.Read(d.Id())
+	c, err := api.Rule.Read(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
+		return flow.DefaultManagementError(err, d)
 	}
 
-	d.Set("name", c.Name)
-	d.Set("script", c.Script)
-	d.Set("order", c.Order)
-	d.Set("enabled", c.Enabled)
+	_ = d.Set("name", c.Name)
+	_ = d.Set("script", c.Script)
+	_ = d.Set("order", c.Order)
+	_ = d.Set("enabled", c.Enabled)
 	return nil
 }
 
-func updateRule(d *schema.ResourceData, m interface{}) error {
+func updateRule(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := buildRule(d)
 	api := m.(*management.Management)
-	err := api.Rule.Update(d.Id(), c)
+	err := api.Rule.Update(d.Id(), c, management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return readRule(d, m)
+	return readRule(ctx, d, m)
 }
 
-func deleteRule(d *schema.ResourceData, m interface{}) error {
+func deleteRule(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	err := api.Rule.Delete(d.Id())
+	err := api.Rule.Delete(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
+		return flow.DefaultManagementError(err, d)
 	}
-	return err
+	return diag.FromErr(err)
 }
 
 func buildRule(d *schema.ResourceData) *management.Rule {
