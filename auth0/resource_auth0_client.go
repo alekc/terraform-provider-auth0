@@ -1,9 +1,11 @@
 package auth0
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -16,13 +18,13 @@ import (
 func newClient() *schema.Resource {
 	return &schema.Resource{
 
-		Create: createClient,
-		Read:   readClient,
-		Update: updateClient,
-		Delete: deleteClient,
+		CreateContext: createClient,
+		ReadContext:   readClient,
+		UpdateContext: updateClient,
+		DeleteContext: deleteClient,
 
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -339,6 +341,7 @@ func newClient() *schema.Resource {
 									"logout": {
 										Type:     schema.TypeList,
 										Optional: true,
+										MaxItems: 1,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"callback": {
@@ -393,6 +396,7 @@ func newClient() *schema.Resource {
 						},
 					},
 				},
+				Default: nil,
 			},
 			"token_endpoint_auth_method": {
 				Type:     schema.TypeString,
@@ -528,17 +532,17 @@ func newClient() *schema.Resource {
 	}
 }
 
-func createClient(d *schema.ResourceData, m interface{}) error {
+func createClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := expandClient(d)
 	api := m.(*management.Management)
 	if err := api.Client.Create(c); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(c.ClientID))
-	return readClient(d, m)
+	return readClient(nil, d, m)
 }
 
-func readClient(d *schema.ResourceData, m interface{}) error {
+func readClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
 	c, err := api.Client.Read(d.Id())
 	if err != nil {
@@ -548,7 +552,7 @@ func readClient(d *schema.ResourceData, m interface{}) error {
 				return nil
 			}
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("client_id", c.ClientID)
@@ -584,25 +588,25 @@ func readClient(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func updateClient(d *schema.ResourceData, m interface{}) error {
+func updateClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := expandClient(d)
 	api := m.(*management.Management)
 	if clientHasChange(c) {
 		err := api.Client.Update(d.Id(), c)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	d.Partial(true)
 	err := rotateClientSecret(d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.Partial(false)
-	return readClient(d, m)
+	return readClient(nil, d, m)
 }
 
-func deleteClient(d *schema.ResourceData, m interface{}) error {
+func deleteClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
 	err := api.Client.Delete(d.Id())
 	if err != nil {
@@ -613,7 +617,7 @@ func deleteClient(d *schema.ResourceData, m interface{}) error {
 			}
 		}
 	}
-	return err
+	return diag.FromErr(err)
 }
 
 func expandClient(d *schema.ResourceData) *management.Client {
@@ -665,8 +669,8 @@ func expandClient(d *schema.ResourceData) *management.Client {
 
 	if m := Map(d, "encryption_key"); m != nil {
 		c.EncryptionKey = map[string]string{}
-		for k, v := range m {
-			c.EncryptionKey[k] = v.(string)
+		for k, val := range m {
+			c.EncryptionKey[k] = val.(string)
 		}
 	}
 
@@ -674,17 +678,24 @@ func expandClient(d *schema.ResourceData) *management.Client {
 
 		c.Addons = make(map[string]interface{})
 
-		for _, name := range []string{
-			"aws", "azure_blob", "azure_sb", "rms", "mscrm", "slack", "sentry",
-			"box", "cloudbees", "concur", "dropbox", "echosign", "egnyte",
-			"firebase", "newrelic", "office365", "salesforce", "salesforce_api",
-			"salesforce_sandbox_api", "layer", "sap_api", "sharepoint",
-			"springcm", "wams", "wsfed", "zendesk", "zoom",
-		} {
-			_, ok := d.GetOk(name)
-			if ok {
-				c.Addons[name] = buildClientAddon(Map(d, name))
-			}
+		// disabled due to https://community.auth0.com/t/new-customer-trying-to-authenticate-with-firebase-api-using-auth0/7534/18
+		// if there will be anyone complaining (from old customers),
+		// I will have a look at the underlying data to create proper structure. However, I think such event is unlikely
+
+		// for _, name := range []string{
+		// 	"aws", "azure_blob", "azure_sb", "rms", "mscrm", "slack", "sentry",
+		// 	"box", "cloudbees", "concur", "dropbox", "echosign", "egnyte",
+		// 	"firebase", "newrelic", "office365", "salesforce", "salesforce_api",
+		// 	"salesforce_sandbox_api", "layer", "sap_api", "sharepoint",
+		// 	"springcm", "wams", "wsfed", "zendesk", "zoom",
+		// } {
+		// 	_, ok := d.GetOk(name)
+		// 	if ok {
+		// 		c.Addons[name] = buildClientAddon(Map(d, name))
+		// 	}
+		// }
+		if _, ok := d.GetOk("wsfed"); ok {
+			c.Addons["wsfed"] = buildClientAddon(Map(d, "name"))
 		}
 
 		List(d, "samlp").Elem(func(d ResourceData) {
@@ -699,7 +710,7 @@ func expandClient(d *schema.ResourceData) *management.Client {
 			_ = m.Set("digestAlgorithm", String(d, "digest_algorithm"))
 			_ = m.Set("includeAttributeNameFormat", Bool(d, "include_attribute_name_format"))
 			_ = m.Set("lifetimeInSeconds", Int(d, "lifetime_in_seconds"))
-			_ = m.Set("logout", buildClientAddon(Map(d, "logout")))
+			_ = m.Set("logout", List(d, "logout").List())
 			_ = m.Set("mapIdentities", Bool(d, "map_identities"))
 			_ = m.Set("mappings", Map(d, "mappings"))
 			_ = m.Set("mapUnknownClaimsAsIs", Bool(d, "map_unknown_claims_as_is"))
@@ -711,14 +722,14 @@ func expandClient(d *schema.ResourceData) *management.Client {
 			_ = m.Set("signResponse", Bool(d, "sign_response"))
 			_ = m.Set("typedAttributes", Bool(d, "typed_attributes"))
 
-			c.Addons["samlp"] = m
+			c.Addons["samlp"] = []interface{}{m}
 		})
 	})
 
-	if v, ok := d.GetOk("client_metadata"); ok {
+	if val, ok := d.GetOk("client_metadata"); ok {
 		c.ClientMetadata = make(map[string]string)
-		for key, value := range v.(map[string]interface{}) {
-			c.ClientMetadata[key] = (value.(string))
+		for key, value := range val.(map[string]interface{}) {
+			c.ClientMetadata[key] = value.(string)
 		}
 	}
 
