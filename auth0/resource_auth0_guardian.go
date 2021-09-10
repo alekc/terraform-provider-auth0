@@ -1,8 +1,10 @@
 package auth0
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -11,11 +13,10 @@ import (
 
 func newGuardian() *schema.Resource {
 	return &schema.Resource{
-
-		Create: createGuardian,
-		Read:   readGuardian,
-		Update: updateGuardian,
-		Delete: deleteGuardian,
+		CreateContext: createGuardian,
+		ReadContext:   readGuardian,
+		UpdateContext: updateGuardian,
+		DeleteContext: deleteGuardian,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -96,18 +97,21 @@ func newGuardian() *schema.Resource {
 		},
 	}
 }
-func createGuardian(d *schema.ResourceData, m interface{}) error {
+func createGuardian(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	d.SetId(resource.UniqueId())
-	return updateGuardian(d, m)
+	return updateGuardian(ctx, d, m)
 }
 
-func deleteGuardian(d *schema.ResourceData, m interface{}) error {
+func deleteGuardian(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	api.Guardian.MultiFactor.Phone.Enable(false)
+	err := api.Guardian.MultiFactor.Phone.Enable(false)
+	if err != nil {
+		return nil
+	}
 	d.SetId("")
 	return nil
 }
-func updateGuardian(d *schema.ResourceData, m interface{}) (err error) {
+func updateGuardian(ctx context.Context, d *schema.ResourceData, m interface{}) (err diag.Diagnostics) {
 	api := m.(*management.Management)
 
 	if d.HasChange("policy") {
@@ -132,7 +136,7 @@ func updateGuardian(d *schema.ResourceData, m interface{}) (err error) {
 	} else {
 		api.Guardian.MultiFactor.Phone.Enable(false)
 	}
-	return readGuardian(d, m)
+	return readGuardian(ctx, d, m)
 }
 
 func configurePhone(d *schema.ResourceData, api *management.Management) (err error) {
@@ -209,7 +213,7 @@ func updateTwilioOptions(opts Iterator, api *management.Management) error {
 	return nil
 }
 
-func readGuardian(d *schema.ResourceData, m interface{}) error {
+func readGuardian(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
 	mt, err := api.Guardian.MultiFactor.Phone.MessageTypes()
 	if err != nil {

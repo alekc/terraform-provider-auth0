@@ -12,10 +12,7 @@ func init() {
 	resource.AddTestSweepers("auth0_email_template", &resource.Sweeper{
 		Name: "auth0_email_template",
 		F: func(_ string) (err error) {
-			api, err := Auth0()
-			if err != nil {
-				return
-			}
+			api := testAuth0ApiClient()
 			err = api.EmailTemplate.Update("welcome_email", &management.EmailTemplate{
 				Enabled: auth0.Bool(false),
 			})
@@ -30,23 +27,7 @@ func TestAccEmailTemplate(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccEmailTemplateConfig,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "template", "welcome_email"),
-					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "body", "<html><body><h1>Welcome!</h1></body></html>"),
-					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "from", "welcome@example.com"),
-					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "result_url", "https://example.com/welcome"),
-					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "subject", "Welcome"),
-					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "syntax", "liquid"),
-					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "url_lifetime_in_seconds", "3600"),
-					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "enabled", "true"),
-				),
-			},
-		},
-	})
-}
-
-const testAccEmailTemplateConfig = `
+				Config: `
 
 resource "auth0_email" "my_email_provider" {
 	name = "ses"
@@ -71,4 +52,18 @@ resource "auth0_email_template" "my_email_template" {
 
 	depends_on = ["auth0_email.my_email_provider"]
 }
-`
+`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "template", "welcome_email"),
+					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "body", "<html><body><h1>Welcome!</h1></body></html>"),
+					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "from", "welcome@example.com"),
+					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "result_url", "https://example.com/welcome"),
+					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "subject", "Welcome"),
+					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "syntax", "liquid"),
+					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "url_lifetime_in_seconds", "3600"),
+					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "enabled", "true"),
+				),
+			},
+		},
+	})
+}
