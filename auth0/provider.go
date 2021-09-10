@@ -46,7 +46,6 @@ func init() {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"auth0_client":          newClient(),
-			"auth0_global_client":   newGlobalClient(),
 			"auth0_client_grant":    newClientGrant(),
 			"auth0_connection":      newConnection(),
 			"auth0_custom_domain":   newCustomDomain(),

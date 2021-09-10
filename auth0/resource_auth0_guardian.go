@@ -104,38 +104,42 @@ func createGuardian(ctx context.Context, d *schema.ResourceData, m interface{}) 
 
 func deleteGuardian(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	err := api.Guardian.MultiFactor.Phone.Enable(false)
+	err := api.Guardian.MultiFactor.Phone.Enable(false, management.Context(ctx))
 	if err != nil {
 		return nil
 	}
 	d.SetId("")
 	return nil
 }
-func updateGuardian(ctx context.Context, d *schema.ResourceData, m interface{}) (err diag.Diagnostics) {
+func updateGuardian(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
 
+	var err error
 	if d.HasChange("policy") {
 		p := d.Get("policy").(string)
 		if p == "never" {
-			//Passing empty array to set it to the "never" policy.
-			err = api.Guardian.MultiFactor.UpdatePolicy(&management.MultiFactorPolicies{})
+			// Passing empty array to set it to the "never" policy.
+			err = api.Guardian.MultiFactor.UpdatePolicy(&management.MultiFactorPolicies{}, management.Context(ctx))
 		} else {
-			err = api.Guardian.MultiFactor.UpdatePolicy(&management.MultiFactorPolicies{p})
+			err = api.Guardian.MultiFactor.UpdatePolicy(&management.MultiFactorPolicies{p}, management.Context(ctx))
+		}
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
-	//TODO: Extend for other MFA types
-	ok, err := factorShouldBeUpdated(d, "phone")
-	if err != nil {
-		return err
-	}
-	if ok {
-		api.Guardian.MultiFactor.Phone.Enable(true)
-		if err := configurePhone(d, api); err != nil {
-			return err
+	// TODO: Extend for other MFA types
+	if ok := factorShouldBeUpdated(d, "phone"); ok {
+		if err = api.Guardian.MultiFactor.Phone.Enable(true, management.Context(ctx)); err != nil {
+			return diag.FromErr(err)
 		}
+		err = configurePhone(d, api)
 	} else {
-		api.Guardian.MultiFactor.Phone.Enable(false)
+		err = api.Guardian.MultiFactor.Phone.Enable(false, management.Context(ctx))
 	}
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return readGuardian(ctx, d, m)
 }
 
@@ -215,49 +219,45 @@ func updateTwilioOptions(opts Iterator, api *management.Management) error {
 
 func readGuardian(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	mt, err := api.Guardian.MultiFactor.Phone.MessageTypes()
+	mt, err := api.Guardian.MultiFactor.Phone.MessageTypes(management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	phoneData := make(map[string]interface{})
 	phoneData["message_types"] = mt.MessageTypes
-	prv, err := api.Guardian.MultiFactor.Phone.Provider()
+	prv, err := api.Guardian.MultiFactor.Phone.Provider(management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	phoneData["provider"] = prv.Provider
 
-	p, err := api.Guardian.MultiFactor.Policy()
+	p, err := api.Guardian.MultiFactor.Policy(management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
+
 	if len(*p) == 0 {
-		d.Set("policy", "never")
+		_ = d.Set("policy", "never")
 	} else {
-		err = d.Set("policy", (*p)[0])
+		_ = d.Set("policy", (*p)[0])
 	}
+
 	var md map[string]interface{}
 	switch *prv.Provider {
 	case "twilio":
-		md, err = flattenTwilioOptions(api)
+		md, err = flattenTwilioOptions(ctx, api)
 	case "auth0":
-		md, err = flattenAuth0Options(api)
+		md, err = flattenAuth0Options(ctx, api)
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	ok, err := factorShouldBeUpdated(d, "phone")
-	if err != nil {
-		return err
-	}
-	if ok {
+
+	if factorShouldBeUpdated(d, "phone") {
 		phoneData["options"] = []interface{}{md}
-		err = d.Set("phone", []interface{}{phoneData})
+		_ = d.Set("phone", []interface{}{phoneData})
 	} else {
-		d.Set("phone", nil)
-	}
-	if err != nil {
-		return err
+		_ = d.Set("phone", nil)
 	}
 	return nil
 }
@@ -271,9 +271,9 @@ func hasBlockPresentInNewState(d *schema.ResourceData, factor string) bool {
 	return false
 }
 
-func flattenAuth0Options(api *management.Management) (map[string]interface{}, error) {
+func flattenAuth0Options(ctx context.Context, api *management.Management) (map[string]interface{}, error) {
 	md := make(map[string]interface{})
-	t, err := api.Guardian.MultiFactor.SMS.Template()
+	t, err := api.Guardian.MultiFactor.SMS.Template(management.Context(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -282,18 +282,20 @@ func flattenAuth0Options(api *management.Management) (map[string]interface{}, er
 	return md, nil
 }
 
-func flattenTwilioOptions(api *management.Management) (map[string]interface{}, error) {
+func flattenTwilioOptions(ctx context.Context, api *management.Management) (map[string]interface{}, error) {
 	md := make(map[string]interface{})
-	t, err := api.Guardian.MultiFactor.SMS.Template()
+	t, err := api.Guardian.MultiFactor.SMS.Template(management.Context(ctx))
 	if err != nil {
 		return nil, err
 	}
+
 	md["enrollment_message"] = t.EnrollmentMessage
 	md["verification_message"] = t.VerificationMessage
-	tw, err := api.Guardian.MultiFactor.SMS.Twilio()
+	tw, err := api.Guardian.MultiFactor.SMS.Twilio(management.Context(ctx))
 	if err != nil {
 		return nil, err
 	}
+
 	md["auth_token"] = tw.AuthToken
 	md["from"] = tw.From
 	md["messaging_service_sid"] = tw.MessagingServiceSid
@@ -327,7 +329,7 @@ func isFactorEnabled(factor string, api *management.Management) (*bool, error) {
 }
 
 // Determines if the factor should be updated. This depends on if it is in the state, if it is about to be added to the state.
-func factorShouldBeUpdated(d *schema.ResourceData, factor string) (bool, error) {
+func factorShouldBeUpdated(d *schema.ResourceData, factor string) bool {
 	_, ok := d.GetOk(factor)
-	return ok || hasBlockPresentInNewState(d, factor), nil
+	return ok || hasBlockPresentInNewState(d, factor)
 }
