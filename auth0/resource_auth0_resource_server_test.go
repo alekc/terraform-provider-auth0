@@ -60,7 +60,7 @@ resource "auth0_resource_server" "my_resource_server" {
 	enforce_policies = true
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_resource_server.my_resource_server", "name", "Acceptance Test - {{.random}}", rand),
 					random.TestCheckResourceAttr("auth0_resource_server.my_resource_server", "identifier", "https://uat.api.alexkappa.com/{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_resource_server.my_resource_server", "signing_alg", "RS256"),
@@ -98,7 +98,7 @@ resource "auth0_resource_server" "my_resource_server" {
 	enforce_policies = true
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_resource_server.my_resource_server", "allow_offline_access", "false"),
 					resource.TestCheckResourceAttr("auth0_resource_server.my_resource_server", "scopes.#", "2"),
 					resource.TestCheckResourceAttr("auth0_resource_server.my_resource_server", "scopes.0.value", "create:bar"), // set id changes

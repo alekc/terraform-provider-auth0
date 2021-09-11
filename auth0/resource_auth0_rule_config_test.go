@@ -48,7 +48,7 @@ resource "auth0_rule_config" "foo" {
   value = "bar"
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_rule_config.foo", "id", "acc_test_{{.random}}", rand),
 					random.TestCheckResourceAttr("auth0_rule_config.foo", "key", "acc_test_{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_rule_config.foo", "value", "bar"),
@@ -62,7 +62,7 @@ resource "auth0_rule_config" "foo" {
   value = "foo"
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_rule_config.foo", "id", "acc_test_{{.random}}", rand),
 					random.TestCheckResourceAttr("auth0_rule_config.foo", "key", "acc_test_{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_rule_config.foo", "value", "foo"),
@@ -76,7 +76,7 @@ resource "auth0_rule_config" "foo" {
   value = "foo"
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_rule_config.foo", "id", "acc_test_key_{{.random}}", rand),
 					random.TestCheckResourceAttr("auth0_rule_config.foo", "key", "acc_test_key_{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_rule_config.foo", "value", "foo"),

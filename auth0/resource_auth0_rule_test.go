@@ -23,7 +23,7 @@ resource "auth0_rule" "my_rule" {
   enabled = true
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_rule.my_rule", "name", "acceptance-test-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_rule.my_rule", "script", "function (user, context, callback) { callback(null, user, context); }"),
 					resource.TestCheckResourceAttr("auth0_rule.my_rule", "enabled", "true"),
