@@ -1,8 +1,11 @@
 package auth0
 
 import (
-	"net/http"
+	"context"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -12,10 +15,9 @@ import (
 
 func newCustomDomain() *schema.Resource {
 	return &schema.Resource{
-
-		Create: createCustomDomain,
-		Read:   readCustomDomain,
-		Delete: deleteCustomDomain,
+		CreateContext: createCustomDomain,
+		ReadContext:   readCustomDomain,
+		DeleteContext: deleteCustomDomain,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -68,27 +70,21 @@ func newCustomDomain() *schema.Resource {
 	}
 }
 
-func createCustomDomain(d *schema.ResourceData, m interface{}) error {
+func createCustomDomain(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := buildCustomDomain(d)
 	api := m.(*management.Management)
-	if err := api.CustomDomain.Create(c); err != nil {
-		return err
+	if err := api.CustomDomain.Create(c, management.Context(ctx)); err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(c.ID))
-	return readCustomDomain(d, m)
+	return readCustomDomain(ctx, d, m)
 }
 
-func readCustomDomain(d *schema.ResourceData, m interface{}) error {
+func readCustomDomain(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	c, err := api.CustomDomain.Read(d.Id())
+	c, err := api.CustomDomain.Read(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
+		return flow.DefaultManagementError(err, d)
 	}
 
 	d.SetId(auth0.StringValue(c.ID))
@@ -106,18 +102,13 @@ func readCustomDomain(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func deleteCustomDomain(d *schema.ResourceData, m interface{}) error {
+func deleteCustomDomain(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	err := api.CustomDomain.Delete(d.Id())
+	err := api.CustomDomain.Delete(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
+		return flow.DefaultManagementError(err, d)
 	}
-	return err
+	return nil
 }
 
 func buildCustomDomain(d *schema.ResourceData) *management.CustomDomain {
