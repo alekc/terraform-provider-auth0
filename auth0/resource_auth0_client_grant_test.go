@@ -11,32 +11,33 @@ func TestAccClientGrant(t *testing.T) {
 
 	rand := random.String(6)
 
+	// cannot be parallel due to eventually hitting limit on resources
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(testAccClientGrantConfigCreate, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_client_grant.my_client_grant", "audience", "https://uat.tf.alexkappa.com/client-grant/{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_client_grant.my_client_grant", "scope.#", "0"),
 				),
 			},
 			{
 				Config: random.Template(testAccClientGrantConfigUpdate, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_client_grant.my_client_grant", "scope.#", "1"),
 					resource.TestCheckResourceAttr("auth0_client_grant.my_client_grant", "scope.0", "create:foo"),
 				),
 			},
 			{
 				Config: random.Template(testAccClientGrantConfigUpdateAgain, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_client_grant.my_client_grant", "scope.#", "0"),
 				),
 			},
 			{
 				Config: random.Template(testAccClientGrantConfigUpdateChangeClient, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_client_grant.my_client_grant", "scope.#", "0"),
 				),
 			},

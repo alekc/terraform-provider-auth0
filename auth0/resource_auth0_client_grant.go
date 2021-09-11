@@ -1,8 +1,10 @@
 package auth0
 
 import (
-	"net/http"
+	"context"
 
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"gopkg.in/auth0.v5"
@@ -11,11 +13,10 @@ import (
 
 func newClientGrant() *schema.Resource {
 	return &schema.Resource{
-
-		Create: createClientGrant,
-		Read:   readClientGrant,
-		Update: updateClientGrant,
-		Delete: deleteClientGrant,
+		CreateContext: createClientGrant,
+		ReadContext:   readClientGrant,
+		UpdateContext: updateClientGrant,
+		DeleteContext: deleteClientGrant,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -40,27 +41,21 @@ func newClientGrant() *schema.Resource {
 	}
 }
 
-func createClientGrant(d *schema.ResourceData, m interface{}) error {
-	g := buildClientGrant(d)
+func createClientGrant(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	clientGrant := buildClientGrant(d)
 	api := m.(*management.Management)
-	if err := api.ClientGrant.Create(g); err != nil {
-		return err
+	if err := api.ClientGrant.Create(clientGrant, management.Context(ctx)); err != nil {
+		return diag.FromErr(err)
 	}
-	d.SetId(auth0.StringValue(g.ID))
-	return readClientGrant(d, m)
+	d.SetId(auth0.StringValue(clientGrant.ID))
+	return readClientGrant(ctx, d, m)
 }
 
-func readClientGrant(d *schema.ResourceData, m interface{}) error {
+func readClientGrant(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	g, err := api.ClientGrant.Read(d.Id())
+	g, err := api.ClientGrant.Read(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
+		return flow.DefaultManagementError(err, d)
 	}
 	d.SetId(auth0.StringValue(g.ID))
 	_ = d.Set("client_id", g.ClientID)
@@ -69,42 +64,36 @@ func readClientGrant(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func updateClientGrant(d *schema.ResourceData, m interface{}) error {
-	g := buildClientGrant(d)
-	g.Audience = nil
-	g.ClientID = nil
+func updateClientGrant(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	clientGrant := buildClientGrant(d)
+	clientGrant.Audience = nil
+	clientGrant.ClientID = nil
 	api := m.(*management.Management)
-	err := api.ClientGrant.Update(d.Id(), g)
+	err := api.ClientGrant.Update(d.Id(), clientGrant, management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return readClientGrant(d, m)
+	return readClientGrant(ctx, d, m)
 }
 
-func deleteClientGrant(d *schema.ResourceData, m interface{}) error {
+func deleteClientGrant(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	err := api.ClientGrant.Delete(d.Id())
+	err := api.ClientGrant.Delete(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
+		return flow.DefaultManagementError(err, d)
 	}
-	return err
+	return diag.FromErr(err)
 }
 
 func buildClientGrant(d *schema.ResourceData) *management.ClientGrant {
-	g := &management.ClientGrant{
+	clientGrant := &management.ClientGrant{
 		ClientID: String(d, "client_id"),
 		Audience: String(d, "audience"),
 	}
 	if scope, ok := d.GetOk("scope"); ok {
-		g.Scope = scope.([]interface{})
+		clientGrant.Scope = scope.([]interface{})
 	} else {
-		g.Scope = []interface{}{}
+		clientGrant.Scope = []interface{}{}
 	}
-	return g
+	return clientGrant
 }
