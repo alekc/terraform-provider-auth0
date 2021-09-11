@@ -288,7 +288,7 @@ func TestAccConnectionOIDC(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -472,7 +472,7 @@ func TestAccConnectionWithEnabledClients(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -682,7 +682,7 @@ resource "auth0_connection" "salesforce_community" {
 func TestAccConnectionGoogleOAuth2(t *testing.T) {
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -788,7 +788,7 @@ resource "auth0_connection" "facebook" {
 func TestAccConnectionApple(t *testing.T) {
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -854,7 +854,7 @@ func TestAccConnectionLinkedin(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -970,7 +970,7 @@ func TestAccConnectionWindowslive(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -1032,7 +1032,7 @@ func TestAccConnectionConfiguration(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{

@@ -2,7 +2,6 @@ package auth0
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -315,18 +314,18 @@ func typeAssertToStringArray(from []interface{}) *[]string {
 	return &stringArray
 }
 
-func isFactorEnabled(factor string, api *management.Management) (*bool, error) {
-	mfs, err := api.Guardian.MultiFactor.List()
-	if err != nil {
-		return nil, err
-	}
-	for _, mf := range mfs {
-		if *mf.Name == factor {
-			return mf.Enabled, nil
-		}
-	}
-	return nil, fmt.Errorf("factor %s is not among the possible factors", factor)
-}
+// func isFactorEnabled(factor string, api *management.Management) (*bool, error) {
+// 	mfs, err := api.Guardian.MultiFactor.List()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	for _, mf := range mfs {
+// 		if *mf.Name == factor {
+// 			return mf.Enabled, nil
+// 		}
+// 	}
+// 	return nil, fmt.Errorf("factor %s is not among the possible factors", factor)
+// }
 
 // Determines if the factor should be updated. This depends on if it is in the state, if it is about to be added to the state.
 func factorShouldBeUpdated(d *schema.ResourceData, factor string) bool {

@@ -539,7 +539,7 @@ func createClient(ctx context.Context, d *schema.ResourceData, m interface{}) di
 		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(c.ClientID))
-	return readClient(nil, d, m)
+	return readClient(ctx, d, m)
 }
 
 func readClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

@@ -181,17 +181,17 @@ func buildEmail(d *schema.ResourceData) *management.Email {
 	return e
 }
 
-func buildEmailCredentials(m map[string]interface{}) *management.EmailCredentials {
-	return &management.EmailCredentials{
-		APIUser:         String(MapData(m), "api_user"),
-		APIKey:          String(MapData(m), "api_key"),
-		AccessKeyID:     String(MapData(m), "access_key_id"),
-		SecretAccessKey: String(MapData(m), "secret_access_key"),
-		Region:          String(MapData(m), "region"),
-		Domain:          String(MapData(m), "domain"),
-		SMTPHost:        String(MapData(m), "smtp_host"),
-		SMTPPort:        Int(MapData(m), "smtp_port"),
-		SMTPUser:        String(MapData(m), "smtp_user"),
-		SMTPPass:        String(MapData(m), "smtp_pass"),
-	}
-}
+// func buildEmailCredentials(m map[string]interface{}) *management.EmailCredentials {
+// 	return &management.EmailCredentials{
+// 		APIUser:         String(MapData(m), "api_user"),
+// 		APIKey:          String(MapData(m), "api_key"),
+// 		AccessKeyID:     String(MapData(m), "access_key_id"),
+// 		SecretAccessKey: String(MapData(m), "secret_access_key"),
+// 		Region:          String(MapData(m), "region"),
+// 		Domain:          String(MapData(m), "domain"),
+// 		SMTPHost:        String(MapData(m), "smtp_host"),
+// 		SMTPPort:        Int(MapData(m), "smtp_port"),
+// 		SMTPUser:        String(MapData(m), "smtp_user"),
+// 		SMTPPass:        String(MapData(m), "smtp_pass"),
+// 	}
+// }
