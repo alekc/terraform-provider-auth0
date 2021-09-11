@@ -1,7 +1,11 @@
 package auth0
 
 import (
-	"net/http"
+	"context"
+
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -12,10 +16,10 @@ import (
 func newRole() *schema.Resource {
 	return &schema.Resource{
 
-		Create: createRole,
-		Update: updateRole,
-		Read:   readRole,
-		Delete: deleteRole,
+		CreateContext: createRole,
+		UpdateContext: updateRole,
+		ReadContext:   readRole,
+		DeleteContext: deleteRole,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -49,12 +53,12 @@ func newRole() *schema.Resource {
 	}
 }
 
-func createRole(d *schema.ResourceData, m interface{}) error {
+func createRole(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 
 	c := expandRole(d)
 	api := m.(*management.Management)
-	if err := api.Role.Create(c); err != nil {
-		return err
+	if err := api.Role.Create(c, management.Context(ctx)); err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(c.ID))
 
@@ -65,31 +69,25 @@ func createRole(d *schema.ResourceData, m interface{}) error {
 	// See: https://www.terraform.io/docs/extend/writing-custom-providers.html
 	d.Partial(true)
 	if err := assignRolePermissions(d, m); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	// We succeeded, disable partial mode. This causes Terraform to save
 	// all fields again.
 	d.Partial(false)
 
-	return readRole(d, m)
+	return readRole(ctx, d, m)
 }
 
-func readRole(d *schema.ResourceData, m interface{}) error {
+func readRole(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	c, err := api.Role.Read(d.Id())
+	c, err := api.Role.Read(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
+		return flow.DefaultManagementError(err, d)
 	}
 
 	d.SetId(c.GetID())
-	d.Set("name", c.Name)
-	d.Set("description", c.Description)
+	_ = d.Set("name", c.Name)
+	_ = d.Set("description", c.Description)
 
 	var permissions []*management.Permission
 
@@ -97,7 +95,7 @@ func readRole(d *schema.ResourceData, m interface{}) error {
 	for {
 		l, err := api.Role.Permissions(d.Id(), management.Page(page))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		for _, permission := range l.Permissions {
 			permissions = append(permissions, permission)
@@ -108,38 +106,33 @@ func readRole(d *schema.ResourceData, m interface{}) error {
 		page++
 	}
 
-	d.Set("permissions", flattenRolePermissions(permissions))
+	_ = d.Set("permissions", flattenRolePermissions(permissions))
 
 	return nil
 }
 
-func updateRole(d *schema.ResourceData, m interface{}) error {
+func updateRole(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := expandRole(d)
 	api := m.(*management.Management)
-	err := api.Role.Update(d.Id(), c)
+	err := api.Role.Update(d.Id(), c, management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.Partial(true)
 	if err := assignRolePermissions(d, m); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.Partial(false)
-	return readRole(d, m)
+	return readRole(ctx, d, m)
 }
 
-func deleteRole(d *schema.ResourceData, m interface{}) error {
+func deleteRole(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	err := api.Role.Delete(d.Id())
+	err := api.Role.Delete(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
+		return flow.DefaultManagementError(err, d)
 	}
-	return err
+	return diag.FromErr(err)
 }
 
 func expandRole(d *schema.ResourceData) *management.Role {

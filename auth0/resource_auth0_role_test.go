@@ -1,75 +1,59 @@
 package auth0
 
 import (
+	"log"
+	"strings"
 	"testing"
+
+	"github.com/hashicorp/go-multierror"
+	"gopkg.in/auth0.v5/management"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/random"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func init() {
-	// resource.AddTestSweepers("auth0_role", &resource.Sweeper{
-	// 	Name: "auth0_role",
-	// 	F: func(_ string) error {
-	// 		api, err := Auth0()
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 		var page int
-	// 		for {
-	// 			l, err := api.Role.List(management.Page(page))
-	// 			if err != nil {
-	// 				return err
-	// 			}
-	// 			for _, role := range l.Roles {
-	// 				log.Printf("[DEBUG] ➝ %s", role.GetName())
-	// 				if strings.Contains(role.GetName(), "Test") {
-	// 					if e := api.Role.Delete(role.GetID()); e != nil {
-	// 						multierror.Append(err, e)
-	// 					}
-	// 					log.Printf("[DEBUG] ✗ %s", role.GetName())
-	// 				}
-	// 			}
-	// 			if err != nil {
-	// 				return err
-	// 			}
-	// 			if !l.HasNext() {
-	// 				break
-	// 			}
-	// 			page++
-	// 		}
-	// 		return nil
-	// 	},
-	// })
+	resource.AddTestSweepers("auth0_role", &resource.Sweeper{
+		Name: "auth0_role",
+		F: func(_ string) error {
+			api := testAuth0ApiClient()
+			var page int
+			for {
+				l, err := api.Role.List(management.Page(page))
+				if err != nil {
+					return err
+				}
+				for _, role := range l.Roles {
+					log.Printf("[DEBUG] ➝ %s", role.GetName())
+					if strings.Contains(role.GetName(), "Test") {
+						if e := api.Role.Delete(role.GetID()); e != nil {
+							_ = multierror.Append(err, e)
+						}
+						log.Printf("[DEBUG] ✗ %s", role.GetName())
+					}
+				}
+				if err != nil {
+					return err
+				}
+				if !l.HasNext() {
+					break
+				}
+				page++
+			}
+			return nil
+		},
+	})
 }
 
 func TestAccRole(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: random.Template(testAccRoleCreate, rand),
-				Check: resource.ComposeTestCheckFunc(
-					random.TestCheckResourceAttr("auth0_role.the_one", "name", "The One - Acceptance Test - {{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_role.the_one", "description", "The One - Acceptance Test"),
-					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.#", "1"),
-				),
-			},
-			{
-				Config: random.Template(testAccRoleUpdate, rand),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("auth0_role.the_one", "description", "The One who will bring peace - Acceptance Test"),
-					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.#", "2"),
-				),
-			},
-		},
-	})
-}
-
-const testAccRoleAux = `
+				Config: random.Template((`
 
 resource auth0_resource_server matrix {
     name = "Role - Acceptance Test - {{.random}}"
@@ -82,9 +66,7 @@ resource auth0_resource_server matrix {
         value = "bring:peace"
         description = "Bring peace"
     }
-}`
-
-const testAccRoleCreate = testAccRoleAux + `
+}`)+`
 
 resource auth0_role the_one {
   name = "The One - Acceptance Test - {{.random}}"
@@ -94,9 +76,28 @@ resource auth0_role the_one {
     resource_server_identifier = auth0_resource_server.matrix.identifier
   }
 }
-`
+`, rand),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					random.TestCheckResourceAttr("auth0_role.the_one", "name", "The One - Acceptance Test - {{.random}}", rand),
+					resource.TestCheckResourceAttr("auth0_role.the_one", "description", "The One - Acceptance Test"),
+					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.#", "1"),
+				),
+			},
+			{
+				Config: random.Template((`
 
-const testAccRoleUpdate = testAccRoleAux + `
+resource auth0_resource_server matrix {
+    name = "Role - Acceptance Test - {{.random}}"
+    identifier = "https://{{.random}}.matrix.com/"
+    scopes {
+        value = "stop:bullets"
+        description = "Stop bullets"
+    }
+    scopes {
+        value = "bring:peace"
+        description = "Bring peace"
+    }
+}`)+`
 
 resource auth0_role the_one {
   name = "The One - Acceptance Test - {{.random}}"
@@ -110,28 +111,25 @@ resource auth0_role the_one {
     resource_server_identifier = auth0_resource_server.matrix.identifier
   }
 }
-`
-
-func TestAccRolePermissions(t *testing.T) {
-
-	rand := random.String(6)
-
-	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: random.Template(testAccRolePermissions, rand),
-				Check: resource.ComposeTestCheckFunc(
-					random.TestCheckResourceAttr("auth0_role.role", "name", "The One - Acceptance Test - {{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_role.role", "description", "The One - Acceptance Test"),
-					resource.TestCheckResourceAttr("auth0_role.role", "permissions.#", "58"),
+`, rand),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("auth0_role.the_one", "description", "The One who will bring peace - Acceptance Test"),
+					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.#", "2"),
 				),
 			},
 		},
 	})
 }
 
-const testAccRolePermissions = `
+func TestAccRolePermissions(t *testing.T) {
+
+	rand := random.String(6)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: testAccProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: random.Template(`
 
 locals {
 	permissions = {
@@ -222,4 +220,13 @@ resource auth0_role role {
 		}
 	}
   }
-`
+`, rand),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					random.TestCheckResourceAttr("auth0_role.role", "name", "The One - Acceptance Test - {{.random}}", rand),
+					resource.TestCheckResourceAttr("auth0_role.role", "description", "The One - Acceptance Test"),
+					resource.TestCheckResourceAttr("auth0_role.role", "permissions.#", "58"),
+				),
+			},
+		},
+	})
+}
