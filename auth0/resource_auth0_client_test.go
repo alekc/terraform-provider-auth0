@@ -120,7 +120,7 @@ resource "auth0_client" "my_client" {
   initiate_login_uri = "https://example.com/login"
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_client.my_client", "name", "Acceptance Test - {{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "is_token_endpoint_ip_header_trusted", "true"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "token_endpoint_auth_method", "client_secret_post"),
@@ -160,7 +160,7 @@ resource "auth0_client" "my_client" {
   is_first_party = false
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_client.my_client", "name", "Acceptance Test - Zero Value Check - {{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "is_first_party", "false"),
 				),
@@ -173,7 +173,7 @@ resource "auth0_client" "my_client" {
   is_first_party = true
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_client.my_client", "is_first_party", "true"),
 				),
 			},
@@ -185,7 +185,7 @@ resource "auth0_client" "my_client" {
   is_first_party = false
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_client.my_client", "is_first_party", "false"),
 				),
 			},
@@ -207,7 +207,7 @@ resource "auth0_client" "my_client" {
   name = "Acceptance Test - Rotate Secret - {{.random}}"
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_client.my_client", "name", "Acceptance Test - Rotate Secret - {{.random}}", rand),
 				),
 			},
@@ -222,7 +222,7 @@ resource "auth0_client" "my_client" {
   }
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_client.my_client", "client_secret_rotation_trigger.triggered_at", "2018-01-02T23:12:01Z"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "client_secret_rotation_trigger.triggered_by", "alex"),
 				),
@@ -281,7 +281,7 @@ resource "auth0_client" "my_client" {
   }
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_client.my_client", "jwt_configuration.#", "1"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "jwt_configuration.0.secret_encoded", "true"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "jwt_configuration.0.lifetime_in_seconds", "300"),
@@ -303,7 +303,7 @@ resource "auth0_client" "my_client" {
   }
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_client.my_client", "jwt_configuration.#", "1"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "jwt_configuration.0.alg", "RS256"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "jwt_configuration.0.lifetime_in_seconds", "300"),
@@ -336,7 +336,7 @@ resource "auth0_client" "my_client" {
   }
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_client.my_client", "mobile.0.android.#", "1"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "mobile.0.android.0.app_package_name", "com.example"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "mobile.0.android.0.sha256_cert_fingerprints.#", "1"),
@@ -356,7 +356,7 @@ resource "auth0_client" "my_client" {
   }
 }
 `, rand),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_client.my_client", "mobile.0.android.#", "1"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "mobile.0.android.0.app_package_name", "com.example"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "mobile.0.android.0.sha256_cert_fingerprints.#", "0"),
