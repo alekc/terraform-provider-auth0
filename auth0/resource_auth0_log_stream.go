@@ -1,9 +1,12 @@
 package auth0
 
 import (
+	"context"
 	"log"
-	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -12,11 +15,10 @@ import (
 
 func newLogStream() *schema.Resource {
 	return &schema.Resource{
-
-		Create: createLogStream,
-		Read:   readLogStream,
-		Update: updateLogStream,
-		Delete: deleteLogStream,
+		CreateContext: createLogStream,
+		ReadContext:   readLogStream,
+		UpdateContext: updateLogStream,
+		DeleteContext: deleteLogStream,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -180,12 +182,12 @@ func newLogStream() *schema.Resource {
 	}
 }
 
-func createLogStream(d *schema.ResourceData, m interface{}) error {
+func createLogStream(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	ls := expandLogStream(d)
 
 	api := m.(*management.Management)
-	if err := api.LogStream.Create(ls); err != nil {
-		return err
+	if err := api.LogStream.Create(ls, management.Context(ctx)); err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId(ls.GetID())
 
@@ -194,62 +196,51 @@ func createLogStream(d *schema.ResourceData, m interface{}) error {
 	// additional operation to modify it.
 	s := String(d, "status")
 	if s != nil && s != ls.Status {
-		err := api.LogStream.Update(ls.GetID(), &management.LogStream{Status: s})
+		err := api.LogStream.Update(ls.GetID(), &management.LogStream{Status: s}, management.Context(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return readLogStream(d, m)
+	return readLogStream(ctx, d, m)
 }
 
-func readLogStream(d *schema.ResourceData, m interface{}) error {
+func readLogStream(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	ls, err := api.LogStream.Read(d.Id())
+	ls, err := api.LogStream.Read(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
+		return flow.DefaultManagementError(err, d)
 	}
 
 	d.SetId(ls.GetID())
 	_ = d.Set("name", ls.Name)
 	_ = d.Set("status", ls.Status)
 	_ = d.Set("type", ls.Type)
-	_ = d.Set("sink", flattenLogStreamSink(d, ls.Sink))
+	_ = d.Set("sink", flattenLogStreamSink(ls.Sink))
 	return nil
 }
 
-func updateLogStream(d *schema.ResourceData, m interface{}) error {
+func updateLogStream(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	ls := expandLogStream(d)
 
 	api := m.(*management.Management)
-	err := api.LogStream.Update(d.Id(), ls)
+	err := api.LogStream.Update(d.Id(), ls, management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return readLogStream(d, m)
+	return readLogStream(ctx, d, m)
 }
 
-func deleteLogStream(d *schema.ResourceData, m interface{}) error {
+func deleteLogStream(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	err := api.LogStream.Delete(d.Id())
+	err := api.LogStream.Delete(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
+		return flow.DefaultManagementError(err, d)
 	}
-	return err
+	return nil
 }
 
-func flattenLogStreamSink(d ResourceData, sink interface{}) []interface{} {
+func flattenLogStreamSink(sink interface{}) []interface{} {
 
 	var m interface{}
 
@@ -288,13 +279,14 @@ func flattenLogStreamSinkAzureEventGrid(o *management.LogStreamSinkAzureEventGri
 }
 
 func flattenLogStreamSinkHTTP(o *management.LogStreamSinkHTTP) interface{} {
-	return map[string]interface{}{
+	data := map[string]interface{}{
 		"http_endpoint":       o.GetEndpoint(),
-		"http_contentFormat":  o.GetContentFormat(),
-		"http_contentType":    o.GetContentType(),
+		"http_content_format": o.GetContentFormat(),
+		"http_content_type":   o.GetContentType(),
 		"http_authorization":  o.GetAuthorization(),
 		"http_custom_headers": o.CustomHeaders,
 	}
+	return data
 }
 
 func flattenLogStreamSinkDatadog(o *management.LogStreamSinkDatadog) interface{} {

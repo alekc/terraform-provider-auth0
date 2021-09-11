@@ -13,11 +13,15 @@ import (
 func init() {
 	resource.AddTestSweepers("auth0_custom_domain", &resource.Sweeper{
 		Name: "auth0_custom_domain",
-		F: func(_ string) (err error) {
+		F: func(_ string) error {
 			api := testAuth0ApiClient()
 			domains, err := api.CustomDomain.List()
 			if err != nil {
-				return
+				if err.Error() == "403 Forbidden: The account is not allowed to perform this operation, please contact our support team" {
+					// we are not premium, so its safe to skip this one.
+					return nil
+				}
+				return err
 			}
 			for _, domain := range domains {
 				log.Printf("[DEBUG] ➝ %s", domain.GetDomain())
@@ -28,7 +32,7 @@ func init() {
 					log.Printf("[DEBUG] ✗ %s", domain.GetDomain())
 				}
 			}
-			return
+			return nil
 		},
 	})
 }
