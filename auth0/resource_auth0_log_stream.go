@@ -217,10 +217,10 @@ func readLogStream(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(ls.GetID())
-	d.Set("name", ls.Name)
-	d.Set("status", ls.Status)
-	d.Set("type", ls.Type)
-	d.Set("sink", flattenLogStreamSink(d, ls.Sink))
+	_ = d.Set("name", ls.Name)
+	_ = d.Set("status", ls.Status)
+	_ = d.Set("type", ls.Type)
+	_ = d.Set("sink", flattenLogStreamSink(d, ls.Sink))
 	return nil
 }
 

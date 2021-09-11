@@ -98,11 +98,11 @@ func readHook(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	d.Set("name", c.Name)
-	d.Set("dependencies", c.Dependencies)
-	d.Set("script", c.Script)
-	d.Set("trigger_id", c.TriggerID)
-	d.Set("enabled", c.Enabled)
+	_ = d.Set("name", c.Name)
+	_ = d.Set("dependencies", c.Dependencies)
+	_ = d.Set("script", c.Script)
+	_ = d.Set("trigger_id", c.TriggerID)
+	_ = d.Set("enabled", c.Enabled)
 	return nil
 }
 

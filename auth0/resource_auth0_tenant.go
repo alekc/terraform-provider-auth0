@@ -266,25 +266,25 @@ func readTenant(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	d.Set("change_password", flattenTenantChangePassword(t.ChangePassword))
-	d.Set("guardian_mfa_page", flattenTenantGuardianMFAPage(t.GuardianMFAPage))
+	_ = d.Set("change_password", flattenTenantChangePassword(t.ChangePassword))
+	_ = d.Set("guardian_mfa_page", flattenTenantGuardianMFAPage(t.GuardianMFAPage))
 
-	d.Set("default_audience", t.DefaultAudience)
-	d.Set("default_directory", t.DefaultDirectory)
+	_ = d.Set("default_audience", t.DefaultAudience)
+	_ = d.Set("default_directory", t.DefaultDirectory)
 
-	d.Set("friendly_name", t.FriendlyName)
-	d.Set("picture_url", t.PictureURL)
-	d.Set("support_email", t.SupportEmail)
-	d.Set("support_url", t.SupportURL)
-	d.Set("allowed_logout_urls", t.AllowedLogoutURLs)
-	d.Set("session_lifetime", t.SessionLifetime)
-	d.Set("idle_session_lifetime", t.IdleSessionLifetime)
-	d.Set("sandbox_version", t.SandboxVersion)
-	d.Set("enabled_locales", t.EnabledLocales)
+	_ = d.Set("friendly_name", t.FriendlyName)
+	_ = d.Set("picture_url", t.PictureURL)
+	_ = d.Set("support_email", t.SupportEmail)
+	_ = d.Set("support_url", t.SupportURL)
+	_ = d.Set("allowed_logout_urls", t.AllowedLogoutURLs)
+	_ = d.Set("session_lifetime", t.SessionLifetime)
+	_ = d.Set("idle_session_lifetime", t.IdleSessionLifetime)
+	_ = d.Set("sandbox_version", t.SandboxVersion)
+	_ = d.Set("enabled_locales", t.EnabledLocales)
 
-	d.Set("error_page", flattenTenantErrorPage(t.ErrorPage))
-	d.Set("flags", flattenTenantFlags(t.Flags))
-	d.Set("universal_login", flattenTenantUniversalLogin(t.UniversalLogin))
+	_ = d.Set("error_page", flattenTenantErrorPage(t.ErrorPage))
+	_ = d.Set("flags", flattenTenantFlags(t.Flags))
+	_ = d.Set("universal_login", flattenTenantUniversalLogin(t.UniversalLogin))
 
 	return nil
 }

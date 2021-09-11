@@ -63,9 +63,9 @@ func readClientGrant(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	d.SetId(auth0.StringValue(g.ID))
-	d.Set("client_id", g.ClientID)
-	d.Set("audience", g.Audience)
-	d.Set("scope", g.Scope)
+	_ = d.Set("client_id", g.ClientID)
+	_ = d.Set("audience", g.Audience)
+	_ = d.Set("scope", g.Scope)
 	return nil
 }
 

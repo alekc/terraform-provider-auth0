@@ -1,8 +1,13 @@
 package auth0
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -14,10 +19,10 @@ import (
 func newResourceServer() *schema.Resource {
 	return &schema.Resource{
 
-		Create: createResourceServer,
-		Read:   readResourceServer,
-		Update: updateResourceServer,
-		Delete: deleteResourceServer,
+		CreateContext: createResourceServer,
+		ReadContext:   readResourceServer,
+		UpdateContext: updateResourceServer,
+		DeleteContext: deleteResourceServer,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -114,19 +119,19 @@ func newResourceServer() *schema.Resource {
 	}
 }
 
-func createResourceServer(d *schema.ResourceData, m interface{}) error {
+func createResourceServer(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	s := expandResourceServer(d)
 	api := m.(*management.Management)
-	if err := api.ResourceServer.Create(s); err != nil {
-		return err
+	if err := api.ResourceServer.Create(s, management.Context(ctx)); err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(s.ID))
-	return readResourceServer(d, m)
+	return readResourceServer(ctx, d, m)
 }
 
-func readResourceServer(d *schema.ResourceData, m interface{}) error {
+func readResourceServer(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	s, err := api.ResourceServer.Read(d.Id())
+	s, err := api.ResourceServer.Read(d.Id(), management.Context(ctx))
 	if err != nil {
 		if mErr, ok := err.(management.Error); ok {
 			if mErr.Status() == http.StatusNotFound {
@@ -134,13 +139,13 @@ func readResourceServer(d *schema.ResourceData, m interface{}) error {
 				return nil
 			}
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(auth0.StringValue(s.ID))
-	d.Set("name", s.Name)
-	d.Set("identifier", s.Identifier)
-	d.Set("scopes", func() (m []map[string]interface{}) {
+	_ = d.Set("name", s.Name)
+	_ = d.Set("identifier", s.Identifier)
+	_ = d.Set("scopes", func() (m []map[string]interface{}) {
 		for _, scope := range s.Scopes {
 			m = append(m, map[string]interface{}{
 				"value":       scope.Value,
@@ -149,46 +154,40 @@ func readResourceServer(d *schema.ResourceData, m interface{}) error {
 		}
 		return m
 	}())
-	d.Set("signing_alg", s.SigningAlgorithm)
-	d.Set("signing_secret", s.SigningSecret)
-	d.Set("allow_offline_access", s.AllowOfflineAccess)
-	d.Set("token_lifetime", s.TokenLifetime)
-	d.Set("token_lifetime_for_web", s.TokenLifetimeForWeb)
-	d.Set("skip_consent_for_verifiable_first_party_clients", s.SkipConsentForVerifiableFirstPartyClients)
-	d.Set("verification_location", s.VerificationLocation)
-	d.Set("options", s.Options)
-	d.Set("enforce_policies", s.EnforcePolicies)
-	d.Set("token_dialect", s.TokenDialect)
+	_ = d.Set("signing_alg", s.SigningAlgorithm)
+	_ = d.Set("signing_secret", s.SigningSecret)
+	_ = d.Set("allow_offline_access", s.AllowOfflineAccess)
+	_ = d.Set("token_lifetime", s.TokenLifetime)
+	_ = d.Set("token_lifetime_for_web", s.TokenLifetimeForWeb)
+	_ = d.Set("skip_consent_for_verifiable_first_party_clients", s.SkipConsentForVerifiableFirstPartyClients)
+	_ = d.Set("verification_location", s.VerificationLocation)
+	_ = d.Set("options", s.Options)
+	_ = d.Set("enforce_policies", s.EnforcePolicies)
+	_ = d.Set("token_dialect", s.TokenDialect)
 	return nil
 }
 
-func updateResourceServer(d *schema.ResourceData, m interface{}) error {
+func updateResourceServer(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	s := expandResourceServer(d)
 	s.Identifier = nil
 	api := m.(*management.Management)
-	err := api.ResourceServer.Update(d.Id(), s)
+	err := api.ResourceServer.Update(d.Id(), s, management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return readResourceServer(d, m)
+	return readResourceServer(ctx, d, m)
 }
 
-func deleteResourceServer(d *schema.ResourceData, m interface{}) error {
+func deleteResourceServer(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	err := api.ResourceServer.Delete(d.Id())
+	err := api.ResourceServer.Delete(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
+		return flow.DefaultManagementError(err, d)
 	}
-	return err
+	return diag.FromErr(err)
 }
 
 func expandResourceServer(d *schema.ResourceData) *management.ResourceServer {
-
 	s := &management.ResourceServer{
 		Name:                 String(d, "name"),
 		Identifier:           String(d, "identifier"),

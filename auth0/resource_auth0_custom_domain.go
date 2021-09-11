@@ -92,13 +92,13 @@ func readCustomDomain(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(auth0.StringValue(c.ID))
-	d.Set("domain", c.Domain)
-	d.Set("type", c.Type)
-	d.Set("primary", c.Primary)
-	d.Set("status", c.Status)
+	_ = d.Set("domain", c.Domain)
+	_ = d.Set("type", c.Type)
+	_ = d.Set("primary", c.Primary)
+	_ = d.Set("status", c.Status)
 
 	if c.Verification != nil {
-		d.Set("verification", []map[string]interface{}{
+		_ = d.Set("verification", []map[string]interface{}{
 			{"methods": c.Verification.Methods},
 		})
 	}

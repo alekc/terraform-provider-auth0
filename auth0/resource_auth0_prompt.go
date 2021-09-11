@@ -56,8 +56,8 @@ func readPrompt(d *schema.ResourceData, m interface{}) error {
 		}
 		return err
 	}
-	d.Set("universal_login_experience", p.UniversalLoginExperience)
-	d.Set("identifier_first", p.IdentifierFirst)
+	_ = d.Set("universal_login_experience", p.UniversalLoginExperience)
+	_ = d.Set("identifier_first", p.IdentifierFirst)
 	return nil
 }
 
