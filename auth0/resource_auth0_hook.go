@@ -1,9 +1,12 @@
 package auth0
 
 import (
-	"net/http"
+	"context"
 	"regexp"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -13,11 +16,10 @@ import (
 
 func newHook() *schema.Resource {
 	return &schema.Resource{
-
-		Create: createHook,
-		Read:   readHook,
-		Update: updateHook,
-		Delete: deleteHook,
+		CreateContext: createHook,
+		ReadContext:   readHook,
+		UpdateContext: updateHook,
+		DeleteContext: deleteHook,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -72,30 +74,26 @@ func newHook() *schema.Resource {
 	}
 }
 
-func createHook(d *schema.ResourceData, m interface{}) error {
+func createHook(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := buildHook(d)
 	api := m.(*management.Management)
-	if err := api.Hook.Create(c); err != nil {
-		return err
+	if err := api.Hook.Create(c, management.Context(ctx)); err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(c.ID))
-	if err := upsertHookSecrets(d, m); err != nil {
-		return err
+	d.Partial(true)
+	if err := upsertHookSecrets(ctx, d, m); err != nil {
+		return diag.FromErr(err)
 	}
-	return readHook(d, m)
+	d.Partial(false)
+	return readHook(ctx, d, m)
 }
 
-func readHook(d *schema.ResourceData, m interface{}) error {
+func readHook(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	c, err := api.Hook.Read(d.Id())
+	c, err := api.Hook.Read(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
+		return flow.DefaultManagementError(err, d)
 	}
 
 	_ = d.Set("name", c.Name)
@@ -106,25 +104,25 @@ func readHook(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func updateHook(d *schema.ResourceData, m interface{}) error {
+func updateHook(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := buildHook(d)
 	api := m.(*management.Management)
-	err := api.Hook.Update(d.Id(), c)
+	err := api.Hook.Update(d.Id(), c, management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	if err = upsertHookSecrets(d, m); err != nil {
-		return err
+	if err = upsertHookSecrets(ctx, d, m); err != nil {
+		return diag.FromErr(err)
 	}
-	return readHook(d, m)
+	return readHook(ctx, d, m)
 }
 
-func upsertHookSecrets(d *schema.ResourceData, m interface{}) error {
+func upsertHookSecrets(ctx context.Context, d *schema.ResourceData, m interface{}) error {
 	if d.IsNewResource() || d.HasChange("secrets") {
 		secrets := Map(d, "secrets")
 		api := m.(*management.Management)
 		hookSecrets := toHookSecrets(secrets)
-		return api.Hook.ReplaceSecrets(d.Id(), hookSecrets)
+		return api.Hook.ReplaceSecrets(d.Id(), hookSecrets, management.Context(ctx))
 	}
 	return nil
 }
@@ -139,19 +137,13 @@ func toHookSecrets(val map[string]interface{}) management.HookSecrets {
 	return hookSecrets
 }
 
-func deleteHook(d *schema.ResourceData, m interface{}) error {
+func deleteHook(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	err := api.Hook.Delete(d.Id())
+	err := api.Hook.Delete(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
+		return flow.DefaultManagementError(err, d)
 	}
-	return err
+	return diag.FromErr(err)
 }
 
 func buildHook(d *schema.ResourceData) *management.Hook {
