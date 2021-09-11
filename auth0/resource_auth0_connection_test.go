@@ -51,7 +51,7 @@ func TestAccConnection(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -186,7 +186,7 @@ func TestAccConnectionAD(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -230,7 +230,7 @@ func TestAccConnectionAzureAD(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -288,7 +288,7 @@ func TestAccConnectionOIDC(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -395,7 +395,7 @@ func TestAccConnectionOAuth2(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -472,7 +472,7 @@ func TestAccConnectionWithEnabledClients(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -527,7 +527,7 @@ func TestAccConnectionSMS(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -573,7 +573,7 @@ func TestAccConnectionEmail(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -651,7 +651,7 @@ func TestAccConnectionSalesforce(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -682,7 +682,7 @@ resource "auth0_connection" "salesforce_community" {
 func TestAccConnectionGoogleOAuth2(t *testing.T) {
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -727,7 +727,7 @@ func TestAccConnectionFacebook(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -788,7 +788,7 @@ resource "auth0_connection" "facebook" {
 func TestAccConnectionApple(t *testing.T) {
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -854,7 +854,7 @@ func TestAccConnectionLinkedin(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -915,7 +915,7 @@ func TestAccConnectionGitHub(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -970,7 +970,7 @@ func TestAccConnectionWindowslive(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -1032,7 +1032,7 @@ func TestAccConnectionConfiguration(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -1206,7 +1206,7 @@ func TestConnectionInstanceStateUpgradeV1(t *testing.T) {
 func TestAccConnectionSAML(t *testing.T) {
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
