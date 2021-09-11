@@ -1,7 +1,10 @@
 package auth0
 
 import (
-	"net/http"
+	"context"
+
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,13 +15,11 @@ import (
 )
 
 func newPrompt() *schema.Resource {
-
 	return &schema.Resource{
-
-		Create: createPrompt,
-		Read:   readPrompt,
-		Update: updatePrompt,
-		Delete: deletePrompt,
+		CreateContext: createPrompt,
+		ReadContext:   readPrompt,
+		UpdateContext: updatePrompt,
+		DeleteContext: deletePrompt,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -39,40 +40,34 @@ func newPrompt() *schema.Resource {
 	}
 }
 
-func createPrompt(d *schema.ResourceData, m interface{}) error {
+func createPrompt(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	d.SetId(resource.UniqueId())
-	return updatePrompt(d, m)
+	return updatePrompt(ctx, d, m)
 }
 
-func readPrompt(d *schema.ResourceData, m interface{}) error {
+func readPrompt(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	p, err := api.Prompt.Read()
+	p, err := api.Prompt.Read(management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
+		return flow.DefaultManagementError(err, d)
 	}
 	_ = d.Set("universal_login_experience", p.UniversalLoginExperience)
 	_ = d.Set("identifier_first", p.IdentifierFirst)
 	return nil
 }
 
-func updatePrompt(d *schema.ResourceData, m interface{}) error {
+func updatePrompt(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	p := buildPrompt(d)
 	api := m.(*management.Management)
 	err := api.Prompt.Update(p)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return readPrompt(d, m)
+	return readPrompt(ctx, d, m)
 }
 
-func deletePrompt(d *schema.ResourceData, m interface{}) error {
-	d.SetId("")
+func deletePrompt(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
+	d.SetId("") // todo verify the auth0 resource
 	return nil
 }
 
