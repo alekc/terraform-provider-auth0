@@ -20,7 +20,7 @@ sweep:
 test: fmtcheck
 	@go test -i $(PKGS) || exit 1
 	@echo $(PKGS) | \
-		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4 -run ^$(TESTS)$
+		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=10 -run ^$(TESTS)$
 
 testacc: fmtcheck
 	@TF_ACC=1 go test $(PKGS) -v $(TESTARGS) -timeout 120m -coverprofile=$(COVERS) -run ^$(TESTS)$
