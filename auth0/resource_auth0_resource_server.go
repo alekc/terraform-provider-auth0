@@ -3,7 +3,6 @@ package auth0
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
 
@@ -133,13 +132,7 @@ func readResourceServer(ctx context.Context, d *schema.ResourceData, m interface
 	api := m.(*management.Management)
 	s, err := api.ResourceServer.Read(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return diag.FromErr(err)
+		return flow.DefaultManagementError(err, d)
 	}
 
 	d.SetId(auth0.StringValue(s.ID))

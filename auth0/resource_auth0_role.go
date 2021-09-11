@@ -68,7 +68,7 @@ func createRole(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 	//
 	// See: https://www.terraform.io/docs/extend/writing-custom-providers.html
 	d.Partial(true)
-	if err := assignRolePermissions(d, m); err != nil {
+	if err := assignRolePermissions(ctx, d, m); err != nil {
 		return diag.FromErr(err)
 	}
 	// We succeeded, disable partial mode. This causes Terraform to save
@@ -93,7 +93,7 @@ func readRole(ctx context.Context, d *schema.ResourceData, m interface{}) diag.D
 
 	var page int
 	for {
-		l, err := api.Role.Permissions(d.Id(), management.Page(page))
+		l, err := api.Role.Permissions(d.Id(), management.Page(page), management.Context(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -119,7 +119,7 @@ func updateRole(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 		return diag.FromErr(err)
 	}
 	d.Partial(true)
-	if err := assignRolePermissions(d, m); err != nil {
+	if err := assignRolePermissions(ctx, d, m); err != nil {
 		return diag.FromErr(err)
 	}
 	d.Partial(false)
@@ -142,7 +142,7 @@ func expandRole(d *schema.ResourceData) *management.Role {
 	}
 }
 
-func assignRolePermissions(d *schema.ResourceData, m interface{}) error {
+func assignRolePermissions(ctx context.Context, d *schema.ResourceData, m interface{}) error {
 
 	add, rm := Diff(d, "permissions")
 
@@ -167,14 +167,14 @@ func assignRolePermissions(d *schema.ResourceData, m interface{}) error {
 	api := m.(*management.Management)
 
 	if len(rmPermissions) > 0 {
-		err := api.Role.RemovePermissions(d.Id(), rmPermissions)
+		err := api.Role.RemovePermissions(d.Id(), rmPermissions, management.Context(ctx))
 		if err != nil {
 			return err
 		}
 	}
 
 	if len(addPermissions) > 0 {
-		err := api.Role.AssociatePermissions(d.Id(), addPermissions)
+		err := api.Role.AssociatePermissions(d.Id(), addPermissions, management.Context(ctx))
 		if err != nil {
 			return err
 		}

@@ -257,7 +257,7 @@ func createTenant(ctx context.Context, d *schema.ResourceData, m interface{}) di
 
 func readTenant(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	t, err := api.Tenant.Read()
+	t, err := api.Tenant.Read(management.Context(ctx))
 	if err != nil {
 		return flow.DefaultManagementError(err, d)
 	}

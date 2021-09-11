@@ -2,7 +2,6 @@ package auth0
 
 import (
 	"context"
-	"net/http"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -536,7 +535,7 @@ func newClient() *schema.Resource {
 func createClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := expandClient(d)
 	api := m.(*management.Management)
-	if err := api.Client.Create(c); err != nil {
+	if err := api.Client.Create(c, management.Context(ctx)); err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(c.ClientID))
@@ -545,7 +544,7 @@ func createClient(ctx context.Context, d *schema.ResourceData, m interface{}) di
 
 func readClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	c, err := api.Client.Read(d.Id())
+	c, err := api.Client.Read(d.Id(), management.Context(ctx))
 	if err != nil {
 		return flow.DefaultManagementError(err, d)
 	}
@@ -587,30 +586,25 @@ func updateClient(ctx context.Context, d *schema.ResourceData, m interface{}) di
 	c := expandClient(d)
 	api := m.(*management.Management)
 	if clientHasChange(c) {
-		err := api.Client.Update(d.Id(), c)
+		err := api.Client.Update(d.Id(), c, management.Context(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 	d.Partial(true)
-	err := rotateClientSecret(d, m)
+	err := rotateClientSecret(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	d.Partial(false)
-	return readClient(nil, d, m)
+	return readClient(ctx, d, m)
 }
 
 func deleteClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	err := api.Client.Delete(d.Id())
+	err := api.Client.Delete(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
+		return flow.DefaultManagementError(err, d)
 	}
 	return diag.FromErr(err)
 }
@@ -784,10 +778,10 @@ func buildClientAddon(d map[string]interface{}) map[string]interface{} {
 	return addon
 }
 
-func rotateClientSecret(d *schema.ResourceData, m interface{}) error {
+func rotateClientSecret(ctx context.Context, d *schema.ResourceData, m interface{}) error {
 	if d.HasChange("client_secret_rotation_trigger") {
 		api := m.(*management.Management)
-		c, err := api.Client.RotateSecret(d.Id())
+		c, err := api.Client.RotateSecret(d.Id(), management.Context(ctx))
 		if err != nil {
 			return err
 		}

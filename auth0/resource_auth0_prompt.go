@@ -59,7 +59,7 @@ func readPrompt(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 func updatePrompt(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	p := buildPrompt(d)
 	api := m.(*management.Management)
-	err := api.Prompt.Update(p)
+	err := api.Prompt.Update(p, management.Context(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}

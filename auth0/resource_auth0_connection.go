@@ -3,7 +3,6 @@ package auth0
 import (
 	"context"
 	"log"
-	"net/http"
 	"strconv"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
@@ -708,7 +707,7 @@ func connectionSchemaUpgradeV1(ctx context.Context, state map[string]interface{}
 func createConnection(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := expandConnection(d)
 	api := m.(*management.Management)
-	if err := api.Connection.Create(c); err != nil {
+	if err := api.Connection.Create(c, management.Context(ctx)); err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(c.ID))
@@ -717,7 +716,7 @@ func createConnection(ctx context.Context, d *schema.ResourceData, m interface{}
 
 func readConnection(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	c, err := api.Connection.Read(d.Id())
+	c, err := api.Connection.Read(d.Id(), management.Context(ctx))
 	if err != nil {
 		return flow.DefaultManagementError(err, d)
 	}
@@ -736,7 +735,7 @@ func readConnection(ctx context.Context, d *schema.ResourceData, m interface{}) 
 func updateConnection(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := expandConnection(d)
 	api := m.(*management.Management)
-	err := api.Connection.Update(d.Id(), c)
+	err := api.Connection.Update(d.Id(), c, management.Context(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -745,16 +744,9 @@ func updateConnection(ctx context.Context, d *schema.ResourceData, m interface{}
 
 func deleteConnection(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	err := api.Connection.Delete(d.Id())
+	err := api.Connection.Delete(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			// if resource doesn't exist already, just return ok
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return diag.FromErr(err)
+		return flow.DefaultManagementError(err, d)
 	}
 	return nil
 }

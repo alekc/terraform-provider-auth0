@@ -104,7 +104,7 @@ func readBranding(ctx context.Context, d *schema.ResourceData, m interface{}) di
 	_ = d.Set("colors", flattenBrandingColors(b.Colors))
 	_ = d.Set("font", flattenBrandingFont(b.Font))
 
-	t, err := api.Tenant.Read()
+	t, err := api.Tenant.Read(management.Context(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -129,7 +129,7 @@ func updateBranding(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	}
 
 	if universalLogin.GetBody() != "" {
-		err = api.Branding.SetUniversalLogin(universalLogin)
+		err = api.Branding.SetUniversalLogin(universalLogin, management.Context(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}

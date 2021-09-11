@@ -3,7 +3,6 @@ package auth0
 import (
 	"context"
 	"log"
-	"net/http"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -137,14 +136,9 @@ func deleteEmailTemplate(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 	err := api.EmailTemplate.Update(d.Id(), t, management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
+		return flow.DefaultManagementError(err, d)
 	}
-	return diag.FromErr(err)
+	return nil
 }
 
 func buildEmailTemplate(d *schema.ResourceData) *management.EmailTemplate {

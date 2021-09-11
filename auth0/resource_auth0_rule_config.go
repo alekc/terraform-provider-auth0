@@ -2,7 +2,6 @@ package auth0
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -65,7 +64,7 @@ func updateRuleConfig(ctx context.Context, d *schema.ResourceData, m interface{}
 	r := buildRuleConfig(d)
 	r.Key = nil
 	api := m.(*management.Management)
-	err := api.RuleConfig.Upsert(d.Id(), r)
+	err := api.RuleConfig.Upsert(d.Id(), r, management.Context(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -74,16 +73,11 @@ func updateRuleConfig(ctx context.Context, d *schema.ResourceData, m interface{}
 
 func deleteRuleConfig(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	err := api.RuleConfig.Delete(d.Id())
+	err := api.RuleConfig.Delete(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
+		return flow.DefaultManagementError(err, d)
 	}
-	return diag.FromErr(err)
+	return nil
 }
 
 func buildRuleConfig(d *schema.ResourceData) *management.RuleConfig {

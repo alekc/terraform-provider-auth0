@@ -214,14 +214,9 @@ func deleteUser(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 	api := m.(*management.Management)
 	err := api.User.Delete(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
+		return flow.DefaultManagementError(err, d)
 	}
-	return diag.FromErr(err)
+	return nil
 }
 
 func buildUser(d *schema.ResourceData) (u *management.User, err error) {
@@ -340,7 +335,7 @@ func assignUserRoles(ctx context.Context, d *schema.ResourceData, m interface{})
 	}
 
 	if len(addRoles) > 0 {
-		err := api.User.AssignRoles(d.Id(), addRoles)
+		err := api.User.AssignRoles(d.Id(), addRoles, management.Context(ctx))
 		if err != nil {
 			return err
 		}
