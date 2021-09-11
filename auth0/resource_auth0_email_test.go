@@ -33,7 +33,7 @@ func TestAccEmail(t *testing.T) {
 					}
 				}
 				`,
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_email.my_email_provider", "name", "ses"),
 					resource.TestCheckResourceAttr("auth0_email.my_email_provider", "enabled", "true"),
 					resource.TestCheckResourceAttr("auth0_email.my_email_provider", "default_from_address", "accounts@example.com"),
@@ -55,7 +55,7 @@ func TestAccEmail(t *testing.T) {
 					}
 				}
 				`,
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_email.my_email_provider", "name", "ses"),
 					resource.TestCheckResourceAttr("auth0_email.my_email_provider", "enabled", "true"),
 					resource.TestCheckResourceAttr("auth0_email.my_email_provider", "default_from_address", "accounts@example.com"),
@@ -77,7 +77,7 @@ func TestAccEmail(t *testing.T) {
 					}
 				}
 				`,
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_email.my_email_provider", "name", "mailgun"),
 					resource.TestCheckResourceAttr("auth0_email.my_email_provider", "enabled", "true"),
 					resource.TestCheckResourceAttr("auth0_email.my_email_provider", "default_from_address", "accounts@example.com"),

@@ -22,7 +22,6 @@ func init() {
 }
 
 func TestAccEmailTemplate(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
@@ -53,7 +52,7 @@ func TestAccEmailTemplate(t *testing.T) {
 				depends_on = ["auth0_email.my_email_provider"]
 			}
 			`,
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "template", "welcome_email"),
 					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "body", "<html><body><h1>Welcome!</h1></body></html>"),
 					resource.TestCheckResourceAttr("auth0_email_template.my_email_template", "from", "welcome@example.com"),
