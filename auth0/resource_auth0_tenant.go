@@ -1,26 +1,28 @@
 package auth0
 
 import (
-	"net/http"
+	"context"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"gopkg.in/auth0.v5/management"
 
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
 	v "github.com/alekc/terraform-provider-auth0/auth0/internal/validation"
 )
 
 func newTenant() *schema.Resource {
 	return &schema.Resource{
 
-		Create: createTenant,
-		Read:   readTenant,
-		Update: updateTenant,
-		Delete: deleteTenant,
+		CreateContext: createTenant,
+		ReadContext:   readTenant,
+		UpdateContext: updateTenant,
+		DeleteContext: deleteTenant,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -248,58 +250,52 @@ func newTenant() *schema.Resource {
 	}
 }
 
-func createTenant(d *schema.ResourceData, m interface{}) error {
+func createTenant(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	d.SetId(resource.UniqueId())
-	return updateTenant(d, m)
+	return updateTenant(ctx, d, m)
 }
 
-func readTenant(d *schema.ResourceData, m interface{}) error {
+func readTenant(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	t, err := api.Tenant.Read()
+	t, err := api.Tenant.Read(management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
+		return flow.DefaultManagementError(err, d)
 	}
 
-	d.Set("change_password", flattenTenantChangePassword(t.ChangePassword))
-	d.Set("guardian_mfa_page", flattenTenantGuardianMFAPage(t.GuardianMFAPage))
+	_ = d.Set("change_password", flattenTenantChangePassword(t.ChangePassword))
+	_ = d.Set("guardian_mfa_page", flattenTenantGuardianMFAPage(t.GuardianMFAPage))
 
-	d.Set("default_audience", t.DefaultAudience)
-	d.Set("default_directory", t.DefaultDirectory)
+	_ = d.Set("default_audience", t.DefaultAudience)
+	_ = d.Set("default_directory", t.DefaultDirectory)
 
-	d.Set("friendly_name", t.FriendlyName)
-	d.Set("picture_url", t.PictureURL)
-	d.Set("support_email", t.SupportEmail)
-	d.Set("support_url", t.SupportURL)
-	d.Set("allowed_logout_urls", t.AllowedLogoutURLs)
-	d.Set("session_lifetime", t.SessionLifetime)
-	d.Set("idle_session_lifetime", t.IdleSessionLifetime)
-	d.Set("sandbox_version", t.SandboxVersion)
-	d.Set("enabled_locales", t.EnabledLocales)
+	_ = d.Set("friendly_name", t.FriendlyName)
+	_ = d.Set("picture_url", t.PictureURL)
+	_ = d.Set("support_email", t.SupportEmail)
+	_ = d.Set("support_url", t.SupportURL)
+	_ = d.Set("allowed_logout_urls", t.AllowedLogoutURLs)
+	_ = d.Set("session_lifetime", t.SessionLifetime)
+	_ = d.Set("idle_session_lifetime", t.IdleSessionLifetime)
+	_ = d.Set("sandbox_version", t.SandboxVersion)
+	_ = d.Set("enabled_locales", t.EnabledLocales)
 
-	d.Set("error_page", flattenTenantErrorPage(t.ErrorPage))
-	d.Set("flags", flattenTenantFlags(t.Flags))
-	d.Set("universal_login", flattenTenantUniversalLogin(t.UniversalLogin))
+	_ = d.Set("error_page", flattenTenantErrorPage(t.ErrorPage))
+	_ = d.Set("flags", flattenTenantFlags(t.Flags))
+	_ = d.Set("universal_login", flattenTenantUniversalLogin(t.UniversalLogin))
 
 	return nil
 }
 
-func updateTenant(d *schema.ResourceData, m interface{}) error {
+func updateTenant(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	t := buildTenant(d)
 	api := m.(*management.Management)
-	err := api.Tenant.Update(t)
+	err := api.Tenant.Update(t, management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return readTenant(d, m)
+	return readTenant(ctx, d, m)
 }
 
-func deleteTenant(d *schema.ResourceData, m interface{}) error {
+func deleteTenant(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	d.SetId("")
 	return nil
 }

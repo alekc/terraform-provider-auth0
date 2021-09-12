@@ -1,28 +1,30 @@
 package auth0
 
 import (
-	"net/http"
+	"context"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"gopkg.in/auth0.v5"
 	"gopkg.in/auth0.v5/management"
 
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
 	v "github.com/alekc/terraform-provider-auth0/auth0/internal/validation"
 )
 
 func newClient() *schema.Resource {
 	return &schema.Resource{
 
-		Create: createClient,
-		Read:   readClient,
-		Update: updateClient,
-		Delete: deleteClient,
+		CreateContext: createClient,
+		ReadContext:   readClient,
+		UpdateContext: updateClient,
+		DeleteContext: deleteClient,
 
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -337,8 +339,9 @@ func newClient() *schema.Resource {
 										Default:  true,
 									},
 									"logout": {
-										Type:     schema.TypeMap,
+										Type:     schema.TypeList,
 										Optional: true,
+										MaxItems: 1,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"callback": {
@@ -393,6 +396,7 @@ func newClient() *schema.Resource {
 						},
 					},
 				},
+				Default: nil,
 			},
 			"token_endpoint_auth_method": {
 				Type:     schema.TypeString,
@@ -528,92 +532,81 @@ func newClient() *schema.Resource {
 	}
 }
 
-func createClient(d *schema.ResourceData, m interface{}) error {
+func createClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := expandClient(d)
 	api := m.(*management.Management)
-	if err := api.Client.Create(c); err != nil {
-		return err
+	if err := api.Client.Create(c, management.Context(ctx)); err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(c.ClientID))
-	return readClient(d, m)
+	return readClient(ctx, d, m)
 }
 
-func readClient(d *schema.ResourceData, m interface{}) error {
+func readClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	c, err := api.Client.Read(d.Id())
+	c, err := api.Client.Read(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
+		return flow.DefaultManagementError(err, d)
 	}
 
-	d.Set("client_id", c.ClientID)
-	d.Set("client_secret", c.ClientSecret)
-	d.Set("name", c.Name)
-	d.Set("description", c.Description)
-	d.Set("app_type", c.AppType)
-	d.Set("logo_uri", c.LogoURI)
-	d.Set("is_first_party", c.IsFirstParty)
-	d.Set("is_token_endpoint_ip_header_trusted", c.IsTokenEndpointIPHeaderTrusted)
-	d.Set("oidc_conformant", c.OIDCConformant)
-	d.Set("callbacks", c.Callbacks)
-	d.Set("allowed_logout_urls", c.AllowedLogoutURLs)
-	d.Set("allowed_origins", c.AllowedOrigins)
-	d.Set("grant_types", c.GrantTypes)
-	d.Set("web_origins", c.WebOrigins)
-	d.Set("sso", c.SSO)
-	d.Set("sso_disabled", c.SSODisabled)
-	d.Set("cross_origin_auth", c.CrossOriginAuth)
-	d.Set("cross_origin_loc", c.CrossOriginLocation)
-	d.Set("custom_login_page_on", c.CustomLoginPageOn)
-	d.Set("custom_login_page", c.CustomLoginPage)
-	d.Set("form_template", c.FormTemplate)
-	d.Set("token_endpoint_auth_method", c.TokenEndpointAuthMethod)
-	d.Set("jwt_configuration", flattenClientJwtConfiguration(c.JWTConfiguration))
-	d.Set("refresh_token", flattenClientRefreshTokenConfiguration(c.RefreshToken))
-	d.Set("encryption_key", c.EncryptionKey)
-	d.Set("addons", c.Addons)
-	d.Set("client_metadata", c.ClientMetadata)
-	d.Set("mobile", c.Mobile)
-	d.Set("initiate_login_uri", c.InitiateLoginURI)
+	_ = d.Set("client_id", c.ClientID)
+	_ = d.Set("client_secret", c.ClientSecret)
+	_ = d.Set("name", c.Name)
+	_ = d.Set("description", c.Description)
+	_ = d.Set("app_type", c.AppType)
+	_ = d.Set("logo_uri", c.LogoURI)
+	_ = d.Set("is_first_party", c.IsFirstParty)
+	_ = d.Set("is_token_endpoint_ip_header_trusted", c.IsTokenEndpointIPHeaderTrusted)
+	_ = d.Set("oidc_conformant", c.OIDCConformant)
+	_ = d.Set("callbacks", c.Callbacks)
+	_ = d.Set("allowed_logout_urls", c.AllowedLogoutURLs)
+	_ = d.Set("allowed_origins", c.AllowedOrigins)
+	_ = d.Set("grant_types", c.GrantTypes)
+	_ = d.Set("web_origins", c.WebOrigins)
+	_ = d.Set("sso", c.SSO)
+	_ = d.Set("sso_disabled", c.SSODisabled)
+	_ = d.Set("cross_origin_auth", c.CrossOriginAuth)
+	_ = d.Set("cross_origin_loc", c.CrossOriginLocation)
+	_ = d.Set("custom_login_page_on", c.CustomLoginPageOn)
+	_ = d.Set("custom_login_page", c.CustomLoginPage)
+	_ = d.Set("form_template", c.FormTemplate)
+	_ = d.Set("token_endpoint_auth_method", c.TokenEndpointAuthMethod)
+	_ = d.Set("jwt_configuration", flattenClientJwtConfiguration(c.JWTConfiguration))
+	_ = d.Set("refresh_token", flattenClientRefreshTokenConfiguration(c.RefreshToken))
+	_ = d.Set("encryption_key", c.EncryptionKey)
+	_ = d.Set("addons", flattenMap(c.Addons))
+	_ = d.Set("client_metadata", c.ClientMetadata)
+	_ = d.Set("mobile", flattenMap(c.Mobile))
+	_ = d.Set("initiate_login_uri", c.InitiateLoginURI)
 
 	return nil
 }
 
-func updateClient(d *schema.ResourceData, m interface{}) error {
+func updateClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := expandClient(d)
 	api := m.(*management.Management)
 	if clientHasChange(c) {
-		err := api.Client.Update(d.Id(), c)
+		err := api.Client.Update(d.Id(), c, management.Context(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	d.Partial(true)
-	err := rotateClientSecret(d, m)
+	err := rotateClientSecret(ctx, d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.Partial(false)
-	return readClient(d, m)
+	return readClient(ctx, d, m)
 }
 
-func deleteClient(d *schema.ResourceData, m interface{}) error {
+func deleteClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	err := api.Client.Delete(d.Id())
+	err := api.Client.Delete(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
+		return flow.DefaultManagementError(err, d)
 	}
-	return err
+	return diag.FromErr(err)
 }
 
 func expandClient(d *schema.ResourceData) *management.Client {
@@ -665,8 +658,8 @@ func expandClient(d *schema.ResourceData) *management.Client {
 
 	if m := Map(d, "encryption_key"); m != nil {
 		c.EncryptionKey = map[string]string{}
-		for k, v := range m {
-			c.EncryptionKey[k] = v.(string)
+		for k, val := range m {
+			c.EncryptionKey[k] = val.(string)
 		}
 	}
 
@@ -674,51 +667,58 @@ func expandClient(d *schema.ResourceData) *management.Client {
 
 		c.Addons = make(map[string]interface{})
 
-		for _, name := range []string{
-			"aws", "azure_blob", "azure_sb", "rms", "mscrm", "slack", "sentry",
-			"box", "cloudbees", "concur", "dropbox", "echosign", "egnyte",
-			"firebase", "newrelic", "office365", "salesforce", "salesforce_api",
-			"salesforce_sandbox_api", "layer", "sap_api", "sharepoint",
-			"springcm", "wams", "wsfed", "zendesk", "zoom",
-		} {
-			_, ok := d.GetOk(name)
-			if ok {
-				c.Addons[name] = buildClientAddon(Map(d, name))
-			}
+		// disabled due to https://community.auth0.com/t/new-customer-trying-to-authenticate-with-firebase-api-using-auth0/7534/18
+		// if there will be anyone complaining (from old customers),
+		// I will have a look at the underlying data to create proper structure. However, I think such event is unlikely
+
+		// for _, name := range []string{
+		// 	"aws", "azure_blob", "azure_sb", "rms", "mscrm", "slack", "sentry",
+		// 	"box", "cloudbees", "concur", "dropbox", "echosign", "egnyte",
+		// 	"firebase", "newrelic", "office365", "salesforce", "salesforce_api",
+		// 	"salesforce_sandbox_api", "layer", "sap_api", "sharepoint",
+		// 	"springcm", "wams", "wsfed", "zendesk", "zoom",
+		// } {
+		// 	_, ok := d.GetOk(name)
+		// 	if ok {
+		// 		c.Addons[name] = buildClientAddon(Map(d, name))
+		// 	}
+		// }
+		if _, ok := d.GetOk("wsfed"); ok {
+			c.Addons["wsfed"] = buildClientAddon(Map(d, "name"))
 		}
 
 		List(d, "samlp").Elem(func(d ResourceData) {
 
 			m := make(MapData)
 
-			m.Set("audience", String(d, "audience"))
-			m.Set("authnContextClassRef", String(d, "authn_context_class_ref"))
-			m.Set("binding", String(d, "binding"))
-			m.Set("createUpnClaim", Bool(d, "create_upn_claim"))
-			m.Set("destination", String(d, "destination"))
-			m.Set("digestAlgorithm", String(d, "digest_algorithm"))
-			m.Set("includeAttributeNameFormat", Bool(d, "include_attribute_name_format"))
-			m.Set("lifetimeInSeconds", Int(d, "lifetime_in_seconds"))
-			m.Set("logout", buildClientAddon(Map(d, "logout")))
-			m.Set("mapIdentities", Bool(d, "map_identities"))
-			m.Set("mappings", Map(d, "mappings"))
-			m.Set("mapUnknownClaimsAsIs", Bool(d, "map_unknown_claims_as_is"))
-			m.Set("nameIdentifierFormat", String(d, "name_identifier_format"))
-			m.Set("nameIdentifierProbes", Slice(d, "name_identifier_probes"))
-			m.Set("passthroughClaimsWithNoMapping", Bool(d, "passthrough_claims_with_no_mapping"))
-			m.Set("recipient", String(d, "recipient"))
-			m.Set("signatureAlgorithm", String(d, "signature_algorithm"))
-			m.Set("signResponse", Bool(d, "sign_response"))
-			m.Set("typedAttributes", Bool(d, "typed_attributes"))
+			_ = m.Set("audience", String(d, "audience"))
+			_ = m.Set("authnContextClassRef", String(d, "authn_context_class_ref"))
+			_ = m.Set("binding", String(d, "binding"))
+			_ = m.Set("createUpnClaim", Bool(d, "create_upn_claim"))
+			_ = m.Set("destination", String(d, "destination"))
+			_ = m.Set("digestAlgorithm", String(d, "digest_algorithm"))
+			_ = m.Set("includeAttributeNameFormat", Bool(d, "include_attribute_name_format"))
+			_ = m.Set("lifetimeInSeconds", Int(d, "lifetime_in_seconds"))
+			_ = m.Set("logout", List(d, "logout").List())
+			_ = m.Set("mapIdentities", Bool(d, "map_identities"))
+			_ = m.Set("mappings", Map(d, "mappings"))
+			_ = m.Set("mapUnknownClaimsAsIs", Bool(d, "map_unknown_claims_as_is"))
+			_ = m.Set("nameIdentifierFormat", String(d, "name_identifier_format"))
+			_ = m.Set("nameIdentifierProbes", Slice(d, "name_identifier_probes"))
+			_ = m.Set("passthroughClaimsWithNoMapping", Bool(d, "passthrough_claims_with_no_mapping"))
+			_ = m.Set("recipient", String(d, "recipient"))
+			_ = m.Set("signatureAlgorithm", String(d, "signature_algorithm"))
+			_ = m.Set("signResponse", Bool(d, "sign_response"))
+			_ = m.Set("typedAttributes", Bool(d, "typed_attributes"))
 
-			c.Addons["samlp"] = m
+			c.Addons["samlp"] = []interface{}{m}
 		})
 	})
 
-	if v, ok := d.GetOk("client_metadata"); ok {
+	if val, ok := d.GetOk("client_metadata"); ok {
 		c.ClientMetadata = make(map[string]string)
-		for key, value := range v.(map[string]interface{}) {
-			c.ClientMetadata[key] = (value.(string))
+		for key, value := range val.(map[string]interface{}) {
+			c.ClientMetadata[key] = value.(string)
 		}
 	}
 
@@ -728,16 +728,16 @@ func expandClient(d *schema.ResourceData) *management.Client {
 
 		List(d, "android").Elem(func(d ResourceData) {
 			m := make(MapData)
-			m.Set("app_package_name", String(d, "app_package_name"))
-			m.Set("sha256_cert_fingerprints", Slice(d, "sha256_cert_fingerprints"))
+			_ = m.Set("app_package_name", String(d, "app_package_name"))
+			_ = m.Set("sha256_cert_fingerprints", Slice(d, "sha256_cert_fingerprints"))
 
 			c.Mobile["android"] = m
 		})
 
 		List(d, "ios").Elem(func(d ResourceData) {
 			m := make(MapData)
-			m.Set("team_id", String(d, "team_id"))
-			m.Set("app_bundle_identifier", String(d, "app_bundle_identifier"))
+			_ = m.Set("team_id", String(d, "team_id"))
+			_ = m.Set("app_bundle_identifier", String(d, "app_bundle_identifier"))
 
 			c.Mobile["ios"] = m
 		})
@@ -778,16 +778,16 @@ func buildClientAddon(d map[string]interface{}) map[string]interface{} {
 	return addon
 }
 
-func rotateClientSecret(d *schema.ResourceData, m interface{}) error {
+func rotateClientSecret(ctx context.Context, d *schema.ResourceData, m interface{}) error {
 	if d.HasChange("client_secret_rotation_trigger") {
 		api := m.(*management.Management)
-		c, err := api.Client.RotateSecret(d.Id())
+		c, err := api.Client.RotateSecret(d.Id(), management.Context(ctx))
 		if err != nil {
 			return err
 		}
-		d.Set("client_secret", c.ClientSecret)
+		_ = d.Set("client_secret", c.ClientSecret)
 	}
-	d.SetPartial("client_secret_rotation_trigger")
+	// d.SetPartial("client_secret_rotation_trigger")
 	return nil
 }
 

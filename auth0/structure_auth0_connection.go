@@ -3,7 +3,6 @@ package auth0
 import (
 	"log"
 
-	"gopkg.in/auth0.v5"
 	"gopkg.in/auth0.v5/management"
 )
 
@@ -70,22 +69,37 @@ func flattenConnectionOptionsWindowsLive(o *management.ConnectionOptionsWindowsL
 
 func flattenConnectionOptionsAuth0(d ResourceData, o *management.ConnectionOptions) interface{} {
 	return map[string]interface{}{
-		"validation":                     o.Validation,
+		"validation":                     flattenMap(o.Validation),
 		"password_policy":                o.GetPasswordPolicy(),
-		"password_history":               o.PasswordHistory,
-		"password_no_personal_info":      o.PasswordNoPersonalInfo,
-		"password_dictionary":            o.PasswordDictionary,
-		"password_complexity_options":    o.PasswordComplexityOptions,
+		"password_history":               flattenMap(o.PasswordHistory),
+		"password_no_personal_info":      flattenMap(o.PasswordNoPersonalInfo),
+		"password_dictionary":            flattenMap(o.PasswordDictionary),
+		"password_complexity_options":    flattenMap(o.PasswordComplexityOptions),
 		"enabled_database_customization": o.GetEnabledDatabaseCustomization(),
 		"brute_force_protection":         o.GetBruteForceProtection(),
 		"import_mode":                    o.GetImportMode(),
 		"disable_signup":                 o.GetDisableSignup(),
 		"requires_username":              o.GetRequiresUsername(),
 		"custom_scripts":                 o.CustomScripts,
-		"mfa":                            o.MFA,
-		"configuration":                  Map(d, "configuration"), // does not get read back
+		"mfa":                            flattenMap(o.MFA),
+		"configuration":                  Map(d, "options.0.configuration"), // does not get read back
 		"non_persistent_attrs":           o.GetNonPersistentAttrs(),
 	}
+}
+
+// flattenMap fixes the issue "source data must be an array or slice, got map"
+//
+func flattenMap(input map[string]interface{}) interface{} {
+	if len(input) == 0 {
+		return nil
+	}
+	for k, v := range input {
+		switch castedVal := v.(type) {
+		case map[string]interface{}:
+			input[k] = flattenMap(castedVal)
+		}
+	}
+	return []interface{}{input}
 }
 
 func flattenConnectionOptionsGoogleOAuth2(o *management.ConnectionOptionsGoogleOAuth2) interface{} {
@@ -167,10 +181,7 @@ func flattenConnectionOptionsSMS(o *management.ConnectionOptionsSMS) interface{}
 		"messaging_service_sid":  o.GetMessagingServiceSID(),
 		"disable_signup":         o.GetDisableSignup(),
 		"brute_force_protection": o.GetBruteForceProtection(),
-		"totp": map[string]interface{}{
-			"time_step": o.OTP.GetTimeStep(),
-			"length":    o.OTP.GetLength(),
-		},
+		"totp":                   flattenTotp(o.OTP),
 	}
 }
 
@@ -197,22 +208,25 @@ func flattenConnectionOptionsOIDC(o *management.ConnectionOptionsOIDC) interface
 
 func flattenConnectionOptionsEmail(o *management.ConnectionOptionsEmail) interface{} {
 	return map[string]interface{}{
-		"name":                   o.GetName(),
-		"from":                   o.GetEmail().GetFrom(),
-		"syntax":                 o.GetEmail().GetSyntax(),
-		"subject":                o.GetEmail().GetSubject(),
-		"template":               o.GetEmail().GetBody(),
-		"disable_signup":         o.GetDisableSignup(),
-		"brute_force_protection": o.GetBruteForceProtection(),
-		"totp": map[string]interface{}{
-			"time_step": o.OTP.GetTimeStep(),
-			"length":    o.OTP.GetLength(),
-		},
+		"name":                     o.GetName(),
+		"from":                     o.GetEmail().GetFrom(),
+		"syntax":                   o.GetEmail().GetSyntax(),
+		"subject":                  o.GetEmail().GetSubject(),
+		"template":                 o.GetEmail().GetBody(),
+		"disable_signup":           o.GetDisableSignup(),
+		"brute_force_protection":   o.GetBruteForceProtection(),
+		"totp":                     flattenTotp(o.OTP),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
 	}
 }
 
+func flattenTotp(otp *management.ConnectionOptionsOTP) interface{} {
+	return flattenMap(map[string]interface{}{
+		"time_step": otp.GetTimeStep(),
+		"length":    otp.GetLength(),
+	})
+}
 func flattenConnectionOptionsAD(o *management.ConnectionOptionsAD) interface{} {
 	return map[string]interface{}{
 		"tenant_domain":            o.GetTenantDomain(),
@@ -255,11 +269,11 @@ func flattenConnectionOptionsSAML(o *management.ConnectionOptionsSAML) interface
 		"signing_cert":     o.GetSigningCert(),
 		"protocol_binding": o.GetProtocolBinding(),
 		"debug":            o.GetDebug(),
-		"idp_initiated": map[string]interface{}{
+		"idp_initiated": flattenMap(map[string]interface{}{
 			"client_id":              o.IdpInitiated.GetClientID(),
 			"client_protocol":        o.IdpInitiated.GetClientProtocol(),
 			"client_authorize_query": o.IdpInitiated.GetClientAuthorizeQuery(),
-		},
+		}),
 		"tenant_domain":            o.GetTenantDomain(),
 		"domain_aliases":           o.DomainAliases,
 		"sign_in_endpoint":         o.GetSignInEndpoint(),
@@ -574,13 +588,14 @@ func expandConnectionOptionsAD(d ResourceData) *management.ConnectionOptionsAD {
 	}
 
 	// `brute_force_protection` will default to true by the API if we don't
-	// specify it. Therefore if it's not specified we'll set it to false
+	// specify it, therefore if it's not specified we'll set it to false
 	// ourselves.
-	v, ok := d.GetOk("brute_force_protection")
-	if !ok {
-		v = false
-	}
-	o.BruteForceProtection = auth0.Bool(v.(bool))
+	// v, ok := d.GetOk("brute_force_protection")
+	// if !ok {
+	// 	v = false
+	// }
+	// o.BruteForceProtection = auth0.Bool(v.(bool))
+	o.BruteForceProtection = Bool(d, "brute_force_protection")
 
 	return o
 }

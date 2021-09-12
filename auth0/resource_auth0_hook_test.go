@@ -4,20 +4,25 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccHook(t *testing.T) {
-
+	// todo: move to parallel once the config has been randomized
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccHookCreate,
-				Check: resource.ComposeTestCheckFunc(
+				Config: `
+
+resource "auth0_hook" "my_hook" {
+  name = "pre-user-reg-hook"
+  script = "function (user, context, callback) { callback(null, { user }); }"
+  trigger_id = "pre-user-registration"
+  enabled = true
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_hook.my_hook", "name", "pre-user-reg-hook"),
 					resource.TestCheckResourceAttr("auth0_hook.my_hook", "script", "function (user, context, callback) { callback(null, { user }); }"),
 					resource.TestCheckResourceAttr("auth0_hook.my_hook", "trigger_id", "pre-user-registration"),
@@ -28,26 +33,13 @@ func TestAccHook(t *testing.T) {
 	})
 }
 
-const testAccHookCreate = `
-
-resource "auth0_hook" "my_hook" {
-  name = "pre-user-reg-hook"
-  script = "function (user, context, callback) { callback(null, { user }); }"
-  trigger_id = "pre-user-registration"
-  enabled = true
-}
-`
-
 func TestAccHookSecrets(t *testing.T) {
-
-	resource.Test(t, resource.TestCase{
-		Providers: map[string]terraform.ResourceProvider{
-			"auth0": Provider(),
-		},
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccHookSecrets("alpha"),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_hook.my_hook", "name", "pre-user-reg-hook"),
 					resource.TestCheckResourceAttr("auth0_hook.my_hook", "dependencies.auth0", "2.30.0"),
 					resource.TestCheckResourceAttr("auth0_hook.my_hook", "script", "function (user, context, callback) { callback(null, { user }); }"),
@@ -59,7 +51,7 @@ func TestAccHookSecrets(t *testing.T) {
 			},
 			{
 				Config: testAccHookSecrets2("gamma", "kappa"),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_hook.my_hook", "name", "pre-user-reg-hook"),
 					resource.TestCheckResourceAttr("auth0_hook.my_hook", "dependencies.auth0", "2.30.0"),
 					resource.TestCheckResourceAttr("auth0_hook.my_hook", "script", "function (user, context, callback) { callback(null, { user }); }"),
@@ -71,7 +63,7 @@ func TestAccHookSecrets(t *testing.T) {
 			},
 			{
 				Config: testAccHookSecrets("delta"),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_hook.my_hook", "name", "pre-user-reg-hook"),
 					resource.TestCheckResourceAttr("auth0_hook.my_hook", "script", "function (user, context, callback) { callback(null, { user }); }"),
 					resource.TestCheckResourceAttr("auth0_hook.my_hook", "trigger_id", "pre-user-registration"),
@@ -84,6 +76,7 @@ func TestAccHookSecrets(t *testing.T) {
 	})
 }
 
+// todo: randomize the test
 func testAccHookSecrets(fooValue string) string {
 	return fmt.Sprintf(`
 resource "auth0_hook" "my_hook" {

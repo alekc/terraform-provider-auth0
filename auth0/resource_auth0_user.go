@@ -1,14 +1,18 @@
 package auth0
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/go-multierror"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/structure"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"gopkg.in/auth0.v5"
 	"gopkg.in/auth0.v5/management"
@@ -16,12 +20,12 @@ import (
 
 func newUser() *schema.Resource {
 	return &schema.Resource{
-		Create: createUser,
-		Read:   readUser,
-		Update: updateUser,
-		Delete: deleteUser,
+		CreateContext: createUser,
+		ReadContext:   readUser,
+		UpdateContext: updateUser,
+		DeleteContext: deleteUser,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -90,13 +94,13 @@ func newUser() *schema.Resource {
 			"user_metadata": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ValidateFunc:     validation.ValidateJsonString,
+				ValidateFunc:     validation.StringIsJSON,
 				DiffSuppressFunc: structure.SuppressJsonDiff,
 			},
 			"app_metadata": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ValidateFunc:     validation.ValidateJsonString,
+				ValidateFunc:     validation.StringIsJSON,
 				DiffSuppressFunc: structure.SuppressJsonDiff,
 			},
 			"blocked": {
@@ -117,50 +121,44 @@ func newUser() *schema.Resource {
 	}
 }
 
-func readUser(d *schema.ResourceData, m interface{}) error {
+func readUser(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	u, err := api.User.Read(d.Id())
+	u, err := api.User.Read(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
+		return flow.DefaultManagementError(err, d)
 	}
 
-	d.Set("user_id", u.ID)
-	d.Set("username", u.Username)
-	d.Set("name", u.Name)
-	d.Set("family_name", u.FamilyName)
-	d.Set("given_name", u.GivenName)
-	d.Set("nickname", u.Nickname)
-	d.Set("email", u.Email)
-	d.Set("email_verified", u.EmailVerified)
-	d.Set("verify_email", u.VerifyEmail)
-	d.Set("phone_number", u.PhoneNumber)
-	d.Set("phone_verified", u.PhoneVerified)
-	d.Set("blocked", u.Blocked)
-	d.Set("picture", u.Picture)
+	_ = d.Set("user_id", u.ID)
+	_ = d.Set("username", u.Username)
+	_ = d.Set("name", u.Name)
+	_ = d.Set("family_name", u.FamilyName)
+	_ = d.Set("given_name", u.GivenName)
+	_ = d.Set("nickname", u.Nickname)
+	_ = d.Set("email", u.Email)
+	_ = d.Set("email_verified", u.EmailVerified)
+	_ = d.Set("verify_email", u.VerifyEmail)
+	_ = d.Set("phone_number", u.PhoneNumber)
+	_ = d.Set("phone_verified", u.PhoneVerified)
+	_ = d.Set("blocked", u.Blocked)
+	_ = d.Set("picture", u.Picture)
 
 	userMeta, err := structure.FlattenJsonToString(u.UserMetadata)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	d.Set("user_metadata", userMeta)
+	_ = d.Set("user_metadata", userMeta)
 
 	appMeta, err := structure.FlattenJsonToString(u.AppMetadata)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	d.Set("app_metadata", appMeta)
+	_ = d.Set("app_metadata", appMeta)
 
-	l, err := api.User.Roles(d.Id())
+	l, err := api.User.Roles(d.Id(), management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	d.Set("roles", func() (v []interface{}) {
+	_ = d.Set("roles", func() (v []interface{}) {
 		for _, role := range l.Roles {
 			v = append(v, auth0.StringValue(role.ID))
 		}
@@ -170,66 +168,58 @@ func readUser(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func createUser(d *schema.ResourceData, m interface{}) error {
+func createUser(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	u, err := buildUser(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	api := m.(*management.Management)
-	if err := api.User.Create(u); err != nil {
-		return err
+	if err := api.User.Create(u, management.Context(ctx)); err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId(*u.ID)
 
 	d.Partial(true)
-	err = assignUserRoles(d, m)
+	err = assignUserRoles(ctx, d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.Partial(false)
 
-	return readUser(d, m)
+	return readUser(ctx, d, m)
 }
 
-func updateUser(d *schema.ResourceData, m interface{}) error {
+func updateUser(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	u, err := buildUser(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err = validateUser(u); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	api := m.(*management.Management)
 	if userHasChange(u) {
-		if err := api.User.Update(d.Id(), u); err != nil {
-			return err
+		if err := api.User.Update(d.Id(), u, management.Context(ctx)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
-	d.Partial(true)
-	err = assignUserRoles(d, m)
+	err = assignUserRoles(ctx, d, m)
 	if err != nil {
-		return fmt.Errorf("failed assigning user roles. %s", err)
+		return diag.Errorf("failed assigning user roles. %s", err)
 	}
-	d.Partial(false)
-	return readUser(d, m)
+	return readUser(ctx, d, m)
 }
 
-func deleteUser(d *schema.ResourceData, m interface{}) error {
+func deleteUser(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	err := api.User.Delete(d.Id())
+	err := api.User.Delete(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
+		return flow.DefaultManagementError(err, d)
 	}
-	return err
+	return nil
 }
 
 func buildUser(d *schema.ResourceData) (u *management.User, err error) {
-
 	u = new(management.User)
 	u.ID = String(d, "user_id", IsNewResource())
 	u.Connection = String(d, "connection_name")
@@ -267,17 +257,17 @@ func buildUser(d *schema.ResourceData) (u *management.User, err error) {
 }
 
 func validateUser(u *management.User) error {
-	var validation error
+	var validate error
 	for _, fn := range []validateUserFunc{
 		validateNoUsernameAndPasswordSimultaneously(),
 		validateNoUsernameAndEmailVerifiedSimultaneously(),
 		validateNoPasswordAndEmailVerifiedSimultaneously(),
 	} {
 		if err := fn(u); err != nil {
-			validation = multierror.Append(validation, err)
+			validate = multierror.Append(validate, err)
 		}
 	}
-	return validation
+	return validate
 }
 
 type validateUserFunc func(*management.User) error
@@ -309,7 +299,7 @@ func validateNoPasswordAndEmailVerifiedSimultaneously() validateUserFunc {
 	}
 }
 
-func assignUserRoles(d *schema.ResourceData, m interface{}) error {
+func assignUserRoles(ctx context.Context, d *schema.ResourceData, m interface{}) error {
 
 	add, rm := Diff(d, "roles")
 
@@ -330,7 +320,7 @@ func assignUserRoles(d *schema.ResourceData, m interface{}) error {
 	api := m.(*management.Management)
 
 	if len(rmRoles) > 0 {
-		err := api.User.RemoveRoles(d.Id(), rmRoles)
+		err := api.User.RemoveRoles(d.Id(), rmRoles, management.Context(ctx))
 		if err != nil {
 			// Ignore 404 errors as the role may have been deleted prior to
 			// unassigning them from the user.
@@ -345,13 +335,12 @@ func assignUserRoles(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if len(addRoles) > 0 {
-		err := api.User.AssignRoles(d.Id(), addRoles)
+		err := api.User.AssignRoles(d.Id(), addRoles, management.Context(ctx))
 		if err != nil {
 			return err
 		}
 	}
 
-	d.SetPartial("roles")
 	return nil
 }
 

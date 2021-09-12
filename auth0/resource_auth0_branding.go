@@ -1,10 +1,14 @@
 package auth0
 
 import (
+	"context"
 	"net/http"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"gopkg.in/auth0.v5/management"
 )
@@ -12,12 +16,12 @@ import (
 func newBranding() *schema.Resource {
 	return &schema.Resource{
 
-		Create: createBranding,
-		Read:   readBranding,
-		Update: updateBranding,
-		Delete: deleteBranding,
+		CreateContext: createBranding,
+		ReadContext:   readBranding,
+		UpdateContext: updateBranding,
+		DeleteContext: deleteBranding,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -82,23 +86,17 @@ func newBranding() *schema.Resource {
 	}
 }
 
-func createBranding(d *schema.ResourceData, m interface{}) error {
+func createBranding(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	d.SetId(resource.UniqueId())
-	return updateBranding(d, m)
+	return updateBranding(ctx, d, m)
 }
 
-func readBranding(d *schema.ResourceData, m interface{}) error {
+func readBranding(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	b, err := api.Branding.Read()
+	b, err := api.Branding.Read(management.Context(ctx))
 
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
+		return flow.DefaultManagementError(err, d)
 	}
 
 	_ = d.Set("favicon_url", b.FaviconURL)
@@ -106,59 +104,53 @@ func readBranding(d *schema.ResourceData, m interface{}) error {
 	_ = d.Set("colors", flattenBrandingColors(b.Colors))
 	_ = d.Set("font", flattenBrandingFont(b.Font))
 
-	t, err := api.Tenant.Read()
+	t, err := api.Tenant.Read(management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if t.Flags.EnableCustomDomainInEmails != nil && *t.Flags.EnableCustomDomainInEmails {
-		if err := assignUniversalLogin(d, m); err != nil {
+		if err := assignUniversalLogin(ctx, d, m); err != nil {
 			d.SetId("")
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
 	return nil
 }
 
-func updateBranding(d *schema.ResourceData, m interface{}) error {
-	b := buildBranding(d)
-	ul := buildBrandingUniversalLogin(d)
+func updateBranding(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	branding := buildBranding(d)
+	universalLogin := buildBrandingUniversalLogin(d)
 	api := m.(*management.Management)
-	err := api.Branding.Update(b)
+	err := api.Branding.Update(branding, management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if ul.GetBody() != "" {
-		err = api.Branding.SetUniversalLogin(ul)
+	if universalLogin.GetBody() != "" {
+		err = api.Branding.SetUniversalLogin(universalLogin, management.Context(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
-	return readBranding(d, m)
+	return readBranding(ctx, d, m)
 }
 
-func deleteBranding(d *schema.ResourceData, m interface{}) error {
+func deleteBranding(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	t, err := api.Tenant.Read()
+	t, err := api.Tenant.Read(management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if t.Flags.EnableCustomDomainInEmails != nil && *t.Flags.EnableCustomDomainInEmails {
-		err = api.Branding.DeleteUniversalLogin()
+		err = api.Branding.DeleteUniversalLogin(management.Context(ctx))
 		if err != nil {
-			if mErr, ok := err.(management.Error); ok {
-				if mErr.Status() == http.StatusNotFound {
-					d.SetId("")
-					return nil
-				}
-			}
+			return flow.DefaultManagementError(err, d)
 		}
 	}
-
-	return err
+	return diag.FromErr(err)
 }
 
 func buildBranding(d *schema.ResourceData) *management.Branding {
@@ -193,9 +185,9 @@ func buildBrandingUniversalLogin(d *schema.ResourceData) *management.BrandingUni
 	return b
 }
 
-func assignUniversalLogin(d *schema.ResourceData, m interface{}) error {
+func assignUniversalLogin(ctx context.Context, d *schema.ResourceData, m interface{}) error {
 	api := m.(*management.Management)
-	ul, err := api.Branding.UniversalLogin()
+	ul, err := api.Branding.UniversalLogin(management.Context(ctx))
 	if err != nil {
 		if mErr, ok := err.(management.Error); ok {
 			// if the custom domain is enabled, but custom universal login pages are not set

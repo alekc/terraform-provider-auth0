@@ -1,9 +1,12 @@
 package auth0
 
 import (
-	"net/http"
+	"context"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"gopkg.in/auth0.v5"
 	"gopkg.in/auth0.v5/management"
@@ -12,12 +15,12 @@ import (
 func newRuleConfig() *schema.Resource {
 	return &schema.Resource{
 
-		Create: createRuleConfig,
-		Read:   readRuleConfig,
-		Update: updateRuleConfig,
-		Delete: deleteRuleConfig,
+		CreateContext: createRuleConfig,
+		ReadContext:   readRuleConfig,
+		UpdateContext: updateRuleConfig,
+		DeleteContext: deleteRuleConfig,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -35,57 +38,46 @@ func newRuleConfig() *schema.Resource {
 	}
 }
 
-func createRuleConfig(d *schema.ResourceData, m interface{}) error {
+func createRuleConfig(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	r := buildRuleConfig(d)
 	key := auth0.StringValue(r.Key)
 	r.Key = nil
 	api := m.(*management.Management)
-	if err := api.RuleConfig.Upsert(key, r); err != nil {
-		return err
+	if err := api.RuleConfig.Upsert(key, r, management.Context(ctx)); err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(r.Key))
-	return readRuleConfig(d, m)
+	return readRuleConfig(ctx, d, m)
 }
 
-func readRuleConfig(d *schema.ResourceData, m interface{}) error {
+func readRuleConfig(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	r, err := api.RuleConfig.Read(d.Id())
+	r, err := api.RuleConfig.Read(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
+		return flow.DefaultManagementError(err, d)
 	}
-	d.Set("key", r.Key)
+	_ = d.Set("key", r.Key)
 	return nil
 }
 
-func updateRuleConfig(d *schema.ResourceData, m interface{}) error {
+func updateRuleConfig(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	r := buildRuleConfig(d)
 	r.Key = nil
 	api := m.(*management.Management)
-	err := api.RuleConfig.Upsert(d.Id(), r)
+	err := api.RuleConfig.Upsert(d.Id(), r, management.Context(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return readRuleConfig(d, m)
+	return readRuleConfig(ctx, d, m)
 }
 
-func deleteRuleConfig(d *schema.ResourceData, m interface{}) error {
+func deleteRuleConfig(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	err := api.RuleConfig.Delete(d.Id())
+	err := api.RuleConfig.Delete(d.Id(), management.Context(ctx))
 	if err != nil {
-		if mErr, ok := err.(management.Error); ok {
-			if mErr.Status() == http.StatusNotFound {
-				d.SetId("")
-				return nil
-			}
-		}
+		return flow.DefaultManagementError(err, d)
 	}
-	return err
+	return nil
 }
 
 func buildRuleConfig(d *schema.ResourceData) *management.RuleConfig {

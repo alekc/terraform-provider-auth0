@@ -3,6 +3,8 @@ PKGS ?= $$(go list ./...)
 FILES ?= $$(find . -name '*.go' | grep -v vendor)
 TESTS ?= ".*"
 COVERS ?= "c.out"
+GOOS ?= $$(go env GOOS)
+GOARCH ?= $$(go env GOARCH)
 
 default: build
 
@@ -13,6 +15,11 @@ install: build
 	@mkdir -p ~/.terraform.d/plugins
 	@cp $(GOPATH)/bin/terraform-provider-auth0 ~/.terraform.d/plugins
 
+install-local:
+	@go build -gcflags="all=-N -l"
+	@mkdir -p ~/.terraform.d/plugins/local/alekc/auth0/$(version)/$(GOOS)_$(GOARCH)/
+	@mv terraform-provider-auth0 ~/.terraform.d/plugins/local/alekc/auth0/$(version)/$(GOOS)_$(GOARCH)/terraform-provider-auth0_v$(version)
+
 sweep:
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
 	@go test ./auth0 -v -sweep="phony" $(SWEEPARGS)
@@ -20,7 +27,7 @@ sweep:
 test: fmtcheck
 	@go test -i $(PKGS) || exit 1
 	@echo $(PKGS) | \
-		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4 -run ^$(TESTS)$
+		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=10 -run ^$(TESTS)$
 
 testacc: fmtcheck
 	@TF_ACC=1 go test $(PKGS) -v $(TESTARGS) -timeout 120m -coverprofile=$(COVERS) -run ^$(TESTS)$
