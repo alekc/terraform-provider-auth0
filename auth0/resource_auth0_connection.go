@@ -83,7 +83,6 @@ var connectionSchema = map[string]*schema.Schema{
 	"options": {
 		Type:     schema.TypeList,
 		Optional: true,
-		Computed: true,
 		MaxItems: 1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -400,7 +399,6 @@ var connectionSchema = map[string]*schema.Schema{
 					Type:     schema.TypeList,
 					MaxItems: 1,
 					Optional: true,
-					Computed: true,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"active": {

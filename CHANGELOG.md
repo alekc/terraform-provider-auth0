@@ -11,7 +11,7 @@ ENHANCEMENTS:
 BREAKING CHANGES:
 * All addons from the `auth0_client` has been dropped, except for those present in the webui (Saml2 and WS-FED).
 * Resource `auth0_global_client` has been deleted
-* Options in `auth0_connection` is now a computed resource. 
+
 
 ## 0.21.1
 
