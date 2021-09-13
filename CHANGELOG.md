@@ -14,6 +14,9 @@ BREAKING CHANGES:
 * Resource `auth0_global_client` has been deleted
 * `auth0_connection.options` is now a required field. It can be empty (but set to `options {}`). This is due to a limitation in nested defaults from Terraform (if that value is not set, it's much harder to catch drifts)
 
+BUG FIXES:
+* Empty non_persistent_attrs no longer breaks Auth0 connection webui (however it will still break if it's set to anything, this is a bug on Auth0 side)
+
 ## 0.21.1
 
 FIXES: 

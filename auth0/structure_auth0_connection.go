@@ -698,6 +698,9 @@ func expandConnectionOptionsScopes(d ResourceData, s scoper) {
 }
 
 func castToListOfStrings(interfaces []interface{}) *[]string {
+	if len(interfaces) == 0 {
+		return nil
+	}
 	var strings []string
 	for _, v := range interfaces {
 		strings = append(strings, v.(string))
