@@ -2,6 +2,7 @@ package auth0
 
 import (
 	"log"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -242,16 +243,30 @@ func TestAccLogStreamDatadog(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				// this should fail due to capital case (Auth0 is very picky)
 				Config: random.Template(`
 resource "auth0_log_stream" "my_log_stream" {
 	name = "Acceptance-Test-LogStream-datadog-{{.random}}"
 	type = "datadog"
 	sink {
-	  datadog_region = "us"
-	  datadog_api_key = "121233123455"
+	  datadog_region = "EU"
+	  datadog_api_key = "1212331234556667"
 	}
 }
 `, rand),
+				ExpectError: regexp.MustCompile("expected sink.0.datadog_region to be one of"),
+			},
+			{
+				Config: random.Template(`
+			resource "auth0_log_stream" "my_log_stream" {
+				name = "Acceptance-Test-LogStream-datadog-{{.random}}"
+				type = "datadog"
+				sink {
+				  datadog_region = "us"
+				  datadog_api_key = "121233123455"
+				}
+			}
+			`, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_log_stream.my_log_stream", "name", "Acceptance-Test-LogStream-datadog-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_log_stream.my_log_stream", "type", "datadog"),
@@ -261,15 +276,15 @@ resource "auth0_log_stream" "my_log_stream" {
 			},
 			{
 				Config: random.Template(`
-resource "auth0_log_stream" "my_log_stream" {
-	name = "Acceptance-Test-LogStream-datadog-{{.random}}"
-	type = "datadog"
-	sink {
-	  datadog_region = "eu"
-	  datadog_api_key = "121233123455"
-	}
-}
-`, rand),
+			resource "auth0_log_stream" "my_log_stream" {
+				name = "Acceptance-Test-LogStream-datadog-{{.random}}"
+				type = "datadog"
+				sink {
+				  datadog_region = "eu"
+				  datadog_api_key = "121233123455"
+				}
+			}
+			`, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_log_stream.my_log_stream", "name", "Acceptance-Test-LogStream-datadog-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_log_stream.my_log_stream", "type", "datadog"),
@@ -279,15 +294,15 @@ resource "auth0_log_stream" "my_log_stream" {
 			},
 			{
 				Config: random.Template(`
-resource "auth0_log_stream" "my_log_stream" {
-	name = "Acceptance-Test-LogStream-datadog-{{.random}}"
-	type = "datadog"
-	sink {
-	  datadog_region = "eu"
-	  datadog_api_key = "1212331234556667"
-	}
-}
-`, rand),
+			resource "auth0_log_stream" "my_log_stream" {
+				name = "Acceptance-Test-LogStream-datadog-{{.random}}"
+				type = "datadog"
+				sink {
+				  datadog_region = "eu"
+				  datadog_api_key = "1212331234556667"
+				}
+			}
+			`, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_log_stream.my_log_stream", "name", "Acceptance-Test-LogStream-datadog-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_log_stream.my_log_stream", "type", "datadog"),

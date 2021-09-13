@@ -6,7 +6,8 @@ ENHANCEMENTS:
 * Introduced parallelism to tests
 * Custom domain is ignored now if the testing account is not premium
 * Created a new make target `make install-local`. To use it run `make install-local version=1.0.0`, and it will build the provider and place it local terraform sdk plugin folder. It can be used with `source  = "local/alekc/auth0"` in your provider source attribute.
-* Added provider's [debug capability](https://www.terraform.io/docs/extend/debugging.html#enabling-debugging-in-a-provider). It can be invoked with 
+* Added provider's [debug capability](https://www.terraform.io/docs/extend/debugging.html#enabling-debugging-in-a-provider). It can be invoked with
+* Added validation for datadog log stream region (capital case was throwing an error on Auth0 side)
 
 BREAKING CHANGES:
 * All addons from the `auth0_client` has been dropped, except for those present in the webui (Saml2 and WS-FED).
