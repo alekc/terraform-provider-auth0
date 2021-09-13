@@ -59,6 +59,7 @@ func TestAccConnection(t *testing.T) {
 			resource "auth0_connection" "my_connection" {
 				name = "Acceptance-Test-Connection-{{.random}}"
 				strategy = "auth0"
+				options {}
 			}
 			`, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -506,6 +507,7 @@ resource "auth0_connection" "my_connection" {
 	name = "Acceptance-Test-Connection-{{.random}}"
 	is_domain_connection = true
 	strategy = "auth0"
+    options {}
 	enabled_clients = [
 		"${auth0_client.my_client_1.id}",
 		"${auth0_client.my_client_2.id}",
