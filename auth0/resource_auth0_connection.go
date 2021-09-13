@@ -82,7 +82,7 @@ var connectionSchema = map[string]*schema.Schema{
 	},
 	"options": {
 		Type:     schema.TypeList,
-		Optional: true,
+		Required: true,
 		MaxItems: 1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -197,8 +197,8 @@ var connectionSchema = map[string]*schema.Schema{
 				"brute_force_protection": {
 					Type:        schema.TypeBool,
 					Optional:    true,
+					Computed:    true,
 					Description: "Indicates whether or not to enable brute force protection, which will limit the number of signups and failed logins from a suspicious IP address",
-					Default:     false,
 				},
 				"import_mode": {
 					Type:        schema.TypeBool,
@@ -399,6 +399,7 @@ var connectionSchema = map[string]*schema.Schema{
 					Type:     schema.TypeList,
 					MaxItems: 1,
 					Optional: true,
+					Computed: true,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"active": {

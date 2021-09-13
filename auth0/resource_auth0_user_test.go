@@ -46,7 +46,7 @@ func init() {
 }
 
 func TestAccUserMissingRequiredParams(t *testing.T) {
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -61,7 +61,7 @@ func TestAccUser(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -195,7 +195,7 @@ func TestAccUserIssue218(t *testing.T) {
 
 	rand := random.String(6)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -237,7 +237,7 @@ func TestAccUserChangeUsername(t *testing.T) {
 
 	rand := random.String(4)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{

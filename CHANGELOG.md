@@ -11,7 +11,7 @@ ENHANCEMENTS:
 BREAKING CHANGES:
 * All addons from the `auth0_client` has been dropped, except for those present in the webui (Saml2 and WS-FED).
 * Resource `auth0_global_client` has been deleted
-
+* `auth0_connection.options` is now a required field. It can be empty (but set to `options {}`). This is due to a limitation in nested defaults from Terraform (if that value is not set, it's much harder to catch drifts)
 
 ## 0.21.1
 
