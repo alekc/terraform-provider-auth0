@@ -5,6 +5,9 @@ TESTS ?= ".*"
 COVERS ?= "c.out"
 GOOS ?= $$(go env GOOS)
 GOARCH ?= $$(go env GOARCH)
+TEST_COUNT?=1
+ACCTEST_TIMEOUT?=15m
+ACCTEST_PARALLELISM?=10
 
 default: build
 
@@ -30,7 +33,7 @@ test: fmtcheck
 		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=10 -run ^$(TESTS)$
 
 testacc: fmtcheck
-	@TF_ACC=1 go test $(PKGS) -v $(TESTARGS) -timeout 120m -coverprofile=$(COVERS) -run ^$(TESTS)$
+	TF_ACC=1 go test ./$(PKG_NAME) -v -count $(TEST_COUNT) -parallel $(ACCTEST_PARALLELISM) $(TESTARGS) -timeout $(ACCTEST_TIMEOUT) -coverprofile=$(COVERS)
 
 vet:
 	@echo "go vet ."

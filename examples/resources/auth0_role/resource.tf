@@ -1,5 +1,3 @@
-provider "auth0" {}
-
 resource "auth0_resource_server" "my_resource_server" {
   name = "My Resource Server (Managed by Terraform)"
   identifier = "my-resource-server-identifier"

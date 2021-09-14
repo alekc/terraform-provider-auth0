@@ -23,6 +23,12 @@ func newConnection() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Description: `
+With Auth0, you can define sources of users, otherwise known as connections, 
+which may include identity providers (such as Google or LinkedIn), databases, 
+or passwordless authentication methods. This resource allows you to configure and manage connections to be used with
+your clients and users.
+`,
 		Schema:        connectionSchema,
 		SchemaVersion: 2,
 		StateUpgraders: []schema.StateUpgrader{
@@ -77,8 +83,16 @@ var connectionSchema = map[string]*schema.Schema{
 			"waad", "weibo", "windowslive", "wordpress", "yahoo",
 			"yammer", "yandex", "line",
 		}, true),
-		ForceNew:    true,
-		Description: "Type of the connection, which indicates the identity provider",
+		ForceNew: true,
+		Description: "Type of the connection, which indicates the identity provider. Options include `ad`, `adfs`, " +
+			"`amazon`, `apple`, `dropbox`, `bitbucket`, `aol`,`auth0-adldap`, `auth0-oidc`, `auth0`, `baidu`, " +
+			"`bitly`,`box`, `custom`, `daccount`, `dwolla`, `email`,`evernote-sandbox`, `evernote`, `exact`, " +
+			"`facebook`,`fitbit`, `flickr`, `github`, `google-apps`,`google-oauth2`, `guardian`, `instagram`, `ip`, " +
+			"`linkedin`,`miicard`, `oauth1`, `oauth2`, `office365`, `oidc`, `paypal`,`paypal-sandbox`, " +
+			"`pingfederate`, `planningcenter`,`renren`, `salesforce-community`, `salesforce-sandbox`,`salesforce`, " +
+			"`samlp`, `sharepoint`, `shopify`, `sms`,`soundcloud`, `thecity-sandbox`, `thecity`,`thirtysevensignals`," +
+			" `twitter`, `untappd`, `vkontakte`,`waad`, `weibo`, `windowslive`, `wordpress`, `yahoo`,`yammer`, " +
+			"`yandex`, `line`",
 	},
 	"options": {
 		Type:     schema.TypeList,
@@ -87,14 +101,16 @@ var connectionSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"validation": {
-					Type:     schema.TypeList,
-					MaxItems: 1,
+					Type:        schema.TypeList,
+					MaxItems:    1,
+					Description: "Validation of the minimum and maximum values allowed for a user to have as username",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"username": {
-								Optional: true,
-								Type:     schema.TypeList,
-								MaxItems: 1,
+								Optional:    true,
+								Type:        schema.TypeList,
+								MaxItems:    1,
+								Description: "Specifies the min and max values of username length",
 								Elem: &schema.Resource{
 									Schema: map[string]*schema.Schema{
 										"min": {
@@ -216,10 +232,12 @@ var connectionSchema = map[string]*schema.Schema{
 					Description: "Indicates whether or not the user is required to provide a username in addition to an email address",
 				},
 				"custom_scripts": {
-					Type:        schema.TypeMap,
-					Elem:        &schema.Schema{Type: schema.TypeString},
-					Optional:    true,
-					Description: "",
+					Type:     schema.TypeMap,
+					Elem:     &schema.Schema{Type: schema.TypeString},
+					Optional: true,
+					Description: "Custom database action scripts. For more information, " +
+						"read [Custom Database Action Script Templates](https://auth0." +
+						"com/docs/connections/database/custom-db/templates)",
 				},
 				"scripts": {
 					Type:        schema.TypeMap,
@@ -232,18 +250,18 @@ var connectionSchema = map[string]*schema.Schema{
 					Elem:        &schema.Schema{Type: schema.TypeString},
 					Sensitive:   true,
 					Optional:    true,
-					Description: "",
+					Description: "A case-sensitive map of key value pairs used as configuration variables for the `custom_script`",
 				},
 				"client_id": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "",
+					Description: "Client ID",
 				},
 				"client_secret": {
 					Type:        schema.TypeString,
 					Optional:    true,
 					Sensitive:   true,
-					Description: "",
+					Description: "App secret",
 				},
 				"allowed_audiences": {
 					Type:        schema.TypeSet,
