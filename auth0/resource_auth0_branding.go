@@ -15,7 +15,8 @@ import (
 
 func newBranding() *schema.Resource {
 	return &schema.Resource{
-
+		Description: `With Auth0, you can setting logo, color to maintain a consistent service brand. 
+This resource allows you to manage a branding within your Auth0 tenant.`,
 		CreateContext: createBranding,
 		ReadContext:   readBranding,
 		UpdateContext: updateBranding,
@@ -26,33 +27,38 @@ func newBranding() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"colors": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Configuration settings for colors for branding",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"primary": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "String, Hexadecimal. Background color of login pages.",
 						},
 						"page_background": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "String, Hexadecimal. Primary button background color.",
 						},
 					},
 				},
 			},
 			"favicon_url": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "URL for the favicon.",
 			},
 			"logo_url": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "URL of logo for branding.",
 			},
 			"font": {
 				Type:     schema.TypeList,
@@ -61,9 +67,10 @@ func newBranding() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "URL for the custom font",
+							Computed:    true,
 						},
 					},
 				},
@@ -75,9 +82,10 @@ func newBranding() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"body": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "body of login pages",
+							Computed:    true,
 						},
 					},
 				},

@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccHook(t *testing.T) {
+func TestAccHook_Common(t *testing.T) {
 	// todo: move to parallel once the config has been randomized
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,

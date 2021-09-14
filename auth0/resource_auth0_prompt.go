@@ -5,11 +5,10 @@ import (
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
 	"gopkg.in/auth0.v5"
 	"gopkg.in/auth0.v5/management"
 )
@@ -23,18 +22,22 @@ func newPrompt() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Description: `With this resource, you can manage your Auth0 prompts, 
+including choosing the login experience version`,
 
 		Schema: map[string]*schema.Schema{
 			"universal_login_experience": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Which login experience to use. Options include `classic` and `new`",
 				ValidateFunc: validation.StringInSlice([]string{
 					"new", "classic",
 				}, false),
 			},
 			"identifier_first": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether identifier first is enabled or not",
 			},
 		},
 	}

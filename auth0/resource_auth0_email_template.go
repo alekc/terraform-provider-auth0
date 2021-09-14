@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
 	"gopkg.in/auth0.v5"
 	"gopkg.in/auth0.v5/management"
 )
@@ -22,11 +21,18 @@ func newEmailTemplate() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Description: `With Auth0, you can have standard welcome, password reset, 
+and account verification email-based workflows built right into Auth0. 
 
+This resource allows you to configure email templates to customize the look, feel, 
+and sender identities of emails sent by Auth0. Used in conjunction with configured email providers.`,
 		Schema: map[string]*schema.Schema{
 			"template": {
 				Type:     schema.TypeString,
 				Required: true,
+				Description: "Template name. Options include `verify_email`, `verify_email_by_code`, `reset_email`, " +
+					"`welcome_email`, `blocked_account`, `stolen_credentials`, `enrollment_email`, `mfa_oob_code`, " +
+					"`change_password` (legacy), and `password_reset` (legacy)",
 				ValidateFunc: validation.StringInSlice([]string{
 					"verify_email",
 					"verify_email_by_code",
@@ -38,35 +44,46 @@ func newEmailTemplate() *schema.Resource {
 					"change_password",
 					"password_reset",
 					"mfa_oob_code",
-				}, true),
+				}, false),
 			},
 			"body": {
 				Type:     schema.TypeString,
 				Required: true,
+				Description: "Body of the email template. You can include [common variables](https://auth0." +
+					"com/docs/email/templates#common-variables)",
 			},
 			"from": {
 				Type:     schema.TypeString,
 				Required: true,
+				Description: "Email address to use as the sender. You can include [common variables](https://auth0." +
+					"com/docs/email/templates#common-variables)",
 			},
 			"result_url": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Description: "URL to redirect the user to after a successful action. [Learn more](https://auth0." +
+					"com/docs/email/templates#configuring-the-redirect-to-url)",
 			},
 			"subject": {
 				Type:     schema.TypeString,
 				Required: true,
+				Description: "Subject line of the email. You can include [common variables](https://auth0." +
+					"com/docs/email/templates#common-variables)",
 			},
 			"syntax": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Syntax of the template body. You can use either text or HTML + Liquid syntax",
 			},
 			"url_lifetime_in_seconds": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Number of seconds during which the link within the email will be valid",
 			},
 			"enabled": {
-				Type:     schema.TypeBool,
-				Required: true,
+				Type:        schema.TypeBool,
+				Required:    true,
+				Description: "Indicates whether or not the template is enabled",
 			},
 		},
 	}

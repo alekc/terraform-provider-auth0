@@ -20,31 +20,40 @@ func newRole() *schema.Resource {
 		UpdateContext: updateRole,
 		ReadContext:   readRole,
 		DeleteContext: deleteRole,
+		Description: "With this resource, " +
+			"you can created and manage collections of permissions that can be assigned to users, " +
+			"which are otherwise known as roles. Permissions (scopes) are created on auth0_resource_server, " +
+			"then associated with roles and optionally, users using this resource",
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name for this role",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Role's description",
 			},
 			"permissions": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Configuration settings for permissions (scopes) attached to the role",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Name of the permission (scope)",
 						},
 						"resource_server_identifier": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Unique identifier for the resource server",
 						},
 					},
 				},

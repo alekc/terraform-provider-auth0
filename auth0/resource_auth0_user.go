@@ -27,6 +27,8 @@ func newUser() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Description: "With this resource, you can manage user identities, including resetting passwords, " +
+			"and creating, provisioning, blocking, and deleting users",
 
 		Schema: map[string]*schema.Schema{
 			"user_id": {

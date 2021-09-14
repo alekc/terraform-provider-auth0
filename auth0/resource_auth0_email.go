@@ -6,6 +6,7 @@ import (
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"gopkg.in/auth0.v5"
 	"gopkg.in/auth0.v5/management"
@@ -21,35 +22,49 @@ func newEmail() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Description: `
+With Auth0, you can have standard welcome, password reset, 
+and account verification email-based workflows built right into Auth0. 
+This resource allows you to configure email providers so you can route all emails that are part of Auth0's
+authentication workflows through the supported high-volume email service of your choice.`,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
+				ValidateFunc: validation.StringInSlice([]string{"mailgun", "mandrill", "sendgrid", "ses", "smtp",
+					"sparkpost"}, false),
+				Description: "Name of the email provider. Can be `mailgun`, `mandrill`, `sendgrid`, `ses`, " +
+					"`sparkpost`, or `smtp`",
 			},
 			"enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether the provider is enabled (`true`) or disabled (`false`)",
 			},
 			"default_from_address": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Email address to use as `from` when no other address specified",
 			},
 			"credentials": {
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Required: true,
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Required:    true,
+				Description: "Credentials required to use the provider",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api_user": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "API User",
 						},
 						"api_key": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
-							ForceNew:  true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Sensitive:   true,
+							ForceNew:    true,
+							Description: "API Key",
 						},
 						"access_key_id": {
 							Type:      schema.TypeString,
@@ -64,8 +79,9 @@ func newEmail() *schema.Resource {
 							ForceNew:  true,
 						},
 						"region": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "AWS or SparkPost region",
 						},
 						"domain": {
 							Type:     schema.TypeString,

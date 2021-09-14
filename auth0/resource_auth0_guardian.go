@@ -16,6 +16,10 @@ func newGuardian() *schema.Resource {
 		ReadContext:   readGuardian,
 		UpdateContext: updateGuardian,
 		DeleteContext: deleteGuardian,
+		Description: `Multi-factor Authentication works by requiring additional factors during the login process to
+prevent unauthorized access. 
+
+With this resource you can configure some of the options available for MFA.`,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -50,7 +54,6 @@ func newGuardian() *schema.Resource {
 						"message_types": {
 							Type:     schema.TypeList,
 							Required: true,
-
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},

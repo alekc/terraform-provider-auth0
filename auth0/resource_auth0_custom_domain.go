@@ -21,41 +21,49 @@ func newCustomDomain() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Description: `With Auth0, you can use a custom domain to maintain a consistent user experience. 
+This resource allows you to create and manage a custom domain within your Auth0 tenant.`,
 
 		Schema: map[string]*schema.Schema{
 			"domain": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Name of the custom domain",
 			},
 			"type": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+				Description: "Provisioning type for the custom domain. Valid options are: auth0_managed_certs, " +
+					"self_managed_certs",
 				ValidateFunc: validation.StringInSlice([]string{
 					"auth0_managed_certs",
 					"self_managed_certs",
 				}, true),
 			},
 			"primary": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether or not this is a primary domain",
 			},
 			"status": {
 				Type:     schema.TypeString,
 				Computed: true,
+				Description: "Configuration status for the custom domain. Options include `disabled`, `pending`, " +
+					"`pending_verification`, and `ready`",
 			},
 			"verification_method": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"txt"}, true),
+				Description:  "Domain verification method. Options include `txt`",
 			},
 			"verification": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Optional: true,
-				MaxItems: 1,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Configuration settings for verification",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"methods": {

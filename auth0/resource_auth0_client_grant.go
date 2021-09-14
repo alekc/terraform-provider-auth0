@@ -20,6 +20,12 @@ func newClientGrant() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Description: `
+Auth0 uses various grant types, 
+or methods by which you grant limited access to your resources to another entity without exposing credentials. 
+The OAuth 2.0 protocol supports several types of grants, which allow different types of access. 
+This resource allows you to create and manage client grants used with configured Auth0 clients.   
+`,
 
 		Schema: map[string]*schema.Schema{
 			"client_id": {

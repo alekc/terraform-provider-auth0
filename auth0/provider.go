@@ -1,10 +1,12 @@
 package auth0
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/alekc/terraform-provider-auth0/version"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 
@@ -63,7 +65,7 @@ func init() {
 			"auth0_branding":        newBranding(),
 			"auth0_guardian":        newGuardian(),
 		},
-		ConfigureFunc: Configure,
+		ConfigureContextFunc: Configure,
 	}
 }
 
@@ -71,7 +73,7 @@ func Provider() *schema.Provider {
 	return provider
 }
 
-func Configure(data *schema.ResourceData) (interface{}, error) {
+func Configure(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
 
 	domain := data.Get("domain").(string)
 	id := data.Get("client_id").(string)
@@ -84,10 +86,11 @@ func Configure(data *schema.ResourceData) (interface{}, error) {
 		TerraformSDKVersion(),
 		TerraformVersion())
 
-	return management.New(domain,
+	m, err := management.New(domain,
 		management.WithClientCredentials(id, secret),
 		management.WithDebug(debug),
 		management.WithUserAgent(userAgent))
+	return m, diag.FromErr(err)
 }
 
 func Version() string {
