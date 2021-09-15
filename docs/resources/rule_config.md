@@ -14,8 +14,8 @@ With Auth0, you can create custom Javascript snippets that run in a secure, isol
 
 ```terraform
 resource "auth0_rule" "my_rule" {
-  name = "empty-rule"
-  script = <<EOF
+  name    = "empty-rule"
+  script  = <<EOF
 function (user, context, callback) {
   callback(null, user, context);
 }
@@ -24,7 +24,7 @@ EOF
 }
 
 resource "auth0_rule_config" "my_rule_config" {
-  key = "foo"
+  key   = "foo"
   value = "bar"
 }
 ```

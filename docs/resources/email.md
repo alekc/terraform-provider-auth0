@@ -22,13 +22,13 @@ authentication workflows through the supported high-volume email service of your
 provider "auth0" {}
 
 resource "auth0_email" "my_email_provider" {
-  name = "ses"
-  enabled = true
+  name                 = "ses"
+  enabled              = true
   default_from_address = "accounts@example.com"
   credentials {
-    access_key_id = "AKIAXXXXXXXXXXXXXXXX"
+    access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
     secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    region = "us-east-1"
+    region            = "us-east-1"
   }
 }
 ```
@@ -38,29 +38,78 @@ resource "auth0_email" "my_email_provider" {
 
 ### Required
 
-- **credentials** (Block List, Min: 1, Max: 1) Credentials required to use the provider (see [below for nested schema](#nestedblock--credentials))
 - **default_from_address** (String) Email address to use as `from` when no other address specified
-- **name** (String) Name of the email provider. Can be `mailgun`, `mandrill`, `sendgrid`, `ses`, `sparkpost`, or `smtp`
 
 ### Optional
 
 - **enabled** (Boolean) Whether the provider is enabled (`true`) or disabled (`false`)
 - **id** (String) The ID of this resource.
+- **mailgun** (Block List, Max: 1) Configuration for the mailgun email integration (see [below for nested schema](#nestedblock--mailgun))
+- **mandrill** (Block List, Max: 1) Configuration for the mandrill email integration (see [below for nested schema](#nestedblock--mandrill))
+- **sendgrid** (Block List, Max: 1) Configuration for the sendgrid email integration (see [below for nested schema](#nestedblock--sendgrid))
+- **ses** (Block List, Max: 1) Configuration for the Aws ses email integration (see [below for nested schema](#nestedblock--ses))
+- **smtp** (Block List, Max: 1) Configuration for the generic SMTP email integration (see [below for nested schema](#nestedblock--smtp))
+- **sparkpost** (Block List, Max: 1) Configuration for the sparkpost email integration (see [below for nested schema](#nestedblock--sparkpost))
 
-<a id="nestedblock--credentials"></a>
-### Nested Schema for `credentials`
+<a id="nestedblock--mailgun"></a>
+### Nested Schema for `mailgun`
+
+Required:
+
+- **api_key** (String, Sensitive) API Key
+- **domain** (String) Your Domain registered with Mailgun
 
 Optional:
 
-- **access_key_id** (String, Sensitive)
+- **region** (String) Mailgun region. If set must be `eu`
+
+
+<a id="nestedblock--mandrill"></a>
+### Nested Schema for `mandrill`
+
+Required:
+
 - **api_key** (String, Sensitive) API Key
-- **api_user** (String) API User
-- **domain** (String)
-- **region** (String) AWS or SparkPost region
-- **secret_access_key** (String, Sensitive)
-- **smtp_host** (String)
-- **smtp_pass** (String, Sensitive)
-- **smtp_port** (Number)
-- **smtp_user** (String)
+
+
+<a id="nestedblock--sendgrid"></a>
+### Nested Schema for `sendgrid`
+
+Required:
+
+- **api_key** (String, Sensitive) API Key
+
+
+<a id="nestedblock--ses"></a>
+### Nested Schema for `ses`
+
+Required:
+
+- **access_key_id** (String, Sensitive) Access key ID
+- **region** (String) Ses region
+- **secret_access_key** (String, Sensitive) Secret Access key. It's not advisable to store it in clear
+
+
+<a id="nestedblock--smtp"></a>
+### Nested Schema for `smtp`
+
+Required:
+
+- **host** (String) SMTP Host
+- **pass** (String, Sensitive)
+- **port** (Number)
+- **user** (String)
+
+
+<a id="nestedblock--sparkpost"></a>
+### Nested Schema for `sparkpost`
+
+Required:
+
+- **api_key** (String, Sensitive) API Key
+
+Optional:
+
+- **region** (String) Sparkpost region. If set must be `eu`
 
 
