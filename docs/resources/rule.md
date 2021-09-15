@@ -24,8 +24,8 @@ You can create global variable for use with rules by using the auth0_rule_config
 provider "auth0" {}
 
 resource "auth0_rule" "my_rule" {
-  name = "empty-rule"
-  script = <<EOF
+  name    = "empty-rule"
+  script  = <<EOF
 function (user, context, callback) {
   callback(null, user, context);
 }
@@ -34,7 +34,7 @@ EOF
 }
 
 resource "auth0_rule_config" "my_rule_config" {
-  key = "foo"
+  key   = "foo"
   value = "bar"
 }
 ```

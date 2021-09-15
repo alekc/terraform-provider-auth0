@@ -18,7 +18,7 @@ This resource allows you to manage a branding within your Auth0 tenant.
 resource "auth0_branding" "my_brand" {
   logo_url = "https://mycompany.org/logo.png"
   colors {
-    primary = "#0059d6"
+    primary         = "#0059d6"
     page_background = "#000000"
   }
   universal_login {

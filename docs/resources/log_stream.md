@@ -14,12 +14,12 @@ With this resource, you can manage your Auth0 log streams
 
 ```terraform
 resource "auth0_log_stream" "example" {
-  name = "AWS Eventbridge"
-  type = "eventbridge"
+  name   = "AWS Eventbridge"
+  type   = "eventbridge"
   status = "active"
   sink {
     aws_account_id = "my_account_id"
-    aws_region = "us-east-2"
+    aws_region     = "us-east-2"
   }
 }
 ```
