@@ -13,6 +13,7 @@ BREAKING CHANGES:
 * All addons from the `auth0_client` has been dropped, except for those present in the webui (Saml2 and WS-FED).
 * Resource `auth0_global_client` has been deleted
 * `auth0_connection.options` is now a required field. It can be empty (but set to `options {}`). This is due to a limitation in nested defaults from Terraform (if that value is not set, it's much harder to catch drifts)
+* `auth0_email` syntax has been changed to provide clearer options for configuration (`name`,`credentials` attributes has been dropped, provider configuration separated in different blocks)
 
 BUG FIXES:
 * Empty non_persistent_attrs no longer breaks Auth0 connection webui (however it will still break if it's set to anything, this is a bug on Auth0 side)
