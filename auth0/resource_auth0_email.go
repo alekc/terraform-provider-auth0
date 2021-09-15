@@ -298,40 +298,40 @@ func buildEmail(d *schema.ResourceData) *management.Email {
 	}
 
 	List(d, "mandrill").Elem(func(d ResourceData) {
-		e.Name = StringPtr("mandrill")
+		e.Name = auth0.String("mandrill")
 		e.Credentials = &management.EmailCredentials{
 			APIKey: String(d, "api_key"),
 		}
 	})
 
 	List(d, "sendgrid").Elem(func(d ResourceData) {
-		e.Name = StringPtr("sendgrid")
+		e.Name = auth0.String("sendgrid")
 		e.Credentials = &management.EmailCredentials{
 			APIKey: String(d, "api_key"),
 		}
 	})
 	List(d, "sparkpost").Elem(func(d ResourceData) {
-		e.Name = StringPtr("sparkpost")
+		e.Name = auth0.String("sparkpost")
 		e.Credentials = &management.EmailCredentials{
 			APIKey: String(d, "api_key"),
 		}
 		if region, ok := d.GetOk("region"); ok {
-			e.Credentials.Region = StringPtr(region.(string))
+			e.Credentials.Region = auth0.String(region.(string))
 		}
 	})
 	List(d, "mailgun").Elem(func(d ResourceData) {
-		e.Name = StringPtr("mailgun")
+		e.Name = auth0.String("mailgun")
 		e.Credentials = &management.EmailCredentials{
 			APIKey: String(d, "api_key"),
 			Domain: String(d, "domain"),
 		}
 		if region, ok := d.GetOk("region"); ok {
-			e.Credentials.Region = StringPtr(region.(string))
+			e.Credentials.Region = auth0.String(region.(string))
 		}
 	})
 
 	List(d, "ses").Elem(func(d ResourceData) {
-		e.Name = StringPtr("ses")
+		e.Name = auth0.String("ses")
 		e.Credentials = &management.EmailCredentials{
 			AccessKeyID:     String(d, "access_key_id"),
 			SecretAccessKey: String(d, "secret_access_key"),
@@ -339,7 +339,7 @@ func buildEmail(d *schema.ResourceData) *management.Email {
 		}
 	})
 	List(d, "smtp").Elem(func(d ResourceData) {
-		e.Name = StringPtr("smtp")
+		e.Name = auth0.String("smtp")
 		e.Credentials = &management.EmailCredentials{
 			SMTPHost: String(d, "host"),
 			SMTPPort: Int(d, "port"),
