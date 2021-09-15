@@ -183,6 +183,52 @@ func TestAccConnection(t *testing.T) {
 	})
 }
 
+func TestAccConnection_NonPersistentAttrs(t *testing.T) {
+
+	rand := random.String(6)
+
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: testAccProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				// language=HCL
+				Config: random.Template(`
+			resource "auth0_connection" "my_connection" {
+				name = "Acceptance-Test-Connection-{{.random}}"
+				strategy = "auth0"
+				options {
+					non_persistent_attrs = ["ethnicity"]
+				}
+			}
+			`, rand),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					random.TestCheckResourceAttr("auth0_connection.my_connection", "name", "Acceptance-Test-Connection-{{.random}}", rand),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "strategy", "auth0"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"options.0.non_persistent_attrs.0", "ethnicity"),
+				),
+			},
+			{
+				// language=HCL
+				Config: random.Template(`
+			resource "auth0_connection" "my_connection" {
+				name = "Acceptance-Test-Connection-{{.random}}"
+				strategy = "auth0"
+				options {
+					non_persistent_attrs = ["bar"]
+				}
+			}
+			`, rand),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					random.TestCheckResourceAttr("auth0_connection.my_connection", "name", "Acceptance-Test-Connection-{{.random}}", rand),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "strategy", "auth0"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.non_persistent_attrs.0", "bar"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccConnectionAD(t *testing.T) {
 
 	rand := random.String(6)
