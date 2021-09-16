@@ -2,6 +2,7 @@ package auth0
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -54,13 +55,14 @@ Actions are used to customize and extend Auth0's capabilities with custom logic.
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Trigger version",
+							Default:     "v2",
 						},
 					},
 				},
 			},
 			"code": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Required:    true, // if set to optional, secrets won't work
 				Description: "The source code of the action",
 			},
 			// Not supported by sdk atm
@@ -72,7 +74,7 @@ Actions are used to customize and extend Auth0's capabilities with custom logic.
 			// },
 			"dependencies": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "The list of third party npm modules, and their versions, that this action depends on",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -89,29 +91,27 @@ Actions are used to customize and extend Auth0's capabilities with custom logic.
 					},
 				},
 			},
-			"secrets": {
+			"secret": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "The list of secrets that are included in an action or a version of an action",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Trigger id. Valid options are `post-login`, `credentials-exchange`, `pre-user-registration`, `post-user-registration`, `post-change-password`, `send-phone-message`",
-							ValidateFunc: validation.StringInSlice([]string{"post-login", "credentials-exchange",
-								"pre-user-registration", "post-user-registration", "post-change-password", "send-phone-message"},
-								false),
+							Description: "Secret name",
 						},
-						"code": {
+						"value": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Trigger version",
+							Sensitive:   true,
+							Description: "Secret Value",
 						},
 						"updated_at": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Trigger version",
+							Description: "Secret's last update date",
 						},
 					},
 				},
@@ -140,13 +140,32 @@ func flattenDependencies(triggers []management.ActionDependency) []map[string]in
 	}
 	return result
 }
-func flattenSecrets(triggers []management.ActionSecret) []map[string]interface{} {
+func flattenSecrets(d *schema.ResourceData, triggers []management.ActionSecret, update bool) []map[string]interface{} {
 	var result []map[string]interface{}
-	for _, v := range triggers {
-		result = append(result, map[string]interface{}{
-			"name":       v.Name,
-			"updated_at": v.UpdatedAt,
-		})
+	for k, v := range triggers {
+		data := map[string]interface{}{
+			"name":       v.GetName(),
+			"updated_at": v.GetUpdatedAt().String(),
+			"value":      "",
+		}
+		oldValue, found := d.GetOk(fmt.Sprintf("secret.%d", k))
+		if !found {
+			// nothing else we can do here, just return
+			result = append(result, data)
+			continue
+		}
+		updatedAt := oldValue.(map[string]interface{})["updated_at"].(string)
+		// Auth0 doesn't send back secret value. So we can assume (
+		// and assign state value) to the secret only in following cases:
+		// 1) updateAt is empty, so it's a new entity
+		// 2) updated_at field hasn't changed
+		// 3) it's an update
+		if updatedAt == "" ||
+			v.UpdatedAt.String() == updatedAt ||
+			update {
+			data["value"] = d.Get(fmt.Sprintf("secret.%d.value", k))
+		}
+		result = append(result, data)
 	}
 	return result
 }
@@ -162,6 +181,9 @@ func createAction(ctx context.Context, d *schema.ResourceData, m interface{}) di
 }
 
 func readAction(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	return execRead(ctx, d, m, false)
+}
+func execRead(ctx context.Context, d *schema.ResourceData, m interface{}, fromUpdate bool) diag.Diagnostics {
 	api := m.(*management.Management)
 	c, err := api.Action.Read(d.Id(), management.Context(ctx))
 	if err != nil {
@@ -170,14 +192,12 @@ func readAction(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 
 	_ = d.Set("name", c.Name)
 	_ = d.Set("trigger", flattenActionTrigger(c.SupportedTriggers))
-	_ = d.Set("code", c.Name)
+	_ = d.Set("code", c.Code)
 	_ = d.Set("dependencies", flattenDependencies(c.Dependencies))
-	_ = d.Set("secrets", flattenSecrets(c.Secrets))
-	_ = d.Set("name", c.Name)
+	_ = d.Set("secret", flattenSecrets(d, c.Secrets, fromUpdate))
 
 	return nil
 }
-
 func updateAction(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := buildAction(d)
 	api := m.(*management.Management)
@@ -185,7 +205,8 @@ func updateAction(ctx context.Context, d *schema.ResourceData, m interface{}) di
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return readAction(ctx, d, m)
+
+	return execRead(ctx, d, m, true)
 }
 
 func deleteAction(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -202,7 +223,7 @@ func buildAction(d *schema.ResourceData) *management.Action {
 		Name: String(d, "name"),
 		Code: String(d, "code"),
 	}
-	List(d, "secrets").Elem(func(d ResourceData) {
+	List(d, "secret").Elem(func(d ResourceData) {
 		action.Secrets = append(action.Secrets, management.ActionSecret{
 			Name:  String(d, "name"),
 			Value: String(d, "value"),
