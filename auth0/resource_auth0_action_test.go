@@ -49,6 +49,7 @@ func init() {
 
 func TestAccAction_Common(t *testing.T) {
 	rand := random.String(6)
+	const objectName = "auth0_action.myaction"
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
@@ -60,17 +61,133 @@ resource "auth0_action" "myaction" {
 	trigger {
 		id = "post-login"
 	}
+	dependency {
+		name = "lodash"
+		version = "1.0.0"
+	}
+	dependency {
+		name = "glob"
+		version = "7.1.7"
+	}
+	secret {
+		name = "foo"
+		value = "fooval"
+	}
+	secret {
+		name = "bar"
+		value = "barval"
+	}
+	
 	code = "exports.onExecutePostLogin = async (event, api) => {};"
 }
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					random.TestCheckResourceAttr("auth0_action.myaction", "name",
+					random.TestCheckResourceAttr(objectName, "name",
 						"Acceptance Test - Action - {{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_action.myaction", "trigger.0.id", "post-login"),
+					resource.TestCheckResourceAttr(objectName, "trigger.0.id", "post-login"),
 					resource.TestCheckResourceAttr(
-						"auth0_action.myaction",
+						objectName,
 						"code",
 						"exports.onExecutePostLogin = async (event, api) => {};",
+					),
+					resource.TestCheckResourceAttr(
+						objectName,
+						"dependency.0.name",
+						"lodash",
+					),
+					resource.TestCheckResourceAttr(
+						objectName,
+						"dependency.0.version",
+						"1.0.0",
+					),
+					resource.TestCheckResourceAttr(
+						objectName,
+						"dependency.1.name",
+						"glob",
+					),
+					resource.TestCheckResourceAttr(
+						objectName,
+						"dependency.1.version",
+						"7.1.7",
+					),
+					resource.TestCheckResourceAttr(
+						objectName,
+						"secret.0.name",
+						"foo",
+					),
+					resource.TestCheckResourceAttr(
+						objectName,
+						"secret.0.value",
+						"fooval",
+					),
+					resource.TestCheckResourceAttr(
+						objectName,
+						"secret.1.name",
+						"bar",
+					),
+					resource.TestCheckResourceAttr(
+						objectName,
+						"secret.1.value",
+						"barval",
+					),
+				),
+			},
+		},
+	})
+}
+
+func TestAccAction_Deploy(t *testing.T) {
+	rand := random.String(6)
+	const objectName = "auth0_action.myaction"
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: testAccProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				// language=HCL
+				Config: random.Template(`
+resource "auth0_action" "myaction" {
+	name = "Acceptance Test - Action - {{.random}}"
+	trigger {
+		id = "post-login"
+	}		
+	code = "exports.onExecutePostLogin = async (event, api) => {};"
+}
+`, rand),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						objectName,
+						"status",
+						"built",
+					),
+					resource.TestCheckResourceAttr(
+						objectName,
+						"all_changes_deployed",
+						"false",
+					),
+				),
+			},
+			{
+				// language=HCL
+				Config: random.Template(`
+resource "auth0_action" "myaction" {
+	name = "Acceptance Test - Action - {{.random}}"
+	trigger {
+		id = "post-login"
+	}		
+	code = "exports.onExecutePostLogin = async (event, api) => {};"
+	deploy  = true
+}
+`, rand),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						objectName,
+						"status",
+						"built",
+					),
+					resource.TestCheckResourceAttr(
+						objectName,
+						"all_changes_deployed",
+						"true",
 					),
 				),
 			},

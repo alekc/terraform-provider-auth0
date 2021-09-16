@@ -3,9 +3,12 @@ package auth0
 import (
 	"context"
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"gopkg.in/auth0.v5"
@@ -65,14 +68,30 @@ Actions are used to customize and extend Auth0's capabilities with custom logic.
 				Required:    true, // if set to optional, secrets won't work
 				Description: "The source code of the action",
 			},
-			// Not supported by sdk atm
+			"deploy": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If set to true, it will deploy the action on every change",
+			},
+			// not supported by sdk atm
 			// "runtime": {
-			// 	Type:        schema.TypeInt,
-			// 	Optional:    true,
+			// 	Type:        schema.TypeString,
+			// 	Computed:    true,
 			// 	Description: "The Node runtime. Valid options are `node12` (not recommended) or `node16`",
 			// 	Default:     "node16",
 			// },
-			"dependencies": {
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The build status of this action",
+			},
+			"all_changes_deployed": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "True if all of an Action's contents have been deployed",
+			},
+			"dependency": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The list of third party npm modules, and their versions, that this action depends on",
@@ -177,7 +196,28 @@ func createAction(ctx context.Context, d *schema.ResourceData, m interface{}) di
 		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(c.ID))
+	d.Partial(true)
+	if err := deployAction(ctx, api, *c.ID, d.Get("deploy").(bool)); err != nil {
+		return err
+	}
+	d.Partial(false)
 	return readAction(ctx, d, m)
+}
+
+func deployAction(ctx context.Context, api *management.Management, ID string, deploy bool) diag.Diagnostics {
+	if !deploy {
+		return nil
+	}
+	err := resource.RetryContext(ctx, time.Second*30, func() *resource.RetryError {
+		log.Printf("[DEBUG] Deploying action %s", ID)
+		if _, apiErr := api.Action.Deploy(ID); apiErr != nil {
+			log.Printf("[DEBUG] Got an error deploying action %s: %#v", ID, apiErr)
+			return resource.RetryableError(apiErr)
+		}
+		log.Printf("[TRACE] Deployed action %s", ID)
+		return nil
+	})
+	return diag.FromErr(err)
 }
 
 func readAction(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -185,16 +225,19 @@ func readAction(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 }
 func execRead(ctx context.Context, d *schema.ResourceData, m interface{}, fromUpdate bool) diag.Diagnostics {
 	api := m.(*management.Management)
-	c, err := api.Action.Read(d.Id(), management.Context(ctx))
+	action, err := api.Action.Read(d.Id(), management.Context(ctx))
 	if err != nil {
 		return flow.DefaultManagementError(err, d)
 	}
 
-	_ = d.Set("name", c.Name)
-	_ = d.Set("trigger", flattenActionTrigger(c.SupportedTriggers))
-	_ = d.Set("code", c.Code)
-	_ = d.Set("dependencies", flattenDependencies(c.Dependencies))
-	_ = d.Set("secret", flattenSecrets(d, c.Secrets, fromUpdate))
+	_ = d.Set("name", action.Name)
+	_ = d.Set("trigger", flattenActionTrigger(action.SupportedTriggers))
+	_ = d.Set("code", action.Code)
+	_ = d.Set("dependency", flattenDependencies(action.Dependencies))
+	_ = d.Set("secret", flattenSecrets(d, action.Secrets, fromUpdate))
+	_ = d.Set("status", action.Status)
+	_ = d.Set("all_changes_deployed", action.AllChangesDeployed)
+	_ = d.Set("deploy", d.Get("deploy"))
 
 	return nil
 }
@@ -204,6 +247,9 @@ func updateAction(ctx context.Context, d *schema.ResourceData, m interface{}) di
 	err := api.Action.Update(d.Id(), c, management.Context(ctx))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+	if err := deployAction(ctx, api, *c.ID, d.Get("deploy").(bool)); err != nil {
+		return err
 	}
 
 	return execRead(ctx, d, m, true)
@@ -235,7 +281,7 @@ func buildAction(d *schema.ResourceData) *management.Action {
 			Version: String(d, "version"),
 		})
 	})
-	List(d, "dependencies").Elem(func(d ResourceData) {
+	List(d, "dependency").Elem(func(d ResourceData) {
 		action.Dependencies = append(action.Dependencies, management.ActionDependency{
 			Name:    String(d, "name"),
 			Version: String(d, "version"),
