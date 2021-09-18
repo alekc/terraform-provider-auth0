@@ -17,9 +17,14 @@ func String(strlen int) string {
 // useful for acceptance tests. By introducing entropy to resources generated
 // during the tests, we can run tests concurrently.
 func Template(tpl, rand string) string {
+	return TemplateMap(tpl, map[string]string{"random": rand})
+}
+
+// TemplateMap has the same behaviour as Template, but allows to pass a map of values instead of a single rand
+func TemplateMap(tpl string, values map[string]string) string {
 	var buf bytes.Buffer
 	t := template.Must(template.New("tpl").Parse(tpl))
-	err := t.Execute(&buf, map[string]string{"random": rand})
+	err := t.Execute(&buf, values)
 	if err != nil {
 		panic(err)
 	}
