@@ -67,6 +67,7 @@ resource "auth0_client" "my_client" {
   oidc_conformant = true
   callbacks = [ "https://example.com/callback" ]
   allowed_origins = [ "https://example.com" ]
+  allowed_clients = [ "https://allowed.example.com" ]
   grant_types = [ "authorization_code", "http://auth0.com/oauth/grant-type/password-realm", "implicit", "password", "refresh_token" ]
   allowed_logout_urls = [ "https://example.com" ]
   web_origins = [ "https://example.com" ]
@@ -132,6 +133,7 @@ resource "auth0_client" "my_client" {
 					resource.TestCheckResourceAttr("auth0_client.my_client", "refresh_token.0.infinite_token_lifetime", "true"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "refresh_token.0.infinite_idle_token_lifetime", "false"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "refresh_token.0.idle_token_lifetime", "3600"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "allowed_clients.0", "https://allowed.example.com"),
 					// resource.TestCheckResourceAttr("auth0_client.my_client", "addons.#", "1"),
 					// resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.#", "1"),
 					// resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.audience", "https://example.com/saml"),
