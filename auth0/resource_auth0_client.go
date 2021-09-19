@@ -122,6 +122,11 @@ your application to call another application's API (such as Firebase and AWS) on
 				Description: "URLs that represent valid origins for cross-origin resource sharing. By default, " +
 					"all your callback URLs will be allowed",
 			},
+			"allowed_clients": {
+				Type:     schema.TypeList,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Optional: true,
+			},
 			"web_origins": {
 				Type:        schema.TypeList,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -660,6 +665,7 @@ func readClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 	_ = d.Set("callbacks", c.Callbacks)
 	_ = d.Set("allowed_logout_urls", c.AllowedLogoutURLs)
 	_ = d.Set("allowed_origins", c.AllowedOrigins)
+	_ = d.Set("allowed_clients", c.AllowedClients)
 	_ = d.Set("grant_types", c.GrantTypes)
 	_ = d.Set("web_origins", c.WebOrigins)
 	_ = d.Set("sso", c.SSO)
@@ -721,6 +727,7 @@ func expandClient(d *schema.ResourceData) *management.Client {
 		Callbacks:                      Slice(d, "callbacks"),
 		AllowedLogoutURLs:              Slice(d, "allowed_logout_urls"),
 		AllowedOrigins:                 Slice(d, "allowed_origins"),
+		AllowedClients:                 Slice(d, "allowed_clients"),
 		GrantTypes:                     Slice(d, "grant_types"),
 		WebOrigins:                     Slice(d, "web_origins"),
 		SSO:                            Bool(d, "sso"),
