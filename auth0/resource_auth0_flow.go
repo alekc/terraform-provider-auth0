@@ -13,7 +13,7 @@ import (
 	"gopkg.in/auth0.v5/management"
 )
 
-func newActionBinding() *schema.Resource {
+func newFlow() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: createActionBinding,
 		ReadContext:   readActionBinding,

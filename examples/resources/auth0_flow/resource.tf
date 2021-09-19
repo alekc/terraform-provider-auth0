@@ -14,7 +14,7 @@ resource "auth0_action" "myaction2" {
   code = "exports.onExecutePostLogin = async (event, api) => {};"
   deploy = true
 }
-resource "auth0_action_binding" "bind" {
+resource "auth0_flow" "bind" {
   trigger_id = "post-login"
   action {
     display_name = "action1"

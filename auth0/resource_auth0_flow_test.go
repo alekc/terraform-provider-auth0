@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccAction_Bindings(t *testing.T) {
+func TestAccFlow_Common(t *testing.T) {
 	rand := random.String(6)
 	data := map[string]string{"random": rand, "trigger_id": "post-login"}
 	resource.ParallelTest(t, resource.TestCase{
@@ -32,7 +32,7 @@ resource "auth0_action" "myaction2" {
 	code = "exports.onExecutePostLogin = async (event, api) => {};"
 	deploy = true
 }
-resource "auth0_action_binding" "bind"{
+resource "auth0_flow" "bind"{
 	trigger_id =  "{{ .trigger_id }}"
 	action {
 		display_name = "action1"
@@ -45,12 +45,12 @@ resource "auth0_action_binding" "bind"{
 }
 `, data),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("auth0_action_binding.bind", "trigger_id", "post-login"),
-					resource.TestCheckResourceAttr("auth0_action_binding.bind", "action.#", "2"),
-					resource.TestCheckResourceAttr("auth0_action_binding.bind", "action.0.display_name", "action1"),
-					random.TestCheckResourceAttr("auth0_action_binding.bind", "action.0.name", "Acceptance Test - Action - {{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_action_binding.bind", "action.1.display_name", "action2"),
-					random.TestCheckResourceAttr("auth0_action_binding.bind", "action.1.name", "Acceptance Test - Action2 - {{.random}}", rand),
+					resource.TestCheckResourceAttr("auth0_flow.bind", "trigger_id", "post-login"),
+					resource.TestCheckResourceAttr("auth0_flow.bind", "action.#", "2"),
+					resource.TestCheckResourceAttr("auth0_flow.bind", "action.0.display_name", "action1"),
+					random.TestCheckResourceAttr("auth0_flow.bind", "action.0.name", "Acceptance Test - Action - {{.random}}", rand),
+					resource.TestCheckResourceAttr("auth0_flow.bind", "action.1.display_name", "action2"),
+					random.TestCheckResourceAttr("auth0_flow.bind", "action.1.name", "Acceptance Test - Action2 - {{.random}}", rand),
 				),
 			},
 		},

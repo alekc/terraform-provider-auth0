@@ -1,5 +1,5 @@
 ## 1.1.0
-ENHANCEMENTS: added `auth0_action` and `auth0_action_bindings` resources
+ENHANCEMENTS: added `auth0_action` and `auth0_flow` resources
 
 ## 1.0.0
 

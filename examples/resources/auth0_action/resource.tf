@@ -1,4 +1,4 @@
-resource "auth0_action" "myaction" {
+resource "auth0_flow" "myaction" {
   name = "my Action"
   trigger {
     id = "post-login"
