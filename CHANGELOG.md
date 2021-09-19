@@ -1,5 +1,7 @@
 ## 1.1.0
-ENHANCEMENTS: added `auth0_action` and `auth0_flow` resources
+ENHANCEMENTS: 
+* Added `auth0_action` and `auth0_flow` resources
+* Added JSONOBJECT option to logstream
 
 ## 1.0.0
 
