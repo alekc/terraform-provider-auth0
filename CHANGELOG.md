@@ -1,6 +1,7 @@
-## 1.1.1 (Unreleased)
+## 1.1.1
 * Improved secrets management in hook 
 * Added support for `organization_usage` and `organization_require_behavior` to resource `auth0_client`
+* Added support for `metadata_url` and `metadata_xml`to resource `auth0_connection`
 
 ## 1.1.0
 ENHANCEMENTS: 

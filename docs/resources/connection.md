@@ -112,6 +112,8 @@ Optional:
 - **key_id** (String) Apple Key ID
 - **max_groups_to_retrieve** (String)
 - **messaging_service_sid** (String)
+- **metadata_url** (String) Url of the document for saml connection expressed in xml
+- **metadata_xml** (String) XML content of the document for saml
 - **mfa** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--mfa))
 - **name** (String)
 - **non_persistent_attrs** (Set of String) If there are user fields that should not be stored in Auth0 databases due to privacy reasons, you can add them to the DenyList here
