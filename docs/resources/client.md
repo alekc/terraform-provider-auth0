@@ -92,6 +92,7 @@ resource "auth0_client" "my_client" {
 ### Optional
 
 - **addons** (Block List, Max: 1) Configuration settings for add-ons for this client (see [below for nested schema](#nestedblock--addons))
+- **allowed_clients** (List of String)
 - **allowed_logout_urls** (List of String) URLs that Auth0 may redirect to after logout
 - **allowed_origins** (List of String) URLs that represent valid origins for cross-origin resource sharing. By default, all your callback URLs will be allowed
 - **app_type** (String) Type of application the client represents. Options include `native`, `spa`, `regular_web`, `non_interactive`, `rms`, `box`, `cloudbees`, `concur`, `dropbox`, `mscrm`, `echosign`, `egnyte`, `newrelic`, `office365`, `salesforce`, `sentry`, `sharepoint`, `slack`, `springcm`, `zendesk`, `zoom`

@@ -53,7 +53,7 @@ Optional:
 - **datadog_api_key** (String, Sensitive) The Datadog API key
 - **datadog_region** (String, Sensitive) The Datadog region. Must be one of `eu` or `us`
 - **http_authorization** (String, Sensitive) Sent in the HTTP `Authorization` header with each request
-- **http_content_format** (String) HTTP Content Format can be JSONLINES or JSONARRAY
+- **http_content_format** (String) HTTP Content Format can be `JSONLINES`, `JSONARRAY` or `JSONOBJECT`
 - **http_content_type** (String) The ContentType header to send over HTTP.  Common value is `application/json`
 - **http_custom_headers** (Set of String) Additional HTTP headers to be included as part of the HTTP request
 - **http_endpoint** (String) The HTTP endpoint to send streaming logs
