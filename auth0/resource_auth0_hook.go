@@ -97,16 +97,32 @@ func createHook(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 
 func readHook(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*management.Management)
-	c, err := api.Hook.Read(d.Id(), management.Context(ctx))
+	hook, err := api.Hook.Read(d.Id(), management.Context(ctx))
 	if err != nil {
 		return flow.DefaultManagementError(err, d)
 	}
+	secrets, err := api.Hook.Secrets(d.Id(), management.Context(ctx))
+	if err != nil {
+		return flow.DefaultManagementError(err, d) // todo: check
+	}
+	existingSecrets := Map(d, "secrets")
+	secretMap := make(map[string]interface{})
+	for k, v := range secrets {
+		// auth0 doesn't send secrets back, so we have to do in this way
+		// best way to do is to go to actions, since at least there they give updated_at field
+		if oldValue, ok := existingSecrets[k]; ok {
+			secretMap[k] = oldValue
+		} else {
+			secretMap[k] = v
+		}
+	}
 
-	_ = d.Set("name", c.Name)
-	_ = d.Set("dependencies", c.Dependencies)
-	_ = d.Set("script", c.Script)
-	_ = d.Set("trigger_id", c.TriggerID)
-	_ = d.Set("enabled", c.Enabled)
+	_ = d.Set("name", hook.Name)
+	_ = d.Set("dependencies", hook.Dependencies)
+	_ = d.Set("script", hook.Script)
+	_ = d.Set("trigger_id", hook.TriggerID)
+	_ = d.Set("enabled", hook.Enabled)
+	_ = d.Set("secrets", secretMap)
 	return nil
 }
 
