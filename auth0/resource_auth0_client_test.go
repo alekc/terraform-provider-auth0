@@ -45,7 +45,7 @@ func init() {
 	})
 }
 
-func TestAccClient(t *testing.T) {
+func TestAccClient_Common(t *testing.T) {
 
 	rand := random.String(6)
 
@@ -54,6 +54,7 @@ func TestAccClient(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				// language=HCL
 				Config: random.Template(`
 
 resource "auth0_client" "my_client" {
@@ -82,27 +83,37 @@ resource "auth0_client" "my_client" {
   client_metadata = {
     foo = "zoo"
   }
-  // addons { 
-  //   samlp {
-  //     audience = "https://example.com/saml"
-  //     mappings = {
-  //       email = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
-  //       name = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
-  //     }
-  //     create_upn_claim = false
-  //     passthrough_claims_with_no_mapping = false
-  //     map_unknown_claims_as_is = false
-  //     map_identities = false
-  //     name_identifier_format = "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"
-  //     name_identifier_probes = [
-  //       "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
-  //     ]
-  //     logout {
-  //       callback = "http://example.com/callback"
-  //       slo_enabled = true
-  //     }
-  //   }
-  // }
+   addons { 
+     samlp {
+       audience = "https://example.com/saml"
+       recipient = "http://foo"
+       mappings = {
+         email = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+         name = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+       }
+       create_upn_claim = false
+       passthrough_claims_with_no_mapping = false
+       map_unknown_claims_as_is = false
+       map_identities = false
+       signature_algorithm = "rsa-sha1"
+       digest_algorithm = "sha1"
+       destination = "http://foo"
+       lifetime_in_seconds = 180
+       sign_response = false
+       typed_attributes = false
+       include_attribute_name_format = true
+       name_identifier_format = "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"
+       name_identifier_probes = [
+         "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+       ]
+       logout {
+         callback = "http://example.com/callback"
+         slo_enabled = true
+       }
+	   signing_cert = "fakecertificate"
+       binding = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+     }
+   }
   refresh_token {
     leeway = 42
     token_lifetime = 424242
@@ -134,11 +145,29 @@ resource "auth0_client" "my_client" {
 					resource.TestCheckResourceAttr("auth0_client.my_client", "refresh_token.0.infinite_idle_token_lifetime", "false"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "refresh_token.0.idle_token_lifetime", "3600"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "allowed_clients.0", "https://allowed.example.com"),
-					// resource.TestCheckResourceAttr("auth0_client.my_client", "addons.#", "1"),
-					// resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.#", "1"),
-					// resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.audience", "https://example.com/saml"),
-					// resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.map_identities", "false"),
-					// resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.name_identifier_format", "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.#", "1"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.#", "1"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.audience", "https://example.com/saml"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.recipient", "http://foo"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.mappings.email", "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.mappings.name", "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.create_upn_claim", "false"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.passthrough_claims_with_no_mapping", "false"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.map_unknown_claims_as_is", "false"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.map_identities", "false"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.signature_algorithm", "rsa-sha1"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.digest_algorithm", "sha1"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.destination", "http://foo"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.lifetime_in_seconds", "180"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.sign_response", "false"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.typed_attributes", "false"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.include_attribute_name_format", "true"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.name_identifier_format", "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.name_identifier_probes.0", "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.logout.0.callback", "http://example.com/callback"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.logout.0.slo_enabled", "true"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.signing_cert", "fakecertificate"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.binding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "client_metadata.foo", "zoo"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "initiate_login_uri", "https://example.com/login"),
 				),

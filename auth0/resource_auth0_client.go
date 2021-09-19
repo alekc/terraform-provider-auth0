@@ -380,7 +380,7 @@ your application to call another application's API (such as Firebase and AWS) on
 									"sign_response": {
 										Type:     schema.TypeBool,
 										Optional: true,
-										Default: "Indicates whether or not the SAML Response should be signed instead" +
+										Description: "Indicates whether or not the SAML Response should be signed instead" +
 											" of the SAML Assertion",
 									},
 									"name_identifier_format": {
@@ -440,6 +440,13 @@ your application to call another application's API (such as Firebase and AWS) on
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Protocol binding used for SAML logout responses",
+									},
+									"signing_cert": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Description: "Optionally indicates the public key certificate used to validate " +
+											"SAML requests. If set, SAML requests will be required to be signed." +
+											" A sample value would be `-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----`",
 									},
 								},
 							},
@@ -679,12 +686,47 @@ func readClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 	_ = d.Set("jwt_configuration", flattenClientJwtConfiguration(c.JWTConfiguration))
 	_ = d.Set("refresh_token", flattenClientRefreshTokenConfiguration(c.RefreshToken))
 	_ = d.Set("encryption_key", c.EncryptionKey)
-	_ = d.Set("addons", flattenMap(c.Addons))
+	_ = d.Set("addons", flattenAddons(c.Addons))
 	_ = d.Set("client_metadata", c.ClientMetadata)
 	_ = d.Set("mobile", flattenMap(c.Mobile))
 	_ = d.Set("initiate_login_uri", c.InitiateLoginURI)
 
 	return nil
+}
+
+func flattenAddons(addons map[string]interface{}) []interface{} {
+	result := make(map[string]interface{})
+	if len(addons) == 0 {
+		return nil
+	}
+
+	// samlp
+	if _, ok := addons["samlp"]; ok {
+		data := addons["samlp"].(map[string]interface{})
+		result["samlp"] = []interface{}{map[string]interface{}{
+			"audience":                           data["audience"],
+			"authn_context_class_ref":            data["authnContextClassRef"],
+			"binding":                            data["binding"],
+			"signing_cert":                       data["signingCert"],
+			"create_upn_claim":                   data["createUpnClaim"],
+			"destination":                        data["destination"],
+			"digest_algorithm":                   data["digestAlgorithm"],
+			"include_attribute_name_format":      data["includeAttributeNameFormat"],
+			"lifetime_in_seconds":                data["lifetimeInSeconds"],
+			"logout":                             data["logout"],
+			"map_identities":                     data["mapIdentities"],
+			"mappings":                           data["mappings"],
+			"map_unknown_claims_as_is":           data["mapUnknownClaimsAsIs"],
+			"name_identifier_format":             data["nameIdentifierFormat"],
+			"name_identifier_probes":             data["nameIdentifierProbes"],
+			"passthrough_claims_with_no_mapping": data["passthroughClaimsWithNoMapping"],
+			"recipient":                          data["recipient"],
+			"signature_algorithm":                data["signatureAlgorithm"],
+			"sign_response":                      data["signResponse"],
+			"typed_attributes":                   data["typedAttributes"],
+		}}
+	}
+	return []interface{}{result}
 }
 
 func updateClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -794,12 +836,12 @@ func expandClient(d *schema.ResourceData) *management.Client {
 		}
 
 		List(d, "samlp").Elem(func(d ResourceData) {
-
 			m := make(MapData)
 
 			_ = m.Set("audience", String(d, "audience"))
 			_ = m.Set("authnContextClassRef", String(d, "authn_context_class_ref"))
 			_ = m.Set("binding", String(d, "binding"))
+			_ = m.Set("signingCert", String(d, "signing_cert"))
 			_ = m.Set("createUpnClaim", Bool(d, "create_upn_claim"))
 			_ = m.Set("destination", String(d, "destination"))
 			_ = m.Set("digestAlgorithm", String(d, "digest_algorithm"))
@@ -817,7 +859,7 @@ func expandClient(d *schema.ResourceData) *management.Client {
 			_ = m.Set("signResponse", Bool(d, "sign_response"))
 			_ = m.Set("typedAttributes", Bool(d, "typed_attributes"))
 
-			c.Addons["samlp"] = []interface{}{m}
+			c.Addons["samlp"] = m
 		})
 	})
 

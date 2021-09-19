@@ -38,6 +38,7 @@ resource "auth0_client" "my_client" {
         email = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
         name  = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
       }
+      signing_cert                       = "pemcertificate"
       create_upn_claim                   = false
       passthrough_claims_with_no_mapping = false
       map_unknown_claims_as_is           = false

@@ -3,7 +3,11 @@ ENHANCEMENTS:
 * Added `auth0_action` and `auth0_flow` resources
 * Added `JSONOBJECT` option to logstream
 * Added support for `allowed_clients`
-* Added support for `user_invitation` in `email_template`
+* Added support for `user_invitation` in `auth0_email_template`
+* Added support for `signing_cert` in `auth0_client`. 
+
+BUG FIXES:
+* Addressed some bugs related to addon serializations in `auth0_client`
 
 ## 1.0.0
 
