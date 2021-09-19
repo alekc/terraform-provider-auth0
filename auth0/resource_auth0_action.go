@@ -92,9 +92,12 @@ Actions are used to customize and extend Auth0's capabilities with custom logic.
 				Description: "True if all of an Action's contents have been deployed",
 			},
 			"dependency": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "The list of third party npm modules, and their versions, that this action depends on",
+				Set: func(i interface{}) int {
+					return schema.HashString(i.(map[string]interface{})["name"])
+				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -149,9 +152,9 @@ func flattenActionTrigger(triggers []management.ActionTrigger) []map[string]inte
 	}
 	return result
 }
-func flattenDependencies(triggers []management.ActionDependency) []map[string]interface{} {
+func flattenDependencies(deps []management.ActionDependency) []map[string]interface{} {
 	var result []map[string]interface{}
-	for _, v := range triggers {
+	for _, v := range deps {
 		result = append(result, map[string]interface{}{
 			"name":    v.Name,
 			"version": v.Version,
@@ -281,7 +284,7 @@ func buildAction(d *schema.ResourceData) *management.Action {
 			Version: String(d, "version"),
 		})
 	})
-	List(d, "dependency").Elem(func(d ResourceData) {
+	Set(d, "dependency").Elem(func(d ResourceData) {
 		action.Dependencies = append(action.Dependencies, management.ActionDependency{
 			Name:    String(d, "name"),
 			Version: String(d, "version"),

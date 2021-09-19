@@ -92,22 +92,22 @@ resource "auth0_action" "myaction" {
 					),
 					resource.TestCheckResourceAttr(
 						objectName,
-						"dependency.0.name",
+						"dependency.1.name",
 						"lodash",
 					),
 					resource.TestCheckResourceAttr(
 						objectName,
-						"dependency.0.version",
+						"dependency.1.version",
 						"1.0.0",
 					),
 					resource.TestCheckResourceAttr(
 						objectName,
-						"dependency.1.name",
+						"dependency.0.name",
 						"glob",
 					),
 					resource.TestCheckResourceAttr(
 						objectName,
-						"dependency.1.version",
+						"dependency.0.version",
 						"7.1.7",
 					),
 					resource.TestCheckResourceAttr(
