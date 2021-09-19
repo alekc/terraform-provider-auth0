@@ -540,6 +540,16 @@ var connectionSchema = map[string]*schema.Schema{
 					Optional:    true,
 					Description: "X.509 signing certificate (encoded in PEM or CER) you retrieved from the IdP, Base64-encoded",
 				},
+				"metadata_xml": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "XML content of the document for saml",
+				},
+				"metadata_url": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "Url of the document for saml connection expressed in xml",
+				},
 				"protocol_binding": {
 					Type:        schema.TypeString,
 					Optional:    true,

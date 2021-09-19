@@ -287,6 +287,8 @@ func flattenConnectionOptionsSAML(o *management.ConnectionOptionsSAML) interface
 		"user_id_attribute":        o.GetUserIDAttribute(),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
+		"metadata_xml":             o.GetMetadataXML(),
+		"metadata_url":             o.GetMetadataURL(),
 	}
 }
 
@@ -661,6 +663,8 @@ func expandConnectionOptionsSAML(d ResourceData) *management.ConnectionOptionsSA
 		SignOutEndpoint:    String(d, "sign_out_endpoint"),
 		SignatureAlgorithm: String(d, "signature_algorithm"),
 		DigestAglorithm:    String(d, "digest_algorithm"),
+		MetadataXML:        String(d, "metadata_xml"),
+		MetadataURL:        String(d, "metadata_url"),
 		FieldsMap:          Map(d, "fields_map"),
 		SignSAMLRequest:    Bool(d, "sign_saml_request"),
 		RequestTemplate:    String(d, "request_template"),
