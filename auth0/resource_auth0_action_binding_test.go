@@ -21,14 +21,6 @@ resource "auth0_action" "myaction" {
 	trigger {
 		id = "{{ .trigger_id }}"
 	}
-	secret {
-		name = "foo"
-		value = "fooval"
-	}
-	secret {
-		name = "bar"
-		value = "barval"
-	}
 	code = "exports.onExecutePostLogin = async (event, api) => {};"
 	deploy = true
 }
@@ -36,14 +28,6 @@ resource "auth0_action" "myaction2" {
 	name = "Acceptance Test - Action2 - {{.random}}"
 	trigger {
 		id = "{{ .trigger_id }}"
-	}
-	secret {
-		name = "foo"
-		value = "fooval"
-	}
-	secret {
-		name = "bar"
-		value = "barval"
 	}
 	code = "exports.onExecutePostLogin = async (event, api) => {};"
 	deploy = true
@@ -56,13 +40,17 @@ resource "auth0_action_binding" "bind"{
 	}
 	action {
 		display_name = "action2"
-		name = "Acceptance Test - Action2 - {{.random}}"
+		name = "${auth0_action.myaction2.name}"
 	}
 }
 `, data),
 				Check: resource.ComposeAggregateTestCheckFunc(
-				// random.TestCheckResourceAttr(objectName, "name",
-				// 	"Acceptance Test - Action - {{.random}}", rand),
+					resource.TestCheckResourceAttr("auth0_action_binding.bind", "trigger_id", "post-login"),
+					resource.TestCheckResourceAttr("auth0_action_binding.bind", "action.#", "2"),
+					resource.TestCheckResourceAttr("auth0_action_binding.bind", "action.0.display_name", "action1"),
+					random.TestCheckResourceAttr("auth0_action_binding.bind", "action.0.name", "Acceptance Test - Action - {{.random}}", rand),
+					resource.TestCheckResourceAttr("auth0_action_binding.bind", "action.1.display_name", "action2"),
+					random.TestCheckResourceAttr("auth0_action_binding.bind", "action.1.name", "Acceptance Test - Action2 - {{.random}}", rand),
 				),
 			},
 		},
