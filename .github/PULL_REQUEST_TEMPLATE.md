@@ -28,3 +28,10 @@ $ make testacc TESTS=TestAccXXX
 * Please do not leave "+1" comments, they generate extra noise for pull request followers and do not help prioritize the request
 
 <!--- Thank you for keeping this note for the community --->
+
+### Checklist
+
+- [ ] All added fields have proper documentation properties set up
+- [ ] All tests are passing
+- [ ] Any new code is covered by test coverage
+- [ ] Example files (in /example folder) have been amended
