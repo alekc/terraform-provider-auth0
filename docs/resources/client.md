@@ -57,6 +57,7 @@ resource "auth0_client" "my_client" {
         email = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
         name  = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
       }
+      signing_cert                       = "pemcertificate"
       create_upn_claim                   = false
       passthrough_claims_with_no_mapping = false
       map_unknown_claims_as_is           = false
@@ -181,8 +182,9 @@ Optional:
 - **name_identifier_probes** (List of String) Attributes that can be used for Subject/NameID. Auth0 will try each of the attributes of this array in order and use the first value it finds
 - **passthrough_claims_with_no_mapping** (Boolean) Indicates whether or not to passthrough claims that are not mapped to the common profile in the output assertion
 - **recipient** (String) Recipient of the SAML Assertion (SubjectConfirmationData). Default is AssertionConsumerUrl on SAMLRequest or Callback URL if no SAMLRequest was sent
-- **sign_response** (Boolean)
+- **sign_response** (Boolean) Indicates whether or not the SAML Response should be signed instead of the SAML Assertion
 - **signature_algorithm** (String) Algorithm used to sign the SAML Assertion or response. Options include `rsa-sha1` (default) and `rsa-sha256`
+- **signing_cert** (String) Optionally indicates the public key certificate used to validate SAML requests. If set, SAML requests will be required to be signed. A sample value would be `-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----`
 - **typed_attributes** (Boolean)
 
 <a id="nestedblock--addons--samlp--logout"></a>
