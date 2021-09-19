@@ -6,11 +6,14 @@ Auth0 Terraform Provider
 [![Test Coverage](https://api.codeclimate.com/v1/badges/6a616125cb75e00d913a/test_coverage)](https://codeclimate.com/github/alekc/terraform-provider-auth0/test_coverage)
 [![Gitter](https://badges.gitter.im/terraform-provider-auth0/community.svg)](https://gitter.im/terraform-provider-auth0/community)
 
-History
+Project History
 -----
 This project was forked from `github/alexkappa/terraform-provider-auth0` due to apparent abandonment / slow release cycle. 
-The split happened on version `0.21.0`
+The split happened on version `0.21.0`, and there have been some breaking changes in the release `1.0.0` (please read release notes)
 
+Documentation
+-----
+See the [Auth0 Provider documentation](https://registry.terraform.io/providers/alekc/auth0/latest/docs) for all the available resources.
 
 Usage
 -----
@@ -24,7 +27,7 @@ terraform {
   required_providers {
     auth0 = {
       source  = "alekc/auth0"
-      version = "0.21.1"
+      version = "~>1.0"
     }
   }
 }
@@ -49,7 +52,6 @@ provider "auth0" {}
 $ terraform init
 ```
 
-See the [Auth0 Provider documentation](https://registry.terraform.io/providers/alekc/auth0/latest/docs) for all the available resources.
 
 Contributing
 ------------
