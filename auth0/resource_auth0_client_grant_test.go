@@ -12,7 +12,7 @@ func TestAccClientGrant(t *testing.T) {
 	rand := random.String(6)
 
 	// cannot be parallel due to eventually hitting limit on resources
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
