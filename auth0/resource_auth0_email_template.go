@@ -32,18 +32,19 @@ and sender identities of emails sent by Auth0. Used in conjunction with configur
 				Required: true,
 				Description: "Template name. Options include `verify_email`, `verify_email_by_code`, `reset_email`, " +
 					"`welcome_email`, `blocked_account`, `stolen_credentials`, `enrollment_email`, `mfa_oob_code`, " +
-					"`change_password` (legacy), and `password_reset` (legacy)",
+					"`change_password`, `user_invitation` (legacy), and `password_reset` (legacy)",
 				ValidateFunc: validation.StringInSlice([]string{
 					"verify_email",
 					"verify_email_by_code",
 					"reset_email",
 					"welcome_email",
+					"enrollment_email",
 					"blocked_account",
 					"stolen_credentials",
-					"enrollment_email",
+					"mfa_oob_code",
+					"user_invitation",
 					"change_password",
 					"password_reset",
-					"mfa_oob_code",
 				}, false),
 			},
 			"body": {

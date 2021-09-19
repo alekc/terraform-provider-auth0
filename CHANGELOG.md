@@ -1,8 +1,9 @@
-## 1.1.0
+## 1.1.0 (Unreleased)
 ENHANCEMENTS: 
 * Added `auth0_action` and `auth0_flow` resources
 * Added `JSONOBJECT` option to logstream
-* Added support for `allowed_clients` 
+* Added support for `allowed_clients`
+* Added support for `user_invitation` in `email_template`
 
 ## 1.0.0
 
