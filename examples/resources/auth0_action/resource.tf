@@ -4,19 +4,19 @@ resource "auth0_flow" "myaction" {
     id = "post-login"
   }
   dependency {
-    name = "lodash"
+    name    = "lodash"
     version = "1.0.0"
   }
   dependency {
-    name = "glob"
+    name    = "glob"
     version = "7.1.7"
   }
   secret {
-    name = "foo"
+    name  = "foo"
     value = "fooval"
   }
   secret {
-    name = "bar"
+    name  = "bar"
     value = "barval"
   }
 
