@@ -70,6 +70,8 @@ resource "auth0_client" "my_client" {
   allowed_origins = [ "https://example.com" ]
   allowed_clients = [ "https://allowed.example.com" ]
   grant_types = [ "authorization_code", "http://auth0.com/oauth/grant-type/password-realm", "implicit", "password", "refresh_token" ]
+  organization_usage = "deny"
+  organization_require_behavior = "no_prompt"
   allowed_logout_urls = [ "https://example.com" ]
   web_origins = [ "https://example.com" ]
   jwt_configuration {
@@ -170,6 +172,8 @@ resource "auth0_client" "my_client" {
 					resource.TestCheckResourceAttr("auth0_client.my_client", "addons.0.samlp.0.binding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "client_metadata.foo", "zoo"),
 					resource.TestCheckResourceAttr("auth0_client.my_client", "initiate_login_uri", "https://example.com/login"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "organization_usage", "deny"),
+					resource.TestCheckResourceAttr("auth0_client.my_client", "organization_require_behavior", "no_prompt"),
 				),
 			},
 		},

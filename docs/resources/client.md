@@ -116,6 +116,8 @@ resource "auth0_client" "my_client" {
 - **logo_uri** (String) URL of the logo for the client. Recommended size is 150px x 150px. If none is set, the default badge for the application type will be shown
 - **mobile** (Block List, Max: 1) Additional configuration for native mobile apps. (see [below for nested schema](#nestedblock--mobile))
 - **oidc_conformant** (Boolean) Indicates whether or not this client will conform to strict OIDC specifications
+- **organization_require_behavior** (String) Specifies what type of prompt to use when your application requires that users select their organization. Only applicable when ORG_USAGE is require. Options include: `no_prompt`, `pre_login_prompt`
+- **organization_usage** (String) Dictates whether your application can support users logging into an organization. Options include: `deny`, `allow`, `require`
 - **refresh_token** (Block List, Max: 1) Configuration settings for the refresh tokens issued for this client (see [below for nested schema](#nestedblock--refresh_token))
 - **sso** (Boolean) Applies only to SSO clients and determines whether Auth0 will handle Single Sign On (true) or whether the Identity Provider will (false)
 - **sso_disabled** (Boolean) Indicates whether or not SSO is disabled

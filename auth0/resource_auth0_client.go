@@ -115,6 +115,25 @@ your application to call another application's API (such as Firebase and AWS) on
 				Optional:    true,
 				Description: "Types of grants that this client is authorized to use",
 			},
+			"organization_usage": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Description: "Dictates whether your application can support users logging into an organization. " +
+					"Options include: `deny`, `allow`, `require`",
+				ValidateFunc: validation.StringInSlice([]string{
+					"deny", "allow", "require",
+				}, false),
+			},
+			"organization_require_behavior": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Description: "Specifies what type of prompt to use when your application requires that users select" +
+					" their organization. Only applicable when ORG_USAGE is require. Options include: `no_prompt`, " +
+					"`pre_login_prompt`",
+				ValidateFunc: validation.StringInSlice([]string{
+					"no_prompt", "pre_login_prompt",
+				}, false),
+			},
 			"allowed_origins": {
 				Type:     schema.TypeList,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -674,6 +693,8 @@ func readClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 	_ = d.Set("allowed_origins", c.AllowedOrigins)
 	_ = d.Set("allowed_clients", c.AllowedClients)
 	_ = d.Set("grant_types", c.GrantTypes)
+	_ = d.Set("organization_usage", c.OrganizationUsage)
+	_ = d.Set("organization_require_behavior", c.OrganizationRequireBehavior)
 	_ = d.Set("web_origins", c.WebOrigins)
 	_ = d.Set("sso", c.SSO)
 	_ = d.Set("sso_disabled", c.SSODisabled)
@@ -771,6 +792,8 @@ func expandClient(d *schema.ResourceData) *management.Client {
 		AllowedOrigins:                 Slice(d, "allowed_origins"),
 		AllowedClients:                 Slice(d, "allowed_clients"),
 		GrantTypes:                     Slice(d, "grant_types"),
+		OrganizationUsage:              String(d, "organization_usage"),
+		OrganizationRequireBehavior:    String(d, "organization_require_behavior"),
 		WebOrigins:                     Slice(d, "web_origins"),
 		SSO:                            Bool(d, "sso"),
 		SSODisabled:                    Bool(d, "sso_disabled"),
