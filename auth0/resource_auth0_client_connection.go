@@ -32,11 +32,11 @@ func contains(s []string, searchterm string) bool {
 
 func newClientConnection() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceAuth0ClientConnectionCreate,
-		ReadContext:   resourceAuth0ClientConnectionRead,
-		DeleteContext: resourceAuth0ClientConnectionDelete,
+		CreateContext: CreateClientConnection,
+		ReadContext:   ReadClientConnection,
+		DeleteContext: DeleteClientConnection,
 		Importer: &schema.ResourceImporter{
-			State: resourceAuth0ClientConnectionImport,
+			State: ImportClientConnection,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -54,7 +54,7 @@ func newClientConnection() *schema.Resource {
 	}
 }
 
-func resourceAuth0ClientConnectionCreate(
+func CreateClientConnection(
 	ctx context.Context,
 	d *schema.ResourceData,
 	m interface{},
@@ -71,10 +71,10 @@ func resourceAuth0ClientConnectionCreate(
 	}
 	d.SetId(resource.PrefixedUniqueId(fmt.Sprintf("%s-", connectionID)))
 
-	return resourceAuth0ClientConnectionRead(ctx, d, m)
+	return ReadClientConnection(ctx, d, m)
 }
 
-func resourceAuth0ClientConnectionRead(
+func ReadClientConnection(
 	ctx context.Context,
 	d *schema.ResourceData,
 	m interface{},
@@ -106,7 +106,7 @@ func resourceAuth0ClientConnectionRead(
 	return nil
 }
 
-func resourceAuth0ClientConnectionDelete(
+func DeleteClientConnection(
 	ctx context.Context,
 	d *schema.ResourceData,
 	m interface{},
@@ -137,10 +137,10 @@ func resourceAuth0ClientConnectionDelete(
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceAuth0ClientConnectionRead(ctx, d, m)
+	return ReadClientConnection(ctx, d, m)
 }
 
-func resourceAuth0ClientConnectionImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func ImportClientConnection(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	idParts := strings.SplitN(d.Id(), ":", 2)
 	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
 		return nil, fmt.Errorf("unexpected format of ID (%q), expected <connection_id>:<client_id>", d.Id())
