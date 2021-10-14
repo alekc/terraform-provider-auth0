@@ -1,3 +1,7 @@
+## 2.0.0 Unreleased
+ENHANCEMENTS:
+* Improved management of the configuration secrets in the `auth0_connection`
+
 ## 1.1.2
 FIXES:
 * logout property of samlp addon is not serialized properly. [#28](https://github.com/alekc/terraform-provider-auth0/issues/28)

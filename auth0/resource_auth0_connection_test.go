@@ -2,7 +2,6 @@ package auth0
 
 import (
 	"log"
-	"reflect"
 	"strings"
 	"testing"
 
@@ -47,7 +46,7 @@ func init() {
 	})
 }
 
-func TestAccConnection(t *testing.T) {
+func TestAccConnection_Auth0(t *testing.T) {
 
 	rand := random.String(6)
 
@@ -55,130 +54,256 @@ func TestAccConnection(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				// language=HCL
 				Config: random.Template(`
 			resource "auth0_connection" "my_connection" {
 				name = "Acceptance-Test-Connection-{{.random}}"
-				strategy = "auth0"
-				options {}
+				auth0 {}
 			}
-			`, rand),
+						`, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.my_connection", "name", "Acceptance-Test-Connection-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "strategy", "auth0"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.mfa.0.active", "true"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.mfa.0.return_enroll_settings", "true"),
-					// resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.passwordPolicy",
-					// "good"), //todo: add to schema
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.brute_force_protection", "true"),
-					// todo: add is_domain_connection
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.mfa_active", "true"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.mfa_return_enroll_settings",
+						"true"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.brute_force_protection",
+						"true"),
 				),
 			},
 			{
+				// language=HCL
 				Config: random.Template(`
-			resource "auth0_connection" "my_connection" {
-				name = "Acceptance-Test-Connection-{{.random}}"
-				is_domain_connection = true
-				strategy = "auth0"
-				options {
-					password_policy = "fair"
-					password_history {
-						enable = true
-						size = 5
-					}
-					password_no_personal_info {
-						enable = true
-					}
-					password_dictionary {
-						enable = true
-						dictionary = [ "password", "admin", "1234" ]
-					}
-					password_complexity_options {
-						min_length = 6
-					}
-					validation {
-						username {
-							min = 10
-							max = 40
-						}
-					}
-					enabled_database_customization = false
-					brute_force_protection = true
-					import_mode = false
-					requires_username = true
-					disable_signup = false
-					custom_scripts = {
-						get_user = "myFunction"
-					}
-					configuration = {
-						foo = "bar"
-					}
-					mfa {
-						active                 = true
-						return_enroll_settings = true
-					}
-				}
-			}
+resource "auth0_connection" "my_connection" {
+  name                 = "Acceptance-Test-Connection-{{.random}}"
+  display_name         = "Display-{{.random}}"
+  is_domain_connection = false
+  realms               = ["foo", "bar"]
+  auth0 {
+    validation {
+      username {
+        min = 1
+        max = 10
+      }
+    }
+    password_policy      = "excellent"
+    non_persistent_attrs = ["foo", "bar"]
+    password_history {
+      enable = true
+      size   = 3
+    }
+    password_no_personal_info {
+      enable = true
+    }
+    password_dictionary {
+      enable     = true
+      dictionary = ["password"]
+    }
+    password_complexity_options {
+      min_length = 5
+    }
+    mfa_active                     = false
+    mfa_return_enroll_settings     = false
+    enabled_database_customization = true
+    brute_force_protection         = false
+    import_mode                    = true
+    disable_signup                 = true
+    requires_username              = true
+    custom_scripts = {
+      get_user = "myFunction"
+    }
+    configuration = {
+      "foo" = "secretbar"
+    }
+  }
+}
 			`, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.my_connection", "name", "Acceptance-Test-Connection-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "is_domain_connection", "true"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "strategy", "auth0"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.password_policy", "fair"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.password_no_personal_info.0.enable", "true"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.password_dictionary.0.enable", "true"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.password_complexity_options.0.min_length", "6"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.enabled_database_customization", "false"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.brute_force_protection", "true"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.import_mode", "false"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.disable_signup", "false"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.requires_username", "true"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.validation.0.username.0.min", "10"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.validation.0.username.0.max", "40"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.custom_scripts.get_user", "myFunction"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.mfa.0.active", "true"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.mfa.0.return_enroll_settings", "true"),
-					resource.TestCheckResourceAttrSet("auth0_connection.my_connection", "options.0.configuration.foo"),
+					random.TestCheckResourceAttr("auth0_connection.my_connection", "display_name",
+						"Display-{{.random}}", rand),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "is_domain_connection", "false"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "realms.#", "2"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "realms.0", "foo"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "realms.1", "bar"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.validation.0.username.0.min", "1"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.validation.0.username.0.max", "10"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.password_policy", "excellent"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.non_persistent_attrs.0", "bar"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.non_persistent_attrs.1", "foo"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.password_history.0.enable", "true"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.password_history.0.size", "3"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.password_no_personal_info.0.enable", "true"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.password_dictionary.0.enable", "true"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.password_dictionary.0.dictionary.0", "password"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.password_complexity_options.0.min_length", "5"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.mfa_active", "false"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.mfa_return_enroll_settings", "false"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.enabled_database_customization", "true"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.brute_force_protection", "false"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.import_mode", "true"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.disable_signup", "true"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.requires_username", "true"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.custom_scripts.get_user",
+						"myFunction"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.configuration.foo",
+						"secretbar"),
+
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.mfa_active", "false"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.mfa_active", "false"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"auth0.0.mfa_return_enroll_settings",
+						"false"),
 				),
 			},
-			{
-				Config: random.Template(`
-			
-			resource "auth0_connection" "my_connection" {
-				name = "Acceptance-Test-Connection-{{.random}}"
-				is_domain_connection = true
-				strategy = "auth0"
-				options {
-					password_policy = "fair"
-					password_history {
-						enable = true
-						size = 5
-					}
-					password_no_personal_info {
-						enable = true
-					}
-					enabled_database_customization = false
-					brute_force_protection = false
-					import_mode = false
-					disable_signup = false
-					requires_username = true
-					custom_scripts = {
-						get_user = "myFunction"
-					}
-					configuration = {
-						foo = "bar"
-					}
-					mfa {
-						active                 = true
-						return_enroll_settings = false
-					}
-				}
-			}
-			`, rand),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.brute_force_protection", "false"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.mfa.0.return_enroll_settings", "false"),
-				),
-			},
+			// 			{
+			// 				// todo: due to a bug in aws sdk it's not possible for now to unset vars.
+			// 				// once the support is introduced by removing omitempty, verify the behaviour
+			// 				// language=HCL
+			// 				Config: random.Template(`
+			// resource "auth0_connection" "my_connection" {
+			// 	name = "Acceptance-Test-Connection-{{.random}}"
+			// 	auth0 {}
+			// }
+			// 			`, rand),
+			// 				Check: resource.ComposeAggregateTestCheckFunc(
+			// 					random.TestCheckResourceAttr("auth0_connection.my_connection", "name", "Acceptance-Test-Connection-{{.random}}", rand),
+			// 					random.TestCheckResourceAttr("auth0_connection.my_connection", "display_name",
+			// 						"Display-{{.random}}", rand),
+			// 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "is_domain_connection", "true"),
+			// 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "realms.#", "2"),
+			// 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "realms.0", "foo"),
+			// 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "realms.1", "bar"),
+			// 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.mfa_active", "true"),
+			// 					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+			// 						"auth0.0.mfa_return_enroll_settings",
+			// 						"true"),
+			// 					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.brute_force_protection",
+			// 						"true"),
+			// 					// todo: add is_domain_connection
+			// 				),
+			// 			},
+			// ,
+			// {
+			// 	Config: random.Template(`
+			// resource "auth0_connection" "my_connection" {
+			// 	name = "Acceptance-Test-Connection-{{.random}}"
+			// 	is_domain_connection = true
+			// 	strategy = "auth0"
+			// 	options {
+			// 		password_policy = "fair"
+			// 		password_history {
+			// 			enable = true
+			// 			size = 5
+			// 		}
+			// 		password_no_personal_info {
+			// 			enable = true
+			// 		}
+			// 		password_dictionary {
+			// 			enable = true
+			// 			dictionary = [ "password", "admin", "1234" ]
+			// 		}
+			// 		password_complexity_options {
+			// 			min_length = 6
+			// 		}
+			// 		validation {
+			// 			username {
+			// 				min = 10
+			// 				max = 40
+			// 			}
+			// 		}
+			// 		enabled_database_customization = false
+			// 		brute_force_protection = true
+			// 		import_mode = false
+			// 		requires_username = true
+			// 		disable_signup = false
+			// 		custom_scripts = {
+			// 			get_user = "myFunction"
+			// 		}
+			// 		configuration = {
+			// 			foo = "bar"
+			// 		}
+			// 		mfa {
+			// 			active                 = true
+			// 			return_enroll_settings = true
+			// 		}
+			// 	}
+			// }
+			// `, rand),
+			// 	Check: resource.ComposeAggregateTestCheckFunc(
+			// 		random.TestCheckResourceAttr("auth0_connection.my_connection", "name", "Acceptance-Test-Connection-{{.random}}", rand),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "is_domain_connection", "true"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "strategy", "auth0"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.password_policy", "fair"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.password_no_personal_info.0.enable", "true"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.password_dictionary.0.enable", "true"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.password_complexity_options.0.min_length", "6"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.enabled_database_customization", "false"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.brute_force_protection", "true"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.import_mode", "false"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.disable_signup", "false"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.requires_username", "true"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.validation.0.username.0.min", "10"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.validation.0.username.0.max", "40"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.custom_scripts.get_user", "myFunction"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.mfa.0.active", "true"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.mfa.0.return_enroll_settings", "true"),
+			// 		resource.TestCheckResourceAttrSet("auth0_connection.my_connection", "options.0.configuration.foo"),
+			// 	),
+			// },
+			// {
+			// 	Config: random.Template(`
+			//
+			// resource "auth0_connection" "my_connection" {
+			// 	name = "Acceptance-Test-Connection-{{.random}}"
+			// 	is_domain_connection = true
+			// 	strategy = "auth0"
+			// 	options {
+			// 		password_policy = "fair"
+			// 		password_history {
+			// 			enable = true
+			// 			size = 5
+			// 		}
+			// 		password_no_personal_info {
+			// 			enable = true
+			// 		}
+			// 		enabled_database_customization = false
+			// 		brute_force_protection = false
+			// 		import_mode = false
+			// 		disable_signup = false
+			// 		requires_username = true
+			// 		custom_scripts = {
+			// 			get_user = "myFunction"
+			// 		}
+			// 		configuration = {
+			// 			foo = "bar"
+			// 		}
+			// 		mfa {
+			// 			active                 = true
+			// 			return_enroll_settings = false
+			// 		}
+			// 	}
+			// }
+			// `, rand),
+			// 	Check: resource.ComposeAggregateTestCheckFunc(
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.brute_force_protection", "false"),
+			// 		resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.mfa.0.return_enroll_settings", "false"),
+			// 	),
+			// },
 		},
 	})
 }
@@ -282,7 +407,6 @@ func TestAccConnectionAzureAD(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: random.Template(`
-
 resource "auth0_connection" "azure_ad" {
 	name     = "Acceptance-Test-Azure-AD-{{.random}}"
 	strategy = "waad"
@@ -1129,126 +1253,6 @@ resource "auth0_connection" "my_connection" {
 			},
 		},
 	})
-}
-
-func TestConnectionInstanceStateUpgradeV0(t *testing.T) {
-
-	for _, tt := range []struct {
-		name            string
-		version         interface{}
-		versionExpected int
-	}{
-		{
-			name:            "Empty",
-			version:         "",
-			versionExpected: 0,
-		},
-		{
-			name:            "Zero",
-			version:         "0",
-			versionExpected: 0,
-		},
-		{
-			name:            "NonZero",
-			version:         "123",
-			versionExpected: 123,
-		},
-		{
-			name:            "Invalid",
-			version:         "foo",
-			versionExpected: 0,
-		},
-	} {
-		t.Run(tt.name, func(t *testing.T) {
-
-			state := map[string]interface{}{
-				"options": []interface{}{
-					map[string]interface{}{"strategy_version": tt.version},
-				},
-			}
-
-			actual, err := connectionSchemaUpgradeV0(nil, state, nil)
-			if err != nil {
-				t.Fatalf("error migrating state: %s", err)
-			}
-
-			expected := map[string]interface{}{
-				"options": []interface{}{
-					map[string]interface{}{"strategy_version": tt.versionExpected},
-				},
-			}
-
-			if !reflect.DeepEqual(expected, actual) {
-				t.Fatalf("\n\nexpected:\n\n%#v\n\ngot:\n\n%#v\n\n", expected, actual)
-			}
-		})
-	}
-}
-
-func TestConnectionInstanceStateUpgradeV1(t *testing.T) {
-
-	for _, tt := range []struct {
-		name               string
-		validation         map[string]string
-		validationExpected []map[string][]interface{}
-	}{
-		{
-			name: "Only Min",
-			validation: map[string]string{
-				"min": "5",
-			},
-			validationExpected: []map[string][]interface{}{
-				{
-					"username": []interface{}{
-						map[string]string{
-							"min": "5",
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "Min and Max",
-			validation: map[string]string{
-				"min": "5",
-				"max": "10",
-			},
-			validationExpected: []map[string][]interface{}{
-				{
-					"username": []interface{}{
-						map[string]string{
-							"min": "5",
-							"max": "10",
-						},
-					},
-				},
-			},
-		},
-	} {
-		t.Run(tt.name, func(t *testing.T) {
-
-			state := map[string]interface{}{
-				"options": []interface{}{
-					map[string]interface{}{"validation": tt.validation},
-				},
-			}
-
-			actual, err := connectionSchemaUpgradeV1(nil, state, nil)
-			if err != nil {
-				t.Fatalf("error migrating state: %s", err)
-			}
-
-			expected := map[string]interface{}{
-				"options": []interface{}{
-					map[string]interface{}{"validation": tt.validationExpected},
-				},
-			}
-
-			if !reflect.DeepEqual(expected, actual) {
-				t.Fatalf("\n\nexpected:\n\n%#v\n\ngot:\n\n%#v\n\n", expected, actual)
-			}
-		})
-	}
 }
 
 func TestAccConnection_SAML(t *testing.T) {

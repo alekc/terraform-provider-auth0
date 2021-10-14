@@ -76,6 +76,29 @@ your application to call another application's API (such as Firebase and AWS) on
 				Description: "URL of the logo for the client. Recommended size is 150px x 150px. If none is set, " +
 					"the default badge for the application type will be shown",
 			},
+			"api_connection": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Represent connection between Api and the Application",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"audience": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+						},
+						"scope": {
+							Type:     schema.TypeList,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+							Required: true,
+						},
+					},
+				},
+			},
 			"is_first_party": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -709,7 +732,7 @@ func readClient(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 	_ = d.Set("encryption_key", c.EncryptionKey)
 	_ = d.Set("addons", flattenAddons(c.Addons))
 	_ = d.Set("client_metadata", c.ClientMetadata)
-	_ = d.Set("mobile", flattenMap(c.Mobile))
+	_ = d.Set("mobile", flattenMap(c.Mobile, true))
 	_ = d.Set("initiate_login_uri", c.InitiateLoginURI)
 
 	return nil

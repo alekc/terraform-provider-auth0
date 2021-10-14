@@ -337,7 +337,7 @@ func (s *set) List() []interface{} {
 }
 
 // Diff accesses the value held by key and type asserts it to a set. It then
-// compares it's changes if any and returns what needs to be added and what
+// compares its changes if any and returns what needs to be added and what
 // needs to be removed.
 func Diff(d ResourceData, key string) (add []interface{}, rm []interface{}) {
 	if d.IsNewResource() {

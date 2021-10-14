@@ -231,17 +231,17 @@ func readEmail(ctx context.Context, d *schema.ResourceData, m interface{}) diag.
 	case "mandrill":
 		_ = d.Set("mandrill", flattenMap(map[string]interface{}{
 			"api_key": d.Get("mandrill.0.api_key"),
-		}))
+		}, true))
 	case "sendgrid":
 		_ = d.Set("sendgrid", flattenMap(map[string]interface{}{
 			"api_key": d.Get("sendgrid.0.api_key"),
-		}))
+		}, true))
 	case "ses":
 		_ = d.Set("ses", flattenMap(map[string]interface{}{
 			"access_key_id":     d.Get("ses.0.access_key_id"),
 			"secret_access_key": d.Get("ses.0.secret_access_key"),
 			"region":            e.Credentials.Region,
-		}))
+		}, true))
 	case "sparkpost":
 		dataMap := map[string]interface{}{
 			"api_key": d.Get("sparkpost.0.api_key"),
@@ -249,7 +249,7 @@ func readEmail(ctx context.Context, d *schema.ResourceData, m interface{}) diag.
 		if e.Credentials.Region != nil {
 			dataMap["region"] = e.Credentials.Region
 		}
-		_ = d.Set("sparkpost", flattenMap(dataMap))
+		_ = d.Set("sparkpost", flattenMap(dataMap, true))
 	case "mailgun":
 		dataMap := map[string]interface{}{
 			"api_key": d.Get("mailgun.0.api_key"),
@@ -258,7 +258,7 @@ func readEmail(ctx context.Context, d *schema.ResourceData, m interface{}) diag.
 		if e.Credentials.Region != nil {
 			dataMap["region"] = e.Credentials.Region
 		}
-		_ = d.Set("mailgun", flattenMap(dataMap))
+		_ = d.Set("mailgun", flattenMap(dataMap, true))
 	case "smtp":
 		dataMap := map[string]interface{}{
 			"pass": d.Get("smtp.0.pass"),
@@ -266,7 +266,7 @@ func readEmail(ctx context.Context, d *schema.ResourceData, m interface{}) diag.
 			"port": e.Credentials.GetSMTPPort(),
 			"user": e.Credentials.GetSMTPUser(),
 		}
-		_ = d.Set("smtp", flattenMap(dataMap))
+		_ = d.Set("smtp", flattenMap(dataMap, true))
 	}
 
 	return nil
