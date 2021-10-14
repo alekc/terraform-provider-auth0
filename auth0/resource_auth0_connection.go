@@ -908,9 +908,9 @@ func readConnection(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	case *management.ConnectionOptions:
 		_ = d.Set(management.ConnectionStrategyAuth0, flattenMap(flattenConnectionOptionsAuth0(d, o), false))
 	case *management.ConnectionOptionsGoogleOAuth2:
-		_ = d.Set("google_oauth2", flattenMap(flattenConnectionOptionsGoogleOAuth2(o), true))
+		_ = d.Set("google_oauth2", flattenMap(flattenConnectionOptionsGoogleOAuth2(o), false))
 	case *management.ConnectionOptionsOAuth2:
-		_ = d.Set(management.ConnectionStrategyOAuth2, flattenMap(flattenConnectionOptionsOAuth2(o), true))
+		_ = d.Set(management.ConnectionStrategyOAuth2, flattenMap(flattenConnectionOptionsOAuth2(o), false))
 	case *management.ConnectionOptionsFacebook:
 		_ = d.Set(management.ConnectionStrategyFacebook, flattenMap(flattenConnectionOptionsFacebook(o), true))
 	case *management.ConnectionOptionsApple:

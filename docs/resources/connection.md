@@ -19,38 +19,46 @@ your clients and users.
 ## Example Usage
 
 ```terraform
-provider "auth0" {
-  version = ">= 0.16.1"
-}
-
 resource "auth0_connection" "my_connection" {
-  name     = "Example-Connection"
-  strategy = "auth0"
-  options {
-    password_policy = "excellent"
+  name                 = "auth0-connection"
+  display_name         = "Custom name"
+  is_domain_connection = false
+  realms               = ["foo", "bar"]
+  auth0 {
+    validation {
+      username {
+        min = 1
+        max = 10
+      }
+    }
+    password_policy      = "excellent"
+    non_persistent_attrs = ["foo", "bar"]
     password_history {
       enable = true
       size   = 3
     }
-    validation {
-      username {
-        min = 5
-        max = 20
-      }
+    password_no_personal_info {
+      enable = true
     }
-    brute_force_protection         = true
+    password_dictionary {
+      enable     = true
+      dictionary = ["password"]
+    }
+    password_complexity_options {
+      min_length = 5
+    }
+    mfa_active                     = false
+    mfa_return_enroll_settings     = false
     enabled_database_customization = true
+    brute_force_protection         = false
+    import_mode                    = true
+    disable_signup                 = true
+    requires_username              = true
     custom_scripts = {
-      get_user = <<EOF
-function getByEmail (email, callback) {
-  return callback(new Error("Whoops!"))
-}
-EOF
+      get_user = "myFunction"
     }
-
     configuration = {
-      foo = "bar"
-      bar = "baz"
+      "foo" = "secretbar"
     }
   }
 }
@@ -62,100 +70,289 @@ EOF
 ### Required
 
 - **name** (String) Name of the connection
-- **options** (Block List, Min: 1, Max: 1) Configuration settings for connection options (see [below for nested schema](#nestedblock--options))
-- **strategy** (String) Type of the connection, which indicates the identity provider. Options include `ad`, `adfs`, `amazon`, `apple`, `dropbox`, `bitbucket`, `aol`,`auth0-adldap`, `auth0-oidc`, `auth0`, `baidu`, `bitly`,`box`, `custom`, `daccount`, `dwolla`, `email`,`evernote-sandbox`, `evernote`, `exact`, `facebook`,`fitbit`, `flickr`, `github`, `google-apps`,`google-oauth2`, `guardian`, `instagram`, `ip`, `linkedin`,`miicard`, `oauth1`, `oauth2`, `office365`, `oidc`, `paypal`,`paypal-sandbox`, `pingfederate`, `planningcenter`,`renren`, `salesforce-community`, `salesforce-sandbox`,`salesforce`, `samlp`, `sharepoint`, `shopify`, `sms`,`soundcloud`, `thecity-sandbox`, `thecity`,`thirtysevensignals`, `twitter`, `untappd`, `vkontakte`,`waad`, `weibo`, `windowslive`, `wordpress`, `yahoo`,`yammer`, `yandex`, `line`
 
 ### Optional
 
+- **ad** (Block List, Max: 1) Active Directory connection (see [below for nested schema](#nestedblock--ad))
+- **apple** (Block List, Max: 1) Apple connection (see [below for nested schema](#nestedblock--apple))
+- **auth0** (Block List, Max: 1) Auth0 hosted database connection (see [below for nested schema](#nestedblock--auth0))
 - **display_name** (String) Name used in login screen
+- **email** (Block List, Max: 1) Passwordless Email connection (see [below for nested schema](#nestedblock--email))
 - **enabled_clients** (Set of String) IDs of the clients for which the connection is enabled
+- **facebook** (Block List, Max: 1) Facebook connection (see [below for nested schema](#nestedblock--facebook))
+- **github** (Block List, Max: 1) Github connection (see [below for nested schema](#nestedblock--github))
+- **google_oauth2** (Block List, Max: 1) Google/Gmail social connection (see [below for nested schema](#nestedblock--google_oauth2))
 - **id** (String) The ID of this resource.
 - **is_domain_connection** (Boolean) Indicates whether or not the connection is domain level
+- **linkedin** (Block List, Max: 1) Linkedin connection (see [below for nested schema](#nestedblock--linkedin))
+- **oauth2** (Block List, Max: 1) Oauth2 connection (see [below for nested schema](#nestedblock--oauth2))
+- **oidc** (Block List, Max: 1) OIDC connection (see [below for nested schema](#nestedblock--oidc))
 - **realms** (List of String) Defines the realms for which the connection will be used (i.e., email domains). If not specified, the connection name is added as the realm
-- **strategy_version** (String)
-- **validation** (Map of String)
+- **salesforce** (Block List, Max: 1) Salesforce connection (see [below for nested schema](#nestedblock--salesforce))
+- **samlp** (Block List, Max: 1) Windows Live connection (see [below for nested schema](#nestedblock--samlp))
+- **sms** (Block List, Max: 1) Twillo SMS connection (see [below for nested schema](#nestedblock--sms))
+- **waad** (Block List, Max: 1) Microsoft Azure enterprise connection (see [below for nested schema](#nestedblock--waad))
+- **windowslive** (Block List, Max: 1) Windows Live connection (see [below for nested schema](#nestedblock--windowslive))
 
-<a id="nestedblock--options"></a>
-### Nested Schema for `options`
+<a id="nestedblock--ad"></a>
+### Nested Schema for `ad`
 
 Optional:
 
-- **adfs_server** (String)
-- **allowed_audiences** (Set of String)
-- **api_enable_users** (Boolean)
-- **app_domain** (String, Deprecated)
-- **app_id** (String)
-- **authorization_endpoint** (String)
 - **brute_force_protection** (Boolean) Indicates whether or not to enable brute force protection, which will limit the number of signups and failed logins from a suspicious IP address
+- **disable_cache** (Boolean)
+- **domain_aliases** (Set of String)
+- **icon_url** (String)
+- **ips** (Set of String) When users log in through these IP addresses, use Windows Integrated Auth (Kerberos). Otherwise not, ask for Active Directory/LDAP username and password.
+- **non_persistent_attrs** (Set of String) If there are user fields that should not be stored in Auth0 databases due to privacy reasons, you can add them to the DenyList here
+- **set_user_root_attributes** (String) Determines whether the 'name', 'given_name', 'family_name', 'nickname', and 'picture' attributes can be independently updated when using an external IdP. Possible values are 'on_each_login' (default value, it configures the connection to automatically update the root attributes from the external IdP with each user login. When this setting is used, root attributes cannot be independently updated), 'on_first_login' (configures the connection to only set the root attributes on first login, allowing them to be independently updated thereafter)
+- **tenant_domain** (String)
+- **use_cert_auth** (Boolean)
+- **use_kerberos** (Boolean)
+
+
+<a id="nestedblock--apple"></a>
+### Nested Schema for `apple`
+
+Optional:
+
 - **client_id** (String) Client ID
 - **client_secret** (String, Sensitive) App secret
-- **community_base_url** (String)
-- **configuration** (Map of String, Sensitive) A case-sensitive map of key value pairs used as configuration variables for the `custom_script`
-- **custom_scripts** (Map of String) Custom database action scripts. For more information, read [Custom Database Action Script Templates](https://auth0.com/docs/connections/database/custom-db/templates)
-- **debug** (Boolean) When enabled, additional debug information will be generated.
-- **digest_algorithm** (String) Sign Request Algorithm Digest
-- **disable_cache** (Boolean)
-- **disable_signup** (Boolean) Indicates whether or not to allow user sign-ups to your application
-- **discovery_url** (String)
-- **domain** (String)
-- **domain_aliases** (Set of String)
-- **enabled_database_customization** (Boolean)
-- **fields_map** (Map of String) If you're configuring a SAML enterprise connection for a non-standard PingFederate Server, you must update the attribute mappings.
-- **from** (String)
-- **icon_url** (String)
-- **identity_api** (String)
-- **idp_initiated** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--idp_initiated))
-- **import_mode** (Boolean) Indicates whether or not you have a legacy user store and want to gradually migrate those users to the Auth0 user store
-- **ips** (Set of String)
-- **issuer** (String)
-- **jwks_uri** (String)
 - **key_id** (String) Apple Key ID
-- **max_groups_to_retrieve** (String)
-- **messaging_service_sid** (String)
-- **metadata_url** (String) Url of the document for saml connection expressed in xml
-- **metadata_xml** (String) XML content of the document for saml
-- **mfa** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--mfa))
+- **non_persistent_attrs** (Set of String) If there are user fields that should not be stored in Auth0 databases due to privacy reasons, you can add them to the DenyList here
+- **scopes** (Set of String)
+- **set_user_root_attributes** (String) Determines whether the 'name', 'given_name', 'family_name', 'nickname', and 'picture' attributes can be independently updated when using an external IdP. Possible values are 'on_each_login' (default value, it configures the connection to automatically update the root attributes from the external IdP with each user login. When this setting is used, root attributes cannot be independently updated), 'on_first_login' (configures the connection to only set the root attributes on first login, allowing them to be independently updated thereafter)
+- **team_id** (String) Apple Team ID
+
+
+<a id="nestedblock--auth0"></a>
+### Nested Schema for `auth0`
+
+Optional:
+
+- **brute_force_protection** (Boolean) Indicates whether or not to enable brute force protection, which will limit the number of signups and failed logins from a suspicious IP address
+- **configuration** (Map of String) A case-sensitive map of key value pairs used as configuration variables for the `custom_script`. NOTE: this field will not detect any drifting originating from auth0
+- **custom_scripts** (Map of String) Custom database action scripts. For more information, read [Custom Database Action Script Templates](https://auth0.com/docs/connections/database/custom-db/templates)
+- **disable_signup** (Boolean) Indicates whether or not to allow user sign-ups to your application
+- **enabled_database_customization** (Boolean)
+- **import_mode** (Boolean) Indicates whether or not you have a legacy user store and want to gradually migrate those users to the Auth0 user store
+- **mfa_active** (Boolean)
+- **mfa_return_enroll_settings** (Boolean)
+- **non_persistent_attrs** (Set of String) If there are user fields that should not be stored in Auth0 databases due to privacy reasons, you can add them to the DenyList here
+- **password_complexity_options** (Block List, Max: 1) Configuration settings for password complexity (see [below for nested schema](#nestedblock--auth0--password_complexity_options))
+- **password_dictionary** (Block List, Max: 1) Configuration settings for the password dictionary check, which does not allow passwords that are part of the password dictionary (see [below for nested schema](#nestedblock--auth0--password_dictionary))
+- **password_history** (Block List) Configuration settings for the password history that is maintained for each user to prevent the reuse of passwords (see [below for nested schema](#nestedblock--auth0--password_history))
+- **password_no_personal_info** (Block List, Max: 1) Configuration settings for the password personal info check, which does not allow passwords that contain any part of the user's personal data, including user's name, username, nickname, user_metadata.name, user_metadata.first, user_metadata.last, user's email, or firstpart of the user's email (see [below for nested schema](#nestedblock--auth0--password_no_personal_info))
+- **password_policy** (String) Indicates level of password strength to enforce during authentication. A strong password policy will make it difficult, if not improbable, for someone to guess a password through either manual or automated means. Options include `none`, `low`, `fair`, `good`, `excellent`
+- **requires_username** (Boolean) Indicates whether or not the user is required to provide a username in addition to an email address
+- **validation** (Block List, Max: 1) Validation of the minimum and maximum values allowed for a user to have as username (see [below for nested schema](#nestedblock--auth0--validation))
+
+<a id="nestedblock--auth0--password_complexity_options"></a>
+### Nested Schema for `auth0.password_complexity_options`
+
+Optional:
+
+- **min_length** (Number)
+
+
+<a id="nestedblock--auth0--password_dictionary"></a>
+### Nested Schema for `auth0.password_dictionary`
+
+Optional:
+
+- **dictionary** (Set of String)
+- **enable** (Boolean)
+
+
+<a id="nestedblock--auth0--password_history"></a>
+### Nested Schema for `auth0.password_history`
+
+Optional:
+
+- **enable** (Boolean)
+- **size** (Number)
+
+
+<a id="nestedblock--auth0--password_no_personal_info"></a>
+### Nested Schema for `auth0.password_no_personal_info`
+
+Optional:
+
+- **enable** (Boolean)
+
+
+<a id="nestedblock--auth0--validation"></a>
+### Nested Schema for `auth0.validation`
+
+Optional:
+
+- **username** (Block List, Max: 1) Specifies the min and max values of username length (see [below for nested schema](#nestedblock--auth0--validation--username))
+
+<a id="nestedblock--auth0--validation--username"></a>
+### Nested Schema for `auth0.validation.username`
+
+Optional:
+
+- **max** (Number)
+- **min** (Number)
+
+
+
+
+<a id="nestedblock--email"></a>
+### Nested Schema for `email`
+
+Optional:
+
+- **brute_force_protection** (Boolean) Indicates whether or not to enable brute force protection, which will limit the number of signups and failed logins from a suspicious IP address
+- **disable_signup** (Boolean) Indicates whether or not to allow user sign-ups to your application
+- **from** (String)
 - **name** (String)
 - **non_persistent_attrs** (Set of String) If there are user fields that should not be stored in Auth0 databases due to privacy reasons, you can add them to the DenyList here
-- **password_complexity_options** (Block List, Max: 1) Configuration settings for password complexity (see [below for nested schema](#nestedblock--options--password_complexity_options))
-- **password_dictionary** (Block List, Max: 1) Configuration settings for the password dictionary check, which does not allow passwords that are part of the password dictionary (see [below for nested schema](#nestedblock--options--password_dictionary))
-- **password_history** (Block List) Configuration settings for the password history that is maintained for each user to prevent the reuse of passwords (see [below for nested schema](#nestedblock--options--password_history))
-- **password_no_personal_info** (Block List, Max: 1) Configuration settings for the password personal info check, which does not allow passwords that contain any part of the user's personal data, including user's name, username, nickname, user_metadata.name, user_metadata.first, user_metadata.last, user's email, or firstpart of the user's email (see [below for nested schema](#nestedblock--options--password_no_personal_info))
-- **password_policy** (String) Indicates level of password strength to enforce during authentication. A strong password policy will make it difficult, if not improbable, for someone to guess a password through either manual or automated means. Options include `none`, `low`, `fair`, `good`, `excellent`
-- **protocol_binding** (String) The SAML Response Binding: how the SAML token is received by Auth0 from IdP
-- **request_template** (String) Template that formats the SAML request.
-- **requires_username** (Boolean) Indicates whether or not the user is required to provide a username in addition to an email address
+- **set_user_root_attributes** (String) Determines whether the 'name', 'given_name', 'family_name', 'nickname', and 'picture' attributes can be independently updated when using an external IdP. Possible values are 'on_each_login' (default value, it configures the connection to automatically update the root attributes from the external IdP with each user login. When this setting is used, root attributes cannot be independently updated), 'on_first_login' (configures the connection to only set the root attributes on first login, allowing them to be independently updated thereafter)
+- **subject** (String)
+- **syntax** (String)
+- **template** (String)
+- **totp** (Block List, Max: 1) (see [below for nested schema](#nestedblock--email--totp))
+
+<a id="nestedblock--email--totp"></a>
+### Nested Schema for `email.totp`
+
+Optional:
+
+- **length** (Number)
+- **time_step** (Number)
+
+
+
+<a id="nestedblock--facebook"></a>
+### Nested Schema for `facebook`
+
+Optional:
+
+- **client_id** (String) Client ID
+- **client_secret** (String, Sensitive) App secret
+- **non_persistent_attrs** (Set of String) If there are user fields that should not be stored in Auth0 databases due to privacy reasons, you can add them to the DenyList here
+- **scopes** (Set of String)
+- **set_user_root_attributes** (String) Determines whether the 'name', 'given_name', 'family_name', 'nickname', and 'picture' attributes can be independently updated when using an external IdP. Possible values are 'on_each_login' (default value, it configures the connection to automatically update the root attributes from the external IdP with each user login. When this setting is used, root attributes cannot be independently updated), 'on_first_login' (configures the connection to only set the root attributes on first login, allowing them to be independently updated thereafter)
+
+
+<a id="nestedblock--github"></a>
+### Nested Schema for `github`
+
+Optional:
+
+- **client_id** (String) Client ID
+- **client_secret** (String, Sensitive) App secret
+- **non_persistent_attrs** (Set of String) If there are user fields that should not be stored in Auth0 databases due to privacy reasons, you can add them to the DenyList here
+- **scopes** (Set of String)
+- **set_user_root_attributes** (String) Determines whether the 'name', 'given_name', 'family_name', 'nickname', and 'picture' attributes can be independently updated when using an external IdP. Possible values are 'on_each_login' (default value, it configures the connection to automatically update the root attributes from the external IdP with each user login. When this setting is used, root attributes cannot be independently updated), 'on_first_login' (configures the connection to only set the root attributes on first login, allowing them to be independently updated thereafter)
+
+
+<a id="nestedblock--google_oauth2"></a>
+### Nested Schema for `google_oauth2`
+
+Optional:
+
+- **allowed_audiences** (Set of String) Allowed audience
+- **client_id** (String) Client ID
+- **client_secret** (String, Sensitive) App secret
+- **non_persistent_attrs** (Set of String) If there are user fields that should not be stored in Auth0 databases due to privacy reasons, you can add them to the DenyList here
+- **scopes** (Set of String)
+- **set_user_root_attributes** (String) Determines whether the 'name', 'given_name', 'family_name', 'nickname', and 'picture' attributes can be independently updated when using an external IdP. Possible values are 'on_each_login' (default value, it configures the connection to automatically update the root attributes from the external IdP with each user login. When this setting is used, root attributes cannot be independently updated), 'on_first_login' (configures the connection to only set the root attributes on first login, allowing them to be independently updated thereafter)
+
+
+<a id="nestedblock--linkedin"></a>
+### Nested Schema for `linkedin`
+
+Optional:
+
+- **client_id** (String) Client ID
+- **client_secret** (String, Sensitive) App secret
+- **non_persistent_attrs** (Set of String) If there are user fields that should not be stored in Auth0 databases due to privacy reasons, you can add them to the DenyList here
+- **scopes** (Set of String)
+- **set_user_root_attributes** (String) Determines whether the 'name', 'given_name', 'family_name', 'nickname', and 'picture' attributes can be independently updated when using an external IdP. Possible values are 'on_each_login' (default value, it configures the connection to automatically update the root attributes from the external IdP with each user login. When this setting is used, root attributes cannot be independently updated), 'on_first_login' (configures the connection to only set the root attributes on first login, allowing them to be independently updated thereafter)
+- **strategy_version** (Number)
+
+
+<a id="nestedblock--oauth2"></a>
+### Nested Schema for `oauth2`
+
+Optional:
+
+- **authorization_endpoint** (String)
+- **client_id** (String) Client ID
+- **client_secret** (String, Sensitive) App secret
+- **non_persistent_attrs** (Set of String) If there are user fields that should not be stored in Auth0 databases due to privacy reasons, you can add them to the DenyList here
 - **scopes** (Set of String)
 - **scripts** (Map of String)
 - **set_user_root_attributes** (String) Determines whether the 'name', 'given_name', 'family_name', 'nickname', and 'picture' attributes can be independently updated when using an external IdP. Possible values are 'on_each_login' (default value, it configures the connection to automatically update the root attributes from the external IdP with each user login. When this setting is used, root attributes cannot be independently updated), 'on_first_login' (configures the connection to only set the root attributes on first login, allowing them to be independently updated thereafter)
-- **should_trust_email_verified_connection** (String) Choose how Auth0 sets the email_verified field in the user profile.
+- **token_endpoint** (String)
+
+
+<a id="nestedblock--oidc"></a>
+### Nested Schema for `oidc`
+
+Optional:
+
+- **authorization_endpoint** (String)
+- **client_id** (String) Client ID
+- **client_secret** (String, Sensitive) App secret
+- **discovery_url** (String)
+- **domain_aliases** (Set of String)
+- **icon_url** (String)
+- **issuer** (String)
+- **jwks_uri** (String)
+- **non_persistent_attrs** (Set of String) If there are user fields that should not be stored in Auth0 databases due to privacy reasons, you can add them to the DenyList here
+- **scopes** (Set of String)
+- **set_user_root_attributes** (String) Determines whether the 'name', 'given_name', 'family_name', 'nickname', and 'picture' attributes can be independently updated when using an external IdP. Possible values are 'on_each_login' (default value, it configures the connection to automatically update the root attributes from the external IdP with each user login. When this setting is used, root attributes cannot be independently updated), 'on_first_login' (configures the connection to only set the root attributes on first login, allowing them to be independently updated thereafter)
+- **tenant_domain** (String)
+- **token_endpoint** (String)
+- **type** (String)
+- **userinfo_endpoint** (String)
+
+
+<a id="nestedblock--salesforce"></a>
+### Nested Schema for `salesforce`
+
+Optional:
+
+- **client_id** (String) Client ID
+- **client_secret** (String, Sensitive) App secret
+- **community_base_url** (String)
+- **non_persistent_attrs** (Set of String) If there are user fields that should not be stored in Auth0 databases due to privacy reasons, you can add them to the DenyList here
+- **scopes** (Set of String)
+- **set_user_root_attributes** (String) Determines whether the 'name', 'given_name', 'family_name', 'nickname', and 'picture' attributes can be independently updated when using an external IdP. Possible values are 'on_each_login' (default value, it configures the connection to automatically update the root attributes from the external IdP with each user login. When this setting is used, root attributes cannot be independently updated), 'on_first_login' (configures the connection to only set the root attributes on first login, allowing them to be independently updated thereafter)
+- **type** (String) If set, indicates what type of salesforce connection. Possible values are `community`,`sandbox`
+
+
+<a id="nestedblock--samlp"></a>
+### Nested Schema for `samlp`
+
+Optional:
+
+- **debug** (Boolean) When enabled, additional debug information will be generated.
+- **digest_algorithm** (String) Sign Request Algorithm Digest
+- **domain_aliases** (Set of String)
+- **fields_map** (Map of String) If you're configuring a SAML enterprise connection for a non-standard PingFederate Server, you must update the attribute mappings.
+- **icon_url** (String)
+- **idp_initiated** (Block List, Max: 1) (see [below for nested schema](#nestedblock--samlp--idp_initiated))
+- **metadata_url** (String) Url of the document for saml connection expressed in xml
+- **metadata_xml** (String) XML content of the document for saml
+- **non_persistent_attrs** (Set of String) If there are user fields that should not be stored in Auth0 databases due to privacy reasons, you can add them to the DenyList here
+- **protocol_binding** (String) The SAML Response Binding: how the SAML token is received by Auth0 from IdP
+- **request_template** (String) Template that formats the SAML request.
+- **set_user_root_attributes** (String) Determines whether the 'name', 'given_name', 'family_name', 'nickname', and 'picture' attributes can be independently updated when using an external IdP. Possible values are 'on_each_login' (default value, it configures the connection to automatically update the root attributes from the external IdP with each user login. When this setting is used, root attributes cannot be independently updated), 'on_first_login' (configures the connection to only set the root attributes on first login, allowing them to be independently updated thereafter)
 - **sign_in_endpoint** (String) SAML single login URL for the connection.
 - **sign_out_endpoint** (String) SAML single logout URL for the connection.
 - **sign_saml_request** (Boolean) When enabled, the SAML authentication request will be signed.
 - **signature_algorithm** (String) Sign Request Algorithm
 - **signing_cert** (String) X.509 signing certificate (encoded in PEM or CER) you retrieved from the IdP, Base64-encoded
-- **strategy_version** (Number)
-- **subject** (String)
-- **syntax** (String)
-- **team_id** (String) Apple Team ID
-- **template** (String)
 - **tenant_domain** (String)
-- **token_endpoint** (String)
-- **totp** (Block List, Max: 1) (see [below for nested schema](#nestedblock--options--totp))
-- **twilio_sid** (String)
-- **twilio_token** (String, Sensitive)
-- **type** (String)
-- **use_cert_auth** (Boolean)
-- **use_kerberos** (Boolean)
-- **use_wsfed** (Boolean)
 - **user_id_attribute** (String) Attribute in the SAML token that will be mapped to the user_id property in Auth0.
-- **userinfo_endpoint** (String)
-- **validation** (Block List, Max: 1) Validation of the minimum and maximum values allowed for a user to have as username (see [below for nested schema](#nestedblock--options--validation))
-- **waad_common_endpoint** (Boolean)
-- **waad_protocol** (String)
 
-<a id="nestedblock--options--idp_initiated"></a>
-### Nested Schema for `options.idp_initiated`
+<a id="nestedblock--samlp--idp_initiated"></a>
+### Nested Schema for `samlp.idp_initiated`
 
 Optional:
 
@@ -164,51 +361,25 @@ Optional:
 - **client_protocol** (String)
 
 
-<a id="nestedblock--options--mfa"></a>
-### Nested Schema for `options.mfa`
+
+<a id="nestedblock--sms"></a>
+### Nested Schema for `sms`
 
 Optional:
 
-- **active** (Boolean)
-- **return_enroll_settings** (Boolean)
+- **brute_force_protection** (Boolean) Indicates whether or not to enable brute force protection, which will limit the number of signups and failed logins from a suspicious IP address
+- **disable_signup** (Boolean) Indicates whether or not to allow user sign-ups to your application
+- **from** (String)
+- **messaging_service_sid** (String)
+- **name** (String)
+- **syntax** (String)
+- **template** (String)
+- **totp** (Block List, Max: 1) (see [below for nested schema](#nestedblock--sms--totp))
+- **twilio_sid** (String)
+- **twilio_token** (String, Sensitive)
 
-
-<a id="nestedblock--options--password_complexity_options"></a>
-### Nested Schema for `options.password_complexity_options`
-
-Optional:
-
-- **min_length** (Number)
-
-
-<a id="nestedblock--options--password_dictionary"></a>
-### Nested Schema for `options.password_dictionary`
-
-Optional:
-
-- **dictionary** (Set of String)
-- **enable** (Boolean)
-
-
-<a id="nestedblock--options--password_history"></a>
-### Nested Schema for `options.password_history`
-
-Optional:
-
-- **enable** (Boolean)
-- **size** (Number)
-
-
-<a id="nestedblock--options--password_no_personal_info"></a>
-### Nested Schema for `options.password_no_personal_info`
-
-Optional:
-
-- **enable** (Boolean)
-
-
-<a id="nestedblock--options--totp"></a>
-### Nested Schema for `options.totp`
+<a id="nestedblock--sms--totp"></a>
+### Nested Schema for `sms.totp`
 
 Optional:
 
@@ -216,19 +387,41 @@ Optional:
 - **time_step** (Number)
 
 
-<a id="nestedblock--options--validation"></a>
-### Nested Schema for `options.validation`
+
+<a id="nestedblock--waad"></a>
+### Nested Schema for `waad`
 
 Optional:
 
-- **username** (Block List, Max: 1) Specifies the min and max values of username length (see [below for nested schema](#nestedblock--options--validation--username))
+- **api_enable_users** (Boolean)
+- **app_id** (String)
+- **client_id** (String) Client ID
+- **client_secret** (String, Sensitive) App secret
+- **domain** (String)
+- **domain_aliases** (Set of String)
+- **icon_url** (String)
+- **identity_api** (String)
+- **max_groups_to_retrieve** (String)
+- **non_persistent_attrs** (Set of String) If there are user fields that should not be stored in Auth0 databases due to privacy reasons, you can add them to the DenyList here
+- **scopes** (Set of String)
+- **set_user_root_attributes** (String) Determines whether the 'name', 'given_name', 'family_name', 'nickname', and 'picture' attributes can be independently updated when using an external IdP. Possible values are 'on_each_login' (default value, it configures the connection to automatically update the root attributes from the external IdP with each user login. When this setting is used, root attributes cannot be independently updated), 'on_first_login' (configures the connection to only set the root attributes on first login, allowing them to be independently updated thereafter)
+- **should_trust_email_verified_connection** (String) Choose how Auth0 sets the email_verified field in the user profile.
+- **tenant_domain** (String)
+- **use_wsfed** (Boolean)
+- **waad_common_endpoint** (Boolean) If enabled, will use a common Endpoint
+- **waad_protocol** (String)
 
-<a id="nestedblock--options--validation--username"></a>
-### Nested Schema for `options.validation.username`
+
+<a id="nestedblock--windowslive"></a>
+### Nested Schema for `windowslive`
 
 Optional:
 
-- **max** (Number)
-- **min** (Number)
+- **client_id** (String) Client ID
+- **client_secret** (String, Sensitive) App secret
+- **non_persistent_attrs** (Set of String) If there are user fields that should not be stored in Auth0 databases due to privacy reasons, you can add them to the DenyList here
+- **scopes** (Set of String)
+- **set_user_root_attributes** (String) Determines whether the 'name', 'given_name', 'family_name', 'nickname', and 'picture' attributes can be independently updated when using an external IdP. Possible values are 'on_each_login' (default value, it configures the connection to automatically update the root attributes from the external IdP with each user login. When this setting is used, root attributes cannot be independently updated), 'on_first_login' (configures the connection to only set the root attributes on first login, allowing them to be independently updated thereafter)
+- **strategy_version** (Number)
 
 

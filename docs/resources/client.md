@@ -96,6 +96,7 @@ resource "auth0_client" "my_client" {
 - **allowed_clients** (List of String)
 - **allowed_logout_urls** (List of String) URLs that Auth0 may redirect to after logout
 - **allowed_origins** (List of String) URLs that represent valid origins for cross-origin resource sharing. By default, all your callback URLs will be allowed
+- **api_connection** (Block Set) Represent connection between Api and the Application (see [below for nested schema](#nestedblock--api_connection))
 - **app_type** (String) Type of application the client represents. Options include `native`, `spa`, `regular_web`, `non_interactive`, `rms`, `box`, `cloudbees`, `concur`, `dropbox`, `mscrm`, `echosign`, `egnyte`, `newrelic`, `office365`, `salesforce`, `sentry`, `sharepoint`, `slack`, `springcm`, `zendesk`, `zoom`
 - **callbacks** (List of String) RLs that Auth0 may call back to after a user authenticates for the client. Make sure to specify the protocol (https://) otherwise the callback may fail in some cases. With the exception of custom URI schemes for native clients, all callbacks should use protocol https://
 - **client_metadata** (Map of String) Metadata associated with the client, in the form of an object with string values (max 255 chars). Maximum of 10 metadata properties allowed. Field names (max 255 chars) are alphanumeric and may only include the following special characters: :,-+=_*?"/\()<>@ [Tab] [Space]
@@ -198,6 +199,19 @@ Optional:
 - **slo_enabled** (Boolean) Indicates whether or not Auth0 should notify service providers of session termination
 
 
+
+
+<a id="nestedblock--api_connection"></a>
+### Nested Schema for `api_connection`
+
+Required:
+
+- **audience** (String)
+- **scope** (List of String)
+
+Read-Only:
+
+- **id** (String) The ID of this resource.
 
 
 <a id="nestedblock--jwt_configuration"></a>
