@@ -834,42 +834,47 @@ resource "auth0_connection" "salesforce_community" {
 	})
 }
 
-func TestAccConnectionGoogleOAuth2(t *testing.T) {
+func TestAccConnection_GoogleOAuth2(t *testing.T) {
 	rand := random.String(6)
 
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				// language=HCL
 				Config: random.Template(`
-
 resource "auth0_connection" "google_oauth2" {
 	name = "Acceptance-Test-Google-OAuth2-{{.random}}"
 	is_domain_connection = false
-	options {
-		client_id = ""
-		client_secret = ""
-		allowed_audiences = [ "example.com", "api.example.com" ]
-		scopes = [ "email", "profile", "gmail", "youtube" ]
+	google_oauth2 {
+		client_id = "foo"
+		client_secret = "bar"
+		allowed_audiences = [ "example.com", "api.example.com" ]		
 		set_user_root_attributes = "on_each_login"
+		non_persistent_attrs = ["foo", "bar"]
+		scopes = [ "email", "profile", "gmail", "youtube" ]
 	}
 }
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.google_oauth2", "name", "Acceptance-Test-Google-OAuth2-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.client_id", ""),
-					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.client_secret", ""),
-					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.allowed_audiences.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.allowed_audiences.1",
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "google_oauth2.0.client_id", "foo"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "google_oauth2.0.client_secret", "bar"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "google_oauth2.0.allowed_audiences.#", "2"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "google_oauth2.0.allowed_audiences.1",
 						"example.com"),
-					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.allowed_audiences.0",
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "google_oauth2.0.allowed_audiences.0",
 						"api.example.com"),
-					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.scopes.#", "4"),
-					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.scopes.0", "email"),
-					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.scopes.2", "profile"),
-					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.scopes.1", "gmail"),
-					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.scopes.3", "youtube"),
-					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "options.0.set_user_root_attributes", "on_each_login"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "google_oauth2.0.scopes.#", "4"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "google_oauth2.0.scopes.0", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "google_oauth2.0.scopes.2", "profile"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "google_oauth2.0.scopes.1", "gmail"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "google_oauth2.0.scopes.3", "youtube"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2", "google_oauth2.0.set_user_root_attributes", "on_each_login"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2",
+						"google_oauth2.0.non_persistent_attrs.0", "bar"),
+					resource.TestCheckResourceAttr("auth0_connection.google_oauth2",
+						"google_oauth2.0.non_persistent_attrs.1", "foo"),
 				),
 			},
 		},
