@@ -1136,23 +1136,23 @@ resource "auth0_connection" "github" {
 	})
 }
 
-func TestAccConnectionWindowslive(t *testing.T) {
-
+func TestAccConnection_Windowslive(t *testing.T) {
 	rand := random.String(6)
-
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				// language=hcl
 				Config: random.Template(`
-
 resource "auth0_connection" "windowslive" {
 	name = "Acceptance-Test-Windowslive-{{.random}}"
 	is_domain_connection = false
-	options {
+	windowslive {
 		client_id = "client_id"
 		client_secret = "client_secret"
 		strategy_version = 2
+		set_user_root_attributes = "on_each_login"
+		non_persistent_attrs = ["foo", "bar"]
 		scopes = ["signin", "graph_user"]
 	}
 }
@@ -1165,11 +1165,16 @@ resource "auth0_connection" "windowslive" {
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.#", "2"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.1", "signin"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.0", "graph_user"),
+					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.set_user_root_attributes", "on_each_login"),
+					resource.TestCheckResourceAttr("auth0_connection.windowslive",
+						"windowslive.0.non_persistent_attrs.0", "bar"),
+					resource.TestCheckResourceAttr("auth0_connection.windowslive",
+						"windowslive.0.non_persistent_attrs.1", "foo"),
 				),
 			},
 			{
+				// language=hcl
 				Config: random.Template(`
-
 resource "auth0_connection" "windowslive" {
 	name = "Acceptance-Test-Windowslive-{{.random}}"
 	is_domain_connection = false
@@ -1183,11 +1188,11 @@ resource "auth0_connection" "windowslive" {
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.windowslive", "name", "Acceptance-Test-Windowslive-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.client_id", "client_id_update"),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.client_secret", "client_secret_update"),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.strategy_version", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.#", "1"),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.0", "signin"),
+					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.client_id", "client_id_update"),
+					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.client_secret", "client_secret_update"),
+					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.strategy_version", "2"),
+					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.scopes.#", "1"),
+					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.scopes.0", "signin"),
 				),
 			},
 		},
