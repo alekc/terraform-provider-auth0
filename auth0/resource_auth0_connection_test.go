@@ -1013,45 +1013,50 @@ resource "auth0_connection" "apple" {
 	})
 }
 
-func TestAccConnectionLinkedin(t *testing.T) {
-
+func TestAccConnection_Linkedin(t *testing.T) {
 	rand := random.String(6)
-
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				// language=HCL
 				Config: random.Template(`
-
 resource "auth0_connection" "linkedin" {
 	name = "Acceptance-Test-Linkedin-{{.random}}"
 	is_domain_connection = false
-	options {
+	linkedin {
 		client_id = "client_id"
 		client_secret = "client_secret"
 		strategy_version = 2
 		scopes = [ "basic_profile", "profile", "email" ]
+		set_user_root_attributes = "on_each_login"
+		non_persistent_attrs = ["foo", "bar"]
 	}
 }
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.linkedin", "name", "Acceptance-Test-Linkedin-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.client_id", "client_id"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.client_secret", "client_secret"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.strategy_version", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.#", "3"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.0", "basic_profile"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.1", "email"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.2", "profile"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.client_id", "client_id"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.client_secret", "client_secret"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.strategy_version", "2"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.scopes.#", "3"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.scopes.0", "basic_profile"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.scopes.1", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.scopes.2", "profile"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.set_user_root_attributes", "on_each_login"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin",
+						"linkedin.0.non_persistent_attrs.0", "bar"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin",
+						"linkedin.0.non_persistent_attrs.1", "foo"),
 				),
 			},
 			{
+				// language=hcl
 				Config: random.Template(`
-
 resource "auth0_connection" "linkedin" {
 	name = "Acceptance-Test-Linkedin-{{.random}}"
 	is_domain_connection = false
-	options {
+	linkedin {
 		client_id = "client_id_update"
 		client_secret = "client_secret_update"
 		strategy_version = 2
@@ -1060,11 +1065,11 @@ resource "auth0_connection" "linkedin" {
 }
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.client_id", "client_id_update"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.client_secret", "client_secret_update"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.0", "basic_profile"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.1", "profile"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "options.0.scopes.#", "2"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.client_id", "client_id_update"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.client_secret", "client_secret_update"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.scopes.0", "basic_profile"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.scopes.1", "profile"),
+					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.scopes.#", "2"),
 				),
 			},
 		},
