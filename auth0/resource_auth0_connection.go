@@ -172,22 +172,9 @@ var connectionSchema = map[string]*schema.Schema{
 		Description: "IDs of the clients for which the connection is enabled",
 	},
 	"realms": {
-		Type:     schema.TypeList,
-		Elem:     &schema.Schema{Type: schema.TypeString},
-		Optional: true,
-		// DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-		// 	name := d.Get("name").(string)
-		// 	length := len(List(d, "realms").List())
-		// 	if k == "realms.#" && new == fmt.Sprintf("%d", length) {
-		// 		return true
-		// 	}
-		//
-		// 	if old == name && new == "" && k == fmt.Sprintf("realms.%d", length-1) {
-		// 		return true
-		// 	}
-		//
-		// 	return old == new
-		// },
+		Type:        schema.TypeList,
+		Elem:        &schema.Schema{Type: schema.TypeString},
+		Optional:    true,
 		Description: "Defines the realms for which the connection will be used (i.e., email domains). If not specified, the connection name is added as the realm",
 	},
 	management.ConnectionStrategyAuth0: {

@@ -881,7 +881,7 @@ resource "auth0_connection" "google_oauth2" {
 	})
 }
 
-func TestAccConnectionFacebook(t *testing.T) {
+func TestAccConnection_Facebook(t *testing.T) {
 
 	rand := random.String(6)
 
@@ -889,37 +889,44 @@ func TestAccConnectionFacebook(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				// language=HCL
 				Config: random.Template(`
-
 resource "auth0_connection" "facebook" {
 	name = "Acceptance-Test-Facebook-{{.random}}"
 	is_domain_connection = false
-	options {
+	facebook {
 		client_id = "client_id"
 		client_secret = "client_secret"
 		scopes = [ "public_profile", "email", "groups_access_member_info", "user_birthday" ]
+		set_user_root_attributes = "on_each_login"
+		non_persistent_attrs = ["foo", "bar"]
 	}
 }
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.facebook", "name", "Acceptance-Test-Facebook-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.client_id", "client_id"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.client_secret", "client_secret"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.#", "4"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.2", "public_profile"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.0", "email"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.1",
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.client_id", "client_id"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.client_secret", "client_secret"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.#", "4"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.2", "public_profile"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.0", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.1",
 						"groups_access_member_info"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.3", "user_birthday"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.3", "user_birthday"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.set_user_root_attributes", "on_each_login"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook",
+						"facebook.0.non_persistent_attrs.0", "bar"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook",
+						"facebook.0.non_persistent_attrs.1", "foo"),
 				),
 			},
 			{
+				// language=HCL
 				Config: random.Template(`
-
 resource "auth0_connection" "facebook" {
 	name = "Acceptance-Test-Facebook-{{.random}}"
 	is_domain_connection = false
-	options {
+	facebook {
 		client_id = "client_id_update"
 		client_secret = "client_secret_update"
 		scopes = [ "public_profile", "email" ]
@@ -928,11 +935,11 @@ resource "auth0_connection" "facebook" {
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.facebook", "name", "Acceptance-Test-Facebook-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.client_id", "client_id_update"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.client_secret", "client_secret_update"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.1", "public_profile"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "options.0.scopes.0", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.client_id", "client_id_update"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.client_secret", "client_secret_update"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.#", "2"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.1", "public_profile"),
+					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.0", "email"),
 				),
 			},
 		},
