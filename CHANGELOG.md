@@ -1,3 +1,7 @@
+## 1.1.2 (Unreleased)
+FIXES:
+* logout property of samlp addon is not serialized properly. [#28](https://github.com/alekc/terraform-provider-auth0/issues/28)
+
 ## 1.1.1
 * Improved secrets management in hook 
 * Added support for `organization_usage` and `organization_require_behavior` to resource `auth0_client`
