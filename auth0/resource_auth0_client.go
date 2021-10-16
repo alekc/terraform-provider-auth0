@@ -724,7 +724,7 @@ func flattenAddons(addons map[string]interface{}) []interface{} {
 	// samlp
 	if _, ok := addons["samlp"]; ok {
 		data := addons["samlp"].(map[string]interface{})
-		result["samlp"] = []interface{}{map[string]interface{}{
+		samplpMap := map[string]interface{}{
 			"audience":                           data["audience"],
 			"authn_context_class_ref":            data["authnContextClassRef"],
 			"binding":                            data["binding"],
@@ -734,7 +734,6 @@ func flattenAddons(addons map[string]interface{}) []interface{} {
 			"digest_algorithm":                   data["digestAlgorithm"],
 			"include_attribute_name_format":      data["includeAttributeNameFormat"],
 			"lifetime_in_seconds":                data["lifetimeInSeconds"],
-			"logout":                             data["logout"],
 			"map_identities":                     data["mapIdentities"],
 			"mappings":                           data["mappings"],
 			"map_unknown_claims_as_is":           data["mapUnknownClaimsAsIs"],
@@ -745,7 +744,15 @@ func flattenAddons(addons map[string]interface{}) []interface{} {
 			"signature_algorithm":                data["signatureAlgorithm"],
 			"sign_response":                      data["signResponse"],
 			"typed_attributes":                   data["typedAttributes"],
-		}}
+		}
+		if val, ok := data["logout"]; ok {
+			logoutData := val.(map[string]interface{})
+			samplpMap["logout"] = flattenMap(map[string]interface{}{
+				"callback":    logoutData["callback"],
+				"slo_enabled": logoutData["slo_enabled"],
+			})
+		}
+		result["samlp"] = []interface{}{samplpMap}
 	}
 	return []interface{}{result}
 }
@@ -870,7 +877,6 @@ func expandClient(d *schema.ResourceData) *management.Client {
 			_ = m.Set("digestAlgorithm", String(d, "digest_algorithm"))
 			_ = m.Set("includeAttributeNameFormat", Bool(d, "include_attribute_name_format"))
 			_ = m.Set("lifetimeInSeconds", Int(d, "lifetime_in_seconds"))
-			_ = m.Set("logout", List(d, "logout").List())
 			_ = m.Set("mapIdentities", Bool(d, "map_identities"))
 			_ = m.Set("mappings", Map(d, "mappings"))
 			_ = m.Set("mapUnknownClaimsAsIs", Bool(d, "map_unknown_claims_as_is"))
@@ -881,6 +887,13 @@ func expandClient(d *schema.ResourceData) *management.Client {
 			_ = m.Set("signatureAlgorithm", String(d, "signature_algorithm"))
 			_ = m.Set("signResponse", Bool(d, "sign_response"))
 			_ = m.Set("typedAttributes", Bool(d, "typed_attributes"))
+
+			List(d, "logout").Elem(func(d ResourceData) {
+				logoutMap := make(MapData)
+				_ = logoutMap.Set("callback", String(d, "callback"))
+				_ = logoutMap.Set("slo_enabled", Bool(d, "slo_enabled"))
+				_ = m.Set("logout", logoutMap)
+			})
 
 			c.Addons["samlp"] = m
 		})
