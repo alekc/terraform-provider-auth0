@@ -804,7 +804,7 @@ resource "auth0_connection" "email" {
 	})
 }
 
-func TestAccConnectionSalesforce(t *testing.T) {
+func TestAccConnection_Salesforce(t *testing.T) {
 
 	rand := random.String(6)
 

@@ -8,3 +8,4 @@
 * `disable_signup` default value false
 * `requires_username` default value false
 * Added `enabledDatabaseCustomization` // TODO
+* Salesforce, salesforce-community, salesforce-sandbox has been moved under the same block `salesforce`
