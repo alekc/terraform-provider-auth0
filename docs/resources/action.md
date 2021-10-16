@@ -18,7 +18,7 @@ Actions are used to customize and extend Auth0's capabilities with custom logic.
 ## Example Usage
 
 ```terraform
-resource "auth0_flow" "myaction" {
+resource "auth0_action" "myaction" {
   name = "my Action"
   trigger {
     id = "post-login"
