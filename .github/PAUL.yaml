@@ -1,0 +1,33 @@
+maintainers:
+  - alekc
+# Allows for the /label and /remove-label commands
+# usage: /label enhancement
+# usage: /remove-label enhancement
+# Will only add existing labels
+# Can be used on PR's or Issues
+labels: true
+# Checks if an issue or an Pull request has a description
+empty_description_check:
+  enabled: true
+  enforced: true
+# Settings for branch destroyer
+# branch destroyer will not delete your default branch
+# set other "protected" branches here
+branch_destroyer:
+  enabled: true
+  protected_branches:
+    - master
+    - main
+pull_requests:
+  # Specifies whether to allow for automated merging of Pull Requests (label merge, merges in the next hour if everything is ok)
+  automated_merge: true
+  # Paul will mark a pull request as "stale" if a Pull Request is not updated for this amount of days
+  # stale_time: 15
+  # This will limit the amount of PR's a single contributer can have
+  # Limits work in progress
+  limit_pull_requests:
+    max_number: 15
+  # Allows any maintainer in the list to run /approve
+  # Paul will approve the PR (Does not merge it)
+  allow_approval: true
+  giphy_enabled: true
