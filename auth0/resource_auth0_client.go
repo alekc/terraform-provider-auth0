@@ -746,11 +746,14 @@ func flattenAddons(addons map[string]interface{}) []interface{} {
 			"typed_attributes":                   data["typedAttributes"],
 		}
 		if val, ok := data["logout"]; ok {
-			logoutData := val.(map[string]interface{})
-			samplpMap["logout"] = flattenMap(map[string]interface{}{
-				"callback":    logoutData["callback"],
-				"slo_enabled": logoutData["slo_enabled"],
-			})
+			logoutData, ok := val.(map[string]interface{})
+			// if the data was invalid, do not set any value, and it will be rectified by an update
+			if ok {
+				samplpMap["logout"] = flattenMap(map[string]interface{}{
+					"callback":    logoutData["callback"],
+					"slo_enabled": logoutData["slo_enabled"],
+				})
+			}
 		}
 		result["samlp"] = []interface{}{samplpMap}
 	}

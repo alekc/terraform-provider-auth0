@@ -8,6 +8,7 @@ GOARCH ?= $$(go env GOARCH)
 TEST_COUNT?=1
 ACCTEST_TIMEOUT?=15m
 ACCTEST_PARALLELISM?=10
+VERSION="1.0.0"
 
 default: build
 
@@ -20,8 +21,8 @@ install: build
 
 install-local:
 	@go build -gcflags="all=-N -l"
-	@mkdir -p ~/.terraform.d/plugins/local/alekc/auth0/$(version)/$(GOOS)_$(GOARCH)/
-	@mv terraform-provider-auth0 ~/.terraform.d/plugins/local/alekc/auth0/$(version)/$(GOOS)_$(GOARCH)/terraform-provider-auth0_v$(version)
+	@mkdir -p ~/.terraform.d/plugins/local/alekc/auth0/$(VERSION)/$(GOOS)_$(GOARCH)/
+	@mv terraform-provider-auth0 ~/.terraform.d/plugins/local/alekc/auth0/$(VERSION)/$(GOOS)_$(GOARCH)/terraform-provider-auth0_v$(VERSION)
 
 sweep:
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
