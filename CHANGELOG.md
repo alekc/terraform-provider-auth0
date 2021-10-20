@@ -1,4 +1,4 @@
-## 1.1.2 (Unreleased)
+## 1.1.2
 FIXES:
 * logout property of samlp addon is not serialized properly. [#28](https://github.com/alekc/terraform-provider-auth0/issues/28)
 
