@@ -99,7 +99,6 @@ func flattenConnectionOptionsApple(o *management.ConnectionOptionsApple) map[str
 		"client_secret":            o.GetClientSecret(),
 		"team_id":                  o.GetTeamID(),
 		"key_id":                   o.GetKeyID(),
-		"scopes":                   o.Scopes(),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
 	}
@@ -451,8 +450,6 @@ func expandConnectionOptionsApple(d ResourceData) *management.ConnectionOptionsA
 		SetUserAttributes:  String(d, "set_user_root_attributes"),
 		NonPersistentAttrs: castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 	}
-
-	expandConnectionOptionsScopes(d, o)
 
 	return o
 }

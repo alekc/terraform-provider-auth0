@@ -960,7 +960,6 @@ resource "auth0_connection" "apple" {
 		client_secret = "-----BEGIN PRIVATE KEY-----\nMIHBAgEAMA0GCSqGSIb3DQEBAQUABIGsMIGpAgEAAiEA3+luhVHxSJ8cv3VNzQDP\nEL6BPs7FjBq4oro0MWM+QJMCAwEAAQIgWbq6/pRK4/ZXV+ZTSj7zuxsWZuK5i3ET\nfR2TCEkZR3kCEQD2ElqDr/pY5aHA++9HioY9AhEA6PIxC1c/K3gJqu+K+EsfDwIQ\nG5MS8Y7Wzv9skOOqfKnZQQIQdG24vaZZ2GwiyOD5YKiLWQIQYNtrb3j0BWsT4LI+\nN9+l1g==\n-----END PRIVATE KEY-----"
 		team_id = "team_id"
 		key_id = "key_id"
-		scopes = ["email", "name"]
 		set_user_root_attributes = "on_each_login"
 		non_persistent_attrs = ["foo", "bar"]
 	}
@@ -972,9 +971,6 @@ resource "auth0_connection" "apple" {
 					resource.TestCheckResourceAttr("auth0_connection.apple", "apple.0.client_secret", "-----BEGIN PRIVATE KEY-----\nMIHBAgEAMA0GCSqGSIb3DQEBAQUABIGsMIGpAgEAAiEA3+luhVHxSJ8cv3VNzQDP\nEL6BPs7FjBq4oro0MWM+QJMCAwEAAQIgWbq6/pRK4/ZXV+ZTSj7zuxsWZuK5i3ET\nfR2TCEkZR3kCEQD2ElqDr/pY5aHA++9HioY9AhEA6PIxC1c/K3gJqu+K+EsfDwIQ\nG5MS8Y7Wzv9skOOqfKnZQQIQdG24vaZZ2GwiyOD5YKiLWQIQYNtrb3j0BWsT4LI+\nN9+l1g==\n-----END PRIVATE KEY-----"),
 					resource.TestCheckResourceAttr("auth0_connection.apple", "apple.0.team_id", "team_id"),
 					resource.TestCheckResourceAttr("auth0_connection.apple", "apple.0.key_id", "key_id"),
-					resource.TestCheckResourceAttr("auth0_connection.apple", "apple.0.scopes.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.apple", "apple.0.scopes.0", "email"),
-					resource.TestCheckResourceAttr("auth0_connection.apple", "apple.0.scopes.1", "name"),
 					resource.TestCheckResourceAttr("auth0_connection.apple", "apple.0.set_user_root_attributes", "on_each_login"),
 					resource.TestCheckResourceAttr("auth0_connection.apple",
 						"apple.0.non_persistent_attrs.0", "bar"),
@@ -993,7 +989,6 @@ resource "auth0_connection" "apple" {
 		client_secret = "-----BEGIN PRIVATE KEY-----\nMIHBAgEAMA0GCSqGSIb3DQEBAQUABIGsMIGpAgEAAiEA3+luhVHxSJ8cv3VNzQDP\nEL6BPs7FjBq4oro0MWM+QJMCAwEAAQIgWbq6/pRK4/ZXV+ZTSj7zuxsWZuK5i3ET\nfR2TCEkZR3kCEQD2ElqDr/pY5aHA++9HioY9AhEA6PIxC1c/K3gJqu+K+EsfDwIQ\nG5MS8Y7Wzv9skOOqfKnZQQIQdG24vaZZ2GwiyOD5YKiLWQIQYNtrb3j0BWsT4LI+\nN9+l1g==\n-----END PRIVATE KEY-----"
 		team_id = "team_id_update"
 		key_id = "key_id_update"
-		scopes = ["email"]
 		set_user_root_attributes = "on_first_login"
 	}
 }
@@ -1001,8 +996,6 @@ resource "auth0_connection" "apple" {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_connection.apple", "apple.0.team_id", "team_id_update"),
 					resource.TestCheckResourceAttr("auth0_connection.apple", "apple.0.key_id", "key_id_update"),
-					resource.TestCheckResourceAttr("auth0_connection.apple", "apple.0.scopes.#", "1"),
-					resource.TestCheckResourceAttr("auth0_connection.apple", "apple.0.scopes.0", "email"),
 					resource.TestCheckResourceAttr("auth0_connection.apple", "apple.0.set_user_root_attributes", "on_first_login"),
 				),
 			},
