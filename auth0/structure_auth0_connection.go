@@ -66,7 +66,6 @@ func flattenConnectionOptionsGoogleOAuth2(o *management.ConnectionOptionsGoogleO
 		"client_id":                o.GetClientID(),
 		"client_secret":            o.GetClientSecret(),
 		"allowed_audiences":        o.AllowedAudiences,
-		"scopes":                   o.Scopes(),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
 	}
@@ -108,7 +107,7 @@ func flattenConnectionOptionsApple(o *management.ConnectionOptionsApple) map[str
 }
 
 func flattenConnectionOptionsLinkedin(o *management.ConnectionOptionsLinkedin) map[string]interface{} {
-	return map[string]interface{}{
+	xx := map[string]interface{}{
 		"client_id":                o.GetClientID(),
 		"client_secret":            o.GetClientSecret(),
 		"strategy_version":         o.GetStrategyVersion(),
@@ -116,6 +115,7 @@ func flattenConnectionOptionsLinkedin(o *management.ConnectionOptionsLinkedin) m
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
 	}
+	return xx
 }
 
 func flattenConnectionOptionsSalesforce(o *management.ConnectionOptionsSalesforce) map[string]interface{} {
@@ -294,13 +294,14 @@ func expandConnection(d ResourceData) *management.Connection {
 		c.Options = expandConnectionOptionsWindowsLive(d)
 	})
 	List(d, "salesforce").Elem(func(d ResourceData) {
-		switch *String(d, "type") {
-		case "community":
-			c.Strategy = auth0.String(management.ConnectionStrategySalesforceCommunity)
-		case "sandbox":
-			c.Strategy = auth0.String(management.ConnectionStrategySalesforceSandbox)
-		default:
+		salesforceType := String(d, "type")
+		switch {
+		case salesforceType == nil:
 			c.Strategy = auth0.String(management.ConnectionStrategySalesforce)
+		case *salesforceType == "community":
+			c.Strategy = auth0.String(management.ConnectionStrategySalesforceCommunity)
+		case *salesforceType == "sandbox":
+			c.Strategy = auth0.String(management.ConnectionStrategySalesforceSandbox)
 		}
 		c.Options = expandConnectionOptionsSalesforce(d)
 	})
@@ -409,8 +410,6 @@ func expandConnectionOptionsGoogleOAuth2(d ResourceData) *management.ConnectionO
 		SetUserAttributes:  String(d, "set_user_root_attributes"),
 		NonPersistentAttrs: castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 	}
-
-	expandConnectionOptionsScopes(d, o)
 
 	return o
 }

@@ -1,6 +1,7 @@
 ## 2.0.0 Unreleased
 ENHANCEMENTS:
 * Improved management of the configuration secrets in the `auth0_connection`
+* Removed scopes from `auth0_connection` where they have not been used
 
 ## 1.1.2
 FIXES:
