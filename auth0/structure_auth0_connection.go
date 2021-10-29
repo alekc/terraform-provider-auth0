@@ -88,7 +88,6 @@ func flattenConnectionOptionsFacebook(o *management.ConnectionOptionsFacebook) m
 	return map[string]interface{}{
 		"client_id":                o.GetClientID(),
 		"client_secret":            o.GetClientSecret(),
-		"scopes":                   o.Scopes(),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
 	}
@@ -438,8 +437,6 @@ func expandConnectionOptionsFacebook(d ResourceData) *management.ConnectionOptio
 		SetUserAttributes:  String(d, "set_user_root_attributes"),
 		NonPersistentAttrs: castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 	}
-
-	expandConnectionOptionsScopes(d, o)
 
 	return o
 }

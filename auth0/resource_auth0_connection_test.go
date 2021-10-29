@@ -573,7 +573,7 @@ resource "auth0_connection" "oauth2" {
 		client_secret = "123456"
 		token_endpoint         = "https://api.login.yahoo.com/oauth2/get_token"
 		authorization_endpoint = "https://api.login.yahoo.com/oauth2/request_auth"
-		scopes = [ "openid", "email", "profile" ]
+		scopes = [ "openid", "email", "profile", "zzz" ]
 		set_user_root_attributes = "on_each_login"
 		scripts = {
 			fetchUserProfile= "function( { return callback(null) }"
@@ -587,10 +587,11 @@ resource "auth0_connection" "oauth2" {
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "oauth2.0.client_secret", "123456"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "oauth2.0.token_endpoint", "https://api.login.yahoo.com/oauth2/get_token"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "oauth2.0.authorization_endpoint", "https://api.login.yahoo.com/oauth2/request_auth"),
-					resource.TestCheckResourceAttr("auth0_connection.oauth2", "oauth2.0.scopes.#", "3"),
+					resource.TestCheckResourceAttr("auth0_connection.oauth2", "oauth2.0.scopes.#", "4"),
+					resource.TestCheckResourceAttr("auth0_connection.oauth2", "oauth2.0.scopes.0", "email"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "oauth2.0.scopes.1", "openid"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "oauth2.0.scopes.2", "profile"),
-					resource.TestCheckResourceAttr("auth0_connection.oauth2", "oauth2.0.scopes.0", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.oauth2", "oauth2.0.scopes.3", "zzz"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "oauth2.0.scripts.fetchUserProfile", "function( { return callback(null) }"),
 					resource.TestCheckResourceAttr("auth0_connection.oauth2", "oauth2.0.set_user_root_attributes", "on_each_login"),
 				),
@@ -904,7 +905,6 @@ resource "auth0_connection" "facebook" {
 	facebook {
 		client_id = "client_id"
 		client_secret = "client_secret"
-		scopes = [ "public_profile", "email", "groups_access_member_info", "user_birthday" ]
 		set_user_root_attributes = "on_each_login"
 		non_persistent_attrs = ["foo", "bar"]
 	}
@@ -914,12 +914,6 @@ resource "auth0_connection" "facebook" {
 					random.TestCheckResourceAttr("auth0_connection.facebook", "name", "Acceptance-Test-Facebook-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.client_id", "client_id"),
 					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.client_secret", "client_secret"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.#", "4"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.2", "public_profile"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.0", "email"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.1",
-						"groups_access_member_info"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.3", "user_birthday"),
 					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.set_user_root_attributes", "on_each_login"),
 					resource.TestCheckResourceAttr("auth0_connection.facebook",
 						"facebook.0.non_persistent_attrs.0", "bar"),
@@ -936,7 +930,6 @@ resource "auth0_connection" "facebook" {
 	facebook {
 		client_id = "client_id_update"
 		client_secret = "client_secret_update"
-		scopes = [ "public_profile", "email" ]
 	}
 }
 `, rand),
@@ -944,9 +937,6 @@ resource "auth0_connection" "facebook" {
 					random.TestCheckResourceAttr("auth0_connection.facebook", "name", "Acceptance-Test-Facebook-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.client_id", "client_id_update"),
 					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.client_secret", "client_secret_update"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.1", "public_profile"),
-					resource.TestCheckResourceAttr("auth0_connection.facebook", "facebook.0.scopes.0", "email"),
 				),
 			},
 		},
