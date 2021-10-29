@@ -686,50 +686,6 @@ resource "auth0_connection" "my_connection" {
 	})
 }
 
-func TestAccConnectionSMS(t *testing.T) {
-
-	rand := random.String(6)
-
-	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: random.Template(`
-resource "auth0_connection" "sms" {
-	name = "Acceptance-Test-SMS-{{.random}}"
-	is_domain_connection = false
-
-	options {
-		disable_signup = false
-		name = "SMS OTP"
-		twilio_sid = "ABC123"
-		twilio_token = "DEF456"
-		from = "+12345678"
-		syntax = "md_with_macros"
-		template = "@@password@@"
-		messaging_service_sid = "GHI789"
-		brute_force_protection = true
-
-		totp {
-			time_step = 300
-			length = 6
-		}
-	}
-}
-`, rand),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					random.TestCheckResourceAttr("auth0_connection.sms", "name", "Acceptance-Test-SMS-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.sms", "options.0.twilio_sid", "ABC123"),
-					resource.TestCheckResourceAttr("auth0_connection.sms", "options.0.twilio_token", "DEF456"),
-					resource.TestCheckResourceAttr("auth0_connection.sms", "options.0.totp.#", "1"),
-					resource.TestCheckResourceAttr("auth0_connection.sms", "options.0.totp.0.time_step", "300"),
-					resource.TestCheckResourceAttr("auth0_connection.sms", "options.0.totp.0.length", "6"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccConnectionEmail(t *testing.T) {
 
 	rand := random.String(6)
@@ -1214,6 +1170,57 @@ resource "auth0_connection" "salesforce" {
 						"salesforce.0.non_persistent_attrs.0", "bar"),
 					resource.TestCheckResourceAttr("auth0_connection.salesforce",
 						"salesforce.0.non_persistent_attrs.1", "foo"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccConnection_SMS(t *testing.T) {
+	rand := random.String(6)
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: testAccProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				// language=HCL
+				Config: random.Template(`
+resource "auth0_connection" "sms" {
+	name = "Acceptance-Test-SMS-{{.random}}"
+	is_domain_connection = false
+
+	sms {
+		disable_signup = false
+		name = "SMS OTP"
+		twilio_sid = "ABC123"
+		twilio_token = "DEF456"
+		from = "+12345678"
+		syntax = "md_with_macros"
+		template = "@@password@@"
+		messaging_service_sid = "GHI789"
+		brute_force_protection = true
+
+		totp {
+			time_step = 300
+			length = 6
+		}
+	}
+}
+`, rand),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					random.TestCheckResourceAttr("auth0_connection.sms", "name", "Acceptance-Test-SMS-{{.random}}", rand),
+					resource.TestCheckResourceAttr("auth0_connection.sms", "sms.0.disable_signup", "false"),
+					resource.TestCheckResourceAttr("auth0_connection.sms", "sms.0.name", "SMS OTP"),
+					resource.TestCheckResourceAttr("auth0_connection.sms", "sms.0.twilio_sid", "ABC123"),
+					resource.TestCheckResourceAttr("auth0_connection.sms", "sms.0.twilio_token", "DEF456"),
+					resource.TestCheckResourceAttr("auth0_connection.sms", "sms.0.from", "+12345678"),
+					resource.TestCheckResourceAttr("auth0_connection.sms", "sms.0.syntax", "md_with_macros"),
+					resource.TestCheckResourceAttr("auth0_connection.sms", "sms.0.template", "@@password@@"),
+					resource.TestCheckResourceAttr("auth0_connection.sms", "sms.0.messaging_service_sid", "GHI789"),
+					resource.TestCheckResourceAttr("auth0_connection.sms", "sms.0.brute_force_protection",
+						"true"),
+					resource.TestCheckResourceAttr("auth0_connection.sms", "sms.0.totp.#", "1"),
+					resource.TestCheckResourceAttr("auth0_connection.sms", "sms.0.totp.0.time_step", "300"),
+					resource.TestCheckResourceAttr("auth0_connection.sms", "sms.0.totp.0.length", "6"),
 				),
 			},
 		},
