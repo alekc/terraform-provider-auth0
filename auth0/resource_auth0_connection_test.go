@@ -805,49 +805,6 @@ resource "auth0_connection" "email" {
 	})
 }
 
-func TestAccConnection_Salesforce(t *testing.T) {
-	rand := random.String(6)
-	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				// language=HCL
-				Config: random.Template(`
-resource "auth0_connection" "salesforce" {
-	name = "Acceptance-Test-Salesforce-Connection-{{.random}}"
-	is_domain_connection = false
-
-	salesforce {		
-		client_id = "client-id"
-		client_secret = "client-secret"
-		set_user_root_attributes = "on_each_login"
-		non_persistent_attrs = ["foo", "bar"]
-		scopes = [ "email", "profile", "gmail", "youtube" ]
-	}
-}
-`, rand),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					random.TestCheckResourceAttr("auth0_connection.salesforce", "name", "Acceptance-Test-Salesforce-Connection-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.client_id",
-						"client-id"),
-					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.client_secret",
-						"client-secret"),
-					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.scopes.#", "4"),
-					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.scopes.0", "email"),
-					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.scopes.2", "profile"),
-					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.scopes.1", "gmail"),
-					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.scopes.3", "youtube"),
-					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.set_user_root_attributes", "on_each_login"),
-					resource.TestCheckResourceAttr("auth0_connection.salesforce",
-						"salesforce.0.non_persistent_attrs.0", "bar"),
-					resource.TestCheckResourceAttr("auth0_connection.salesforce",
-						"salesforce.0.non_persistent_attrs.1", "foo"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccConnection_GoogleOAuth2(t *testing.T) {
 	rand := random.String(6)
 
@@ -1142,6 +1099,121 @@ resource "auth0_connection" "windowslive" {
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.client_id", "client_id_update"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.client_secret", "client_secret_update"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.strategy_version", "2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccConnection_Salesforce(t *testing.T) {
+	rand := random.String(6)
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: testAccProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				// language=HCL
+				Config: random.Template(`
+resource "auth0_connection" "salesforce" {
+	name = "Acceptance-Test-Salesforce-Connection-{{.random}}"
+	is_domain_connection = false
+
+	salesforce {		
+		client_id = "client-id"
+		client_secret = "client-secret"
+		set_user_root_attributes = "on_each_login"
+		non_persistent_attrs = ["foo", "bar"]
+	}
+}
+`, rand),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					random.TestCheckResourceAttr("auth0_connection.salesforce", "name", "Acceptance-Test-Salesforce-Connection-{{.random}}", rand),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.client_id",
+						"client-id"),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.client_secret",
+						"client-secret"),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.set_user_root_attributes", "on_each_login"),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce",
+						"salesforce.0.non_persistent_attrs.0", "bar"),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce",
+						"salesforce.0.non_persistent_attrs.1", "foo"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccConnection_Salesforce_Sandbox(t *testing.T) {
+	rand := random.String(6)
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: testAccProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				// language=HCL
+				Config: random.Template(`
+resource "auth0_connection" "salesforce" {
+	name = "Acceptance-Test-Salesforce-Connection-{{.random}}"
+	is_domain_connection = false
+
+	salesforce {		
+		type = "sandbox"
+		client_id = "client-id"
+		client_secret = "client-secret"
+		set_user_root_attributes = "on_each_login"
+		non_persistent_attrs = ["foo", "bar"]
+	}
+}
+`, rand),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					random.TestCheckResourceAttr("auth0_connection.salesforce", "name", "Acceptance-Test-Salesforce-Connection-{{.random}}", rand),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.client_id",
+						"client-id"),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.client_secret",
+						"client-secret"),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.set_user_root_attributes", "on_each_login"),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce",
+						"salesforce.0.non_persistent_attrs.0", "bar"),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce",
+						"salesforce.0.non_persistent_attrs.1", "foo"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccConnection_Salesforce_Community(t *testing.T) {
+	rand := random.String(6)
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: testAccProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				// language=HCL
+				Config: random.Template(`
+resource "auth0_connection" "salesforce" {
+	name = "Acceptance-Test-Salesforce-Connection-{{.random}}"
+	is_domain_connection = false
+
+	salesforce {		
+		type = "sandbox"
+		client_id = "client-id"
+		client_secret = "client-secret"
+		set_user_root_attributes = "on_each_login"
+		non_persistent_attrs = ["foo", "bar"]
+		community_base_url = "http://google.com"
+	}
+}
+`, rand),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					random.TestCheckResourceAttr("auth0_connection.salesforce", "name", "Acceptance-Test-Salesforce-Connection-{{.random}}", rand),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.client_id",
+						"client-id"),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.client_secret",
+						"client-secret"),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.set_user_root_attributes", "on_each_login"),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce", "salesforce.0.community_base_url", "http://google.com"),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce",
+						"salesforce.0.non_persistent_attrs.0", "bar"),
+					resource.TestCheckResourceAttr("auth0_connection.salesforce",
+						"salesforce.0.non_persistent_attrs.1", "foo"),
 				),
 			},
 		},

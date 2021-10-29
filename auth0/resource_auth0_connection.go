@@ -491,7 +491,6 @@ var connectionSchema = map[string]*schema.Schema{
 				},
 				"set_user_root_attributes": connectionSchemaSetUserRootAttributes,
 				"non_persistent_attrs":     connectionSchemaNonPersistentAttributes,
-				"scopes":                   connectionSchemaScopes,
 			},
 		},
 	},
@@ -904,7 +903,8 @@ func readConnection(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	case *management.ConnectionOptionsWindowsLive:
 		_ = d.Set(management.ConnectionStrategyWindowsLive, flattenMap(flattenConnectionOptionsWindowsLive(o), true))
 	case *management.ConnectionOptionsSalesforce:
-		_ = d.Set(management.ConnectionStrategySalesforce, flattenMap(flattenConnectionOptionsSalesforce(o), true))
+		_ = d.Set(management.ConnectionStrategySalesforce, flattenMap(flattenConnectionOptionsSalesforce(o, *c.Strategy),
+			true))
 	case *management.ConnectionOptionsEmail:
 		_ = d.Set(management.ConnectionStrategyEmail, flattenMap(flattenConnectionOptionsEmail(o), true))
 	case *management.ConnectionOptionsSMS:

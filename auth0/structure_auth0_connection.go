@@ -113,15 +113,22 @@ func flattenConnectionOptionsLinkedin(o *management.ConnectionOptionsLinkedin) m
 	return xx
 }
 
-func flattenConnectionOptionsSalesforce(o *management.ConnectionOptionsSalesforce) map[string]interface{} {
-	return map[string]interface{}{
+func flattenConnectionOptionsSalesforce(o *management.ConnectionOptionsSalesforce,
+	strategy string) map[string]interface{} {
+	data := map[string]interface{}{
 		"client_id":                o.GetClientID(),
 		"client_secret":            o.GetClientSecret(),
 		"community_base_url":       o.GetCommunityBaseURL(),
-		"scopes":                   o.Scopes(),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
 	}
+	switch strategy {
+	case "salesforce-sandbox":
+		data["type"] = "sandbox"
+	case "salesforce-community":
+		data["type"] = "community"
+	}
+	return data
 }
 
 func flattenConnectionOptionsSMS(o *management.ConnectionOptionsSMS) map[string]interface{} {
@@ -471,8 +478,6 @@ func expandConnectionOptionsSalesforce(d ResourceData) *management.ConnectionOpt
 		SetUserAttributes:  String(d, "set_user_root_attributes"),
 		NonPersistentAttrs: castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 	}
-
-	expandConnectionOptionsScopes(d, o)
 
 	return o
 }
