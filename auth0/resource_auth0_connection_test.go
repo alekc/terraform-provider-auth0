@@ -1074,10 +1074,6 @@ resource "auth0_connection" "github" {
 		client_secret = "client-secret"
 		set_user_root_attributes = "on_each_login"
 		non_persistent_attrs = ["foo", "bar"]
-		scopes = [ "email", "profile", "read_user", "follow", "public_repo", "repo", "repo_deployment", "repo_status",
-				   "delete_repo", "notifications", "gist", "read_repo_hook", "write_repo_hook", "admin_repo_hook",
-				   "read_org", "admin_org", "read_public_key", "write_public_key", "admin_public_key", "write_org"
-		]
 	}
 }
 `, rand),
@@ -1085,27 +1081,6 @@ resource "auth0_connection" "github" {
 					random.TestCheckResourceAttr("auth0_connection.github", "name", "Acceptance-Test-GitHub-{{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.client_id", "client-id"),
 					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.client_secret", "client-secret"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.#", "20"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.0", "admin_org"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.1", "admin_public_key"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.2", "admin_repo_hook"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.3", "delete_repo"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.4", "email"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.5", "follow"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.6", "gist"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.7", "notifications"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.8", "profile"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.9", "public_repo"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.10", "read_org"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.11", "read_public_key"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.12", "read_repo_hook"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.13", "read_user"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.14", "repo"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.15", "repo_deployment"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.16", "repo_status"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.17", "write_org"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.18", "write_public_key"),
-					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.scopes.19", "write_repo_hook"),
 					resource.TestCheckResourceAttr("auth0_connection.github", "github.0.set_user_root_attributes", "on_each_login"),
 					resource.TestCheckResourceAttr("auth0_connection.github",
 						"github.0.non_persistent_attrs.0", "bar"),

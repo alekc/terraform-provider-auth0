@@ -447,7 +447,6 @@ var connectionSchema = map[string]*schema.Schema{
 				"client_secret":            connectionSchemaClientSecret,
 				"set_user_root_attributes": connectionSchemaSetUserRootAttributes,
 				"non_persistent_attrs":     connectionSchemaNonPersistentAttributes,
-				"scopes":                   connectionSchemaScopes,
 			},
 		},
 	},

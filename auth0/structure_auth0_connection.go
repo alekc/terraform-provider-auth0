@@ -11,7 +11,6 @@ func flattenConnectionOptionsGitHub(o *management.ConnectionOptionsGitHub) map[s
 		"client_secret":            o.GetClientSecret(),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
-		"scopes":                   o.Scopes(),
 	}
 }
 
@@ -338,8 +337,6 @@ func expandConnectionOptionsGitHub(d ResourceData) *management.ConnectionOptions
 		SetUserAttributes:  String(d, "set_user_root_attributes"),
 		NonPersistentAttrs: castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 	}
-
-	expandConnectionOptionsScopes(d, o)
 
 	return o
 }
