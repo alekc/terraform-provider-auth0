@@ -1018,7 +1018,6 @@ resource "auth0_connection" "linkedin" {
 		client_id = "client_id"
 		client_secret = "client_secret"
 		strategy_version = 2
-		scopes = [ "basic_profile", "profile", "email" ]
 		set_user_root_attributes = "on_each_login"
 		non_persistent_attrs = ["foo", "bar"]
 	}
@@ -1029,10 +1028,6 @@ resource "auth0_connection" "linkedin" {
 					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.client_id", "client_id"),
 					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.client_secret", "client_secret"),
 					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.strategy_version", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.scopes.#", "3"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.scopes.0", "basic_profile"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.scopes.1", "email"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.scopes.2", "profile"),
 					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.set_user_root_attributes", "on_each_login"),
 					resource.TestCheckResourceAttr("auth0_connection.linkedin",
 						"linkedin.0.non_persistent_attrs.0", "bar"),
@@ -1050,7 +1045,6 @@ resource "auth0_connection" "linkedin" {
 		client_id = "client_id_update"
 		client_secret = "client_secret_update"
 		strategy_version = 2
-		scopes = [ "basic_profile", "profile" ]
 		set_user_root_attributes = "on_each_login"
 		non_persistent_attrs = ["foo", "bar"]
 	}
@@ -1059,9 +1053,6 @@ resource "auth0_connection" "linkedin" {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.client_id", "client_id_update"),
 					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.client_secret", "client_secret_update"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.scopes.0", "basic_profile"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.scopes.1", "profile"),
-					resource.TestCheckResourceAttr("auth0_connection.linkedin", "linkedin.0.scopes.#", "2"),
 				),
 			},
 		},

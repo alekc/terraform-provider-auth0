@@ -109,7 +109,6 @@ func flattenConnectionOptionsLinkedin(o *management.ConnectionOptionsLinkedin) m
 		"client_id":                o.GetClientID(),
 		"client_secret":            o.GetClientSecret(),
 		"strategy_version":         o.GetStrategyVersion(),
-		"scopes":                   o.Scopes(),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
 	}
@@ -463,8 +462,6 @@ func expandConnectionOptionsLinkedin(d ResourceData) *management.ConnectionOptio
 		SetUserAttributes:  String(d, "set_user_root_attributes"),
 		NonPersistentAttrs: castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 	}
-
-	expandConnectionOptionsScopes(d, o)
 
 	return o
 }
