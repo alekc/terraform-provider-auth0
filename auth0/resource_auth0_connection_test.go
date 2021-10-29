@@ -452,7 +452,7 @@ resource "auth0_connection" "azure_ad" {
 	})
 }
 
-func TestAccConnectionOIDC(t *testing.T) {
+func TestAccConnection_OIDC(t *testing.T) {
 
 	rand := random.String(6)
 
@@ -460,13 +460,14 @@ func TestAccConnectionOIDC(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				// language=hcl
 				Config: random.Template(`
 resource "auth0_connection" "oidc" {
 	name     = "Acceptance-Test-OIDC-{{.random}}"
 	display_name     = "Acceptance-Test-OIDC-{{.random}}"
-	options {
+	oidc {
 		client_id     = "123456"
-		client_secret = "123456"
+		client_secret = "1234567"
 		domain_aliases = [
 			"example.com",
 			"api.example.com"
@@ -478,7 +479,7 @@ resource "auth0_connection" "oidc" {
 		token_endpoint         = "https://api.login.yahoo.com/oauth2/get_token"
 		userinfo_endpoint      = "https://api.login.yahoo.com/openid/v1/userinfo"
 		authorization_endpoint = "https://api.login.yahoo.com/oauth2/request_auth"
-		scopes                 = [ "openid", "email", "profile" ]
+		scopes                 = [ "openid", "email", "profile","zzz" ]
 		set_user_root_attributes = "on_each_login"
 		non_persistent_attrs = ["gender","hair_color"]
 	}
@@ -486,70 +487,36 @@ resource "auth0_connection" "oidc" {
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.oidc", "name", "Acceptance-Test-OIDC-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "strategy", "oidc"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.client_id", "123456"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.client_secret", "123456"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.domain_aliases.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.domain_aliases.1", "example.com"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.domain_aliases.0", "api.example.com"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.type", "back_channel"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.issuer", "https://api.login.yahoo.com"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.jwks_uri", "https://api.login.yahoo.com/openid/v1/certs"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.discovery_url", "https://api.login.yahoo.com/.well-known/openid-configuration"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.token_endpoint", "https://api.login.yahoo.com/oauth2/get_token"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.userinfo_endpoint", "https://api.login.yahoo.com/openid/v1/userinfo"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.authorization_endpoint", "https://api.login.yahoo.com/oauth2/request_auth"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.#", "3"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.1", "openid"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.2", "profile"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.0", "email"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.set_user_root_attributes", "on_each_login"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.non_persistent_attrs.0",
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.client_id", "123456"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.client_secret", "1234567"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.domain_aliases.#", "2"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.domain_aliases.1", "example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.domain_aliases.0",
+						"api.example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.type", "back_channel"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.issuer",
+						"https://api.login.yahoo.com"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.jwks_uri",
+						"https://api.login.yahoo.com/openid/v1/certs"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.discovery_url",
+						"https://api.login.yahoo.com/.well-known/openid-configuration"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.token_endpoint",
+						"https://api.login.yahoo.com/oauth2/get_token"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.userinfo_endpoint",
+						"https://api.login.yahoo.com/openid/v1/userinfo"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.authorization_endpoint",
+						"https://api.login.yahoo.com/oauth2/request_auth"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.scopes.#", "4"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.scopes.1", "openid"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.scopes.2", "profile"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.scopes.3", "zzz"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.scopes.0", "email"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.set_user_root_attributes",
+						"on_each_login"),
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.non_persistent_attrs.0",
 						"gender"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.non_persistent_attrs.1",
+					resource.TestCheckResourceAttr("auth0_connection.oidc", "oidc.0.non_persistent_attrs.1",
 						"hair_color"),
-				),
-			},
-			{
-				Config: random.Template(`
-
-resource "auth0_connection" "oidc" {
-	name     = "Acceptance-Test-OIDC-{{.random}}"
-	display_name     = "Acceptance-Test-OIDC-{{.random}}"
-	options {
-		client_id     = "1234567"
-		client_secret = "1234567"
-		domain_aliases = [
-			"example.com"
-		]
-		type                   = "front_channel"
-		issuer                 = "https://www.paypalobjects.com"
-		jwks_uri               = "https://api.paypal.com/v1/oauth2/certs"
-		discovery_url          = "https://www.paypalobjects.com/.well-known/openid-configuration"
-		token_endpoint         = "https://api.paypal.com/v1/oauth2/token"
-		userinfo_endpoint      = "https://api.paypal.com/v1/oauth2/token/userinfo"
-		authorization_endpoint = "https://www.paypal.com/signin/authorize"
-		scopes                 = [ "openid", "email" ]
-		set_user_root_attributes = "on_first_login"
-	}
-}
-`, rand),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.client_id", "1234567"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.client_secret", "1234567"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.domain_aliases.#", "1"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.domain_aliases.0", "example.com"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.type", "front_channel"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.issuer", "https://www.paypalobjects.com"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.jwks_uri", "https://api.paypal.com/v1/oauth2/certs"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.discovery_url", "https://www.paypalobjects.com/.well-known/openid-configuration"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.token_endpoint", "https://api.paypal.com/v1/oauth2/token"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.userinfo_endpoint", "https://api.paypal.com/v1/oauth2/token/userinfo"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.authorization_endpoint", "https://www.paypal.com/signin/authorize"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.1", "openid"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.scopes.0", "email"),
-					resource.TestCheckResourceAttr("auth0_connection.oidc", "options.0.set_user_root_attributes", "on_first_login"),
 				),
 			},
 		},
