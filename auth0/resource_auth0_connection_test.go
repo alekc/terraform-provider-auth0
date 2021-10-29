@@ -1109,18 +1109,14 @@ resource "auth0_connection" "windowslive" {
 		strategy_version = 2
 		set_user_root_attributes = "on_each_login"
 		non_persistent_attrs = ["foo", "bar"]
-		scopes = ["signin", "graph_user"]
 	}
 }
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.windowslive", "name", "Acceptance-Test-Windowslive-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.client_id", "client_id"),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.client_secret", "client_secret"),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.strategy_version", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.1", "signin"),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "options.0.scopes.0", "graph_user"),
+					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.client_id", "client_id"),
+					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.client_secret", "client_secret"),
+					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.strategy_version", "2"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.set_user_root_attributes", "on_each_login"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive",
 						"windowslive.0.non_persistent_attrs.0", "bar"),
@@ -1134,11 +1130,10 @@ resource "auth0_connection" "windowslive" {
 resource "auth0_connection" "windowslive" {
 	name = "Acceptance-Test-Windowslive-{{.random}}"
 	is_domain_connection = false
-	options {
+	windowslive {
 		client_id = "client_id_update"
 		client_secret = "client_secret_update"
 		strategy_version = 2
-		scopes = ["signin"]
 	}
 }
 `, rand),
@@ -1147,8 +1142,6 @@ resource "auth0_connection" "windowslive" {
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.client_id", "client_id_update"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.client_secret", "client_secret_update"),
 					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.strategy_version", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.scopes.#", "1"),
-					resource.TestCheckResourceAttr("auth0_connection.windowslive", "windowslive.0.scopes.0", "signin"),
 				),
 			},
 		},

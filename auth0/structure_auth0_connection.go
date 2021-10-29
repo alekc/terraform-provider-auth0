@@ -18,7 +18,6 @@ func flattenConnectionOptionsWindowsLive(o *management.ConnectionOptionsWindowsL
 	return map[string]interface{}{
 		"client_id":                o.GetClientID(),
 		"client_secret":            o.GetClientSecret(),
-		"scopes":                   o.Scopes(),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
 		"strategy_version":         o.GetStrategyVersion(),
@@ -487,8 +486,6 @@ func expandConnectionOptionsWindowsLive(d ResourceData) *management.ConnectionOp
 		SetUserAttributes:  String(d, "set_user_root_attributes"),
 		NonPersistentAttrs: castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 	}
-
-	expandConnectionOptionsScopes(d, o)
 
 	return o
 }
