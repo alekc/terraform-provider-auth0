@@ -353,18 +353,17 @@ func TestAccConnection_NonPersistentAttrs(t *testing.T) {
 	})
 }
 
-func TestAccConnectionAD(t *testing.T) {
-
+func TestAccConnection_AD(t *testing.T) {
 	rand := random.String(6)
-
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				// language=hcl
 				Config: random.Template(`
 resource "auth0_connection" "ad" {
 	name = "Acceptance-Test-AD-{{.random}}"
-	options {
+	ad {
 		tenant_domain = "example.com"
 		domain_aliases = [
 			"example.com",
@@ -378,18 +377,18 @@ resource "auth0_connection" "ad" {
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.ad", "name", "Acceptance-Test-AD-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "strategy", "ad"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.domain_aliases.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.tenant_domain", "example.com"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.use_kerberos", "false"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.ips.1", "192.168.1.2"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.ips.0", "192.168.1.1"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.domain_aliases.1", "example.com"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.domain_aliases.0",
+					resource.TestCheckResourceAttr("auth0_connection.ad", "ad.0.domain_aliases.#", "2"),
+					resource.TestCheckResourceAttr("auth0_connection.ad", "ad.0.tenant_domain", "example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.ad", "ad.0.use_kerberos", "false"),
+					resource.TestCheckResourceAttr("auth0_connection.ad", "ad.0.ips.1", "192.168.1.2"),
+					resource.TestCheckResourceAttr("auth0_connection.ad", "ad.0.ips.0", "192.168.1.1"),
+					resource.TestCheckResourceAttr("auth0_connection.ad", "ad.0.domain_aliases.1", "example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.ad", "ad.0.domain_aliases.0",
 						"api.example.com"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.set_user_root_attributes", "on_each_login"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.non_persistent_attrs.0", "ethnicity"),
-					resource.TestCheckResourceAttr("auth0_connection.ad", "options.0.non_persistent_attrs.1", "gender"),
+					resource.TestCheckResourceAttr("auth0_connection.ad", "ad.0.set_user_root_attributes",
+						"on_each_login"),
+					resource.TestCheckResourceAttr("auth0_connection.ad", "ad.0.non_persistent_attrs.0", "ethnicity"),
+					resource.TestCheckResourceAttr("auth0_connection.ad", "ad.0.non_persistent_attrs.1", "gender"),
 				),
 			},
 		},
