@@ -657,7 +657,7 @@ resource "auth0_connection" "my_connection" {
 	})
 }
 
-func TestAccConnectionEmail(t *testing.T) {
+func TestAccConnection_Email(t *testing.T) {
 
 	rand := random.String(6)
 
@@ -665,22 +665,20 @@ func TestAccConnectionEmail(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				// language=hcl
 				Config: random.Template(`
-
 resource "auth0_connection" "email" {
 	name = "Acceptance-Test-Email-{{.random}}"
 	is_domain_connection = false
 
-	options {
+	email {
 		disable_signup = false
 		name = "Email OTP"
 		from = "Magic Password <password@example.com>"
 		subject = "Sign in!"
 		syntax = "liquid"
 		template = "<html><body><h1>Here's your password!</h1></body></html>"
-
 		brute_force_protection = true
-
 		totp {
 			time_step = 300
 			length = 6
@@ -691,41 +689,17 @@ resource "auth0_connection" "email" {
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.email", "name", "Acceptance-Test-Email-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.email", "options.0.from", "Magic Password <password@example.com>"),
-					resource.TestCheckResourceAttr("auth0_connection.email", "options.0.subject", "Sign in!"),
-					resource.TestCheckResourceAttr("auth0_connection.email", "options.0.totp.#", "1"),
-					resource.TestCheckResourceAttr("auth0_connection.email", "options.0.totp.0.time_step", "300"),
-					resource.TestCheckResourceAttr("auth0_connection.email", "options.0.totp.0.length", "6"),
-				),
-			},
-			{
-				Config: random.Template(`
-
-resource "auth0_connection" "email" {
-	name = "Acceptance-Test-Email-{{.random}}"
-	is_domain_connection = false
-
-	options {
-		disable_signup = false
-		name = "Email OTP"
-		from = "Magic Password <password@example.com>"
-		subject = "Sign in!"
-		syntax = "liquid"
-		template = "<html><body><h1>Here's your password!</h1></body></html>"
-
-		brute_force_protection = true
-
-		totp {
-			time_step = 360
-			length = 4
-		}
-	}
-}
-`, rand),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("auth0_connection.email", "options.0.totp.#", "1"),
-					resource.TestCheckResourceAttr("auth0_connection.email", "options.0.totp.0.time_step", "360"),
-					resource.TestCheckResourceAttr("auth0_connection.email", "options.0.totp.0.length", "4"),
+					resource.TestCheckResourceAttr("auth0_connection.email", "email.0.from",
+						"Magic Password <password@example.com>"),
+					resource.TestCheckResourceAttr("auth0_connection.email", "email.0.name", "Email OTP"),
+					resource.TestCheckResourceAttr("auth0_connection.email", "email.0.subject", "Sign in!"),
+					resource.TestCheckResourceAttr("auth0_connection.email", "email.0.syntax", "liquid"),
+					resource.TestCheckResourceAttr("auth0_connection.email", "email.0.template", "<html><body><h1>Here's your password!</h1></body></html>"),
+					resource.TestCheckResourceAttr("auth0_connection.email", "email.0.brute_force_protection",
+						"true"),
+					resource.TestCheckResourceAttr("auth0_connection.email", "email.0.totp.#", "1"),
+					resource.TestCheckResourceAttr("auth0_connection.email", "email.0.totp.0.time_step", "300"),
+					resource.TestCheckResourceAttr("auth0_connection.email", "email.0.totp.0.length", "6"),
 				),
 			},
 		},
