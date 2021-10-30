@@ -395,7 +395,7 @@ resource "auth0_connection" "ad" {
 	})
 }
 
-func TestAccConnectionAzureAD(t *testing.T) {
+func TestAccConnection_AzureAD(t *testing.T) {
 
 	rand := random.String(6)
 
@@ -403,10 +403,11 @@ func TestAccConnectionAzureAD(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				// language=hcl
 				Config: random.Template(`
 resource "auth0_connection" "azure_ad" {
 	name     = "Acceptance-Test-Azure-AD-{{.random}}"
-	options {
+	waad {
 		client_id     = "123456"
 		client_secret = "123456"
 		tenant_domain = "example.onmicrosoft.com"
@@ -419,11 +420,6 @@ resource "auth0_connection" "azure_ad" {
 		waad_protocol        = "openid-connect"
 		waad_common_endpoint = false
 		api_enable_users     = true
-		scopes               = [
-			"basic_profile",
-			"ext_groups",
-			"ext_profile"
-		]
 		set_user_root_attributes = "on_each_login"
 		should_trust_email_verified_connection = "never_set_emails_as_verified"
 	}
@@ -431,20 +427,29 @@ resource "auth0_connection" "azure_ad" {
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.azure_ad", "name", "Acceptance-Test-Azure-AD-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "strategy", "waad"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.client_id", "123456"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.client_secret", "123456"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.tenant_domain", "example.onmicrosoft.com"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.domain", "example.onmicrosoft.com"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.domain_aliases.#", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.domain_aliases.1", "example.com"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.domain_aliases.0", "api.example.com"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.scopes.#", "3"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.scopes.0", "basic_profile"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.scopes.2", "ext_profile"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.scopes.1", "ext_groups"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.set_user_root_attributes", "on_each_login"),
-					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "options.0.should_trust_email_verified_connection", "never_set_emails_as_verified"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "waad.0.client_id", "123456"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "waad.0.client_secret", "123456"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "waad.0.tenant_domain",
+						"example.onmicrosoft.com"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "waad.0.domain",
+						"example.onmicrosoft.com"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "waad.0.domain_aliases.#", "2"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "waad.0.domain_aliases.1",
+						"example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "waad.0.domain_aliases.0",
+						"api.example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "waad.0.use_wsfed",
+						"false"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "waad.0.waad_protocol",
+						"openid-connect"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "waad.0.waad_common_endpoint",
+						"false"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "waad.0.api_enable_users",
+						"true"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad", "waad.0.set_user_root_attributes",
+						"on_each_login"),
+					resource.TestCheckResourceAttr("auth0_connection.azure_ad",
+						"waad.0.should_trust_email_verified_connection", "never_set_emails_as_verified"),
 				),
 			},
 		},

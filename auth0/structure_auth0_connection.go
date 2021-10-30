@@ -218,7 +218,6 @@ func flattenConnectionOptionsAzureAD(o *management.ConnectionOptionsAzureAD) map
 		"use_wsfed":                              o.GetUseWSFederation(),
 		"api_enable_users":                       o.GetEnableUsersAPI(),
 		"max_groups_to_retrieve":                 o.GetMaxGroupsToRetrieve(),
-		"scopes":                                 o.Scopes(),
 		"set_user_root_attributes":               o.GetSetUserAttributes(),
 		"non_persistent_attrs":                   o.GetNonPersistentAttrs(),
 		"should_trust_email_verified_connection": o.GetTrustEmailVerified(),
@@ -592,8 +591,6 @@ func expandConnectionOptionsAzureAD(d ResourceData) *management.ConnectionOption
 		NonPersistentAttrs:  castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 		TrustEmailVerified:  String(d, "should_trust_email_verified_connection"),
 	}
-
-	expandConnectionOptionsScopes(d, o)
 
 	return o
 }

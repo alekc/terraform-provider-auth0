@@ -690,7 +690,6 @@ var connectionSchema = map[string]*schema.Schema{
 				},
 				"set_user_root_attributes": connectionSchemaSetUserRootAttributes,
 				"non_persistent_attrs":     connectionSchemaNonPersistentAttributes,
-				"scopes":                   connectionSchemaScopes,
 			},
 		},
 	},
