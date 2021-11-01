@@ -320,17 +320,15 @@ func TestAccConnection_NonPersistentAttrs(t *testing.T) {
 				Config: random.Template(`
 			resource "auth0_connection" "my_connection" {
 				name = "Acceptance-Test-Connection-{{.random}}"
-				strategy = "auth0"
-				options {
+				auth0 {
 					non_persistent_attrs = ["ethnicity"]
 				}
 			}
 			`, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.my_connection", "name", "Acceptance-Test-Connection-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "strategy", "auth0"),
 					resource.TestCheckResourceAttr("auth0_connection.my_connection",
-						"options.0.non_persistent_attrs.0", "ethnicity"),
+						"auth0.0.non_persistent_attrs.0", "ethnicity"),
 				),
 			},
 			{
@@ -338,15 +336,14 @@ func TestAccConnection_NonPersistentAttrs(t *testing.T) {
 				Config: random.Template(`
 			resource "auth0_connection" "my_connection" {
 				name = "Acceptance-Test-Connection-{{.random}}"
-				options {
+				auth0 {
 					non_persistent_attrs = ["bar"]
 				}
 			}
 			`, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.my_connection", "name", "Acceptance-Test-Connection-{{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "strategy", "auth0"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.non_persistent_attrs.0", "bar"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.non_persistent_attrs.0", "bar"),
 				),
 			},
 		},
@@ -602,7 +599,7 @@ resource "auth0_connection" "oauth2" {
 	})
 }
 
-func TestAccConnectionWithEnabledClients(t *testing.T) {
+func TestAccConnection_WithEnabledClients(t *testing.T) {
 
 	rand := random.String(6)
 
@@ -610,8 +607,8 @@ func TestAccConnectionWithEnabledClients(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				// language=hcl
 				Config: random.Template(`
-
 resource "auth0_client" "my_client_1" {
 	name = "Application - Acceptance Test - 1 - {{.random}}"
 	description = "Test Applications Long Description"
@@ -639,7 +636,7 @@ resource "auth0_client" "my_client_4" {
 resource "auth0_connection" "my_connection" {
 	name = "Acceptance-Test-Connection-{{.random}}"
 	is_domain_connection = true
-    options {}
+    auth0 {}
 	enabled_clients = [
 		"${auth0_client.my_client_1.id}",
 		"${auth0_client.my_client_2.id}",
@@ -1172,7 +1169,7 @@ resource "auth0_connection" "sms" {
 	})
 }
 
-func TestAccConnectionConfiguration(t *testing.T) {
+func TestAccConnection_Configuration(t *testing.T) {
 
 	rand := random.String(6)
 
@@ -1180,12 +1177,12 @@ func TestAccConnectionConfiguration(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				// language=hcl
 				Config: random.Template(`
-
 resource "auth0_connection" "my_connection" {
 	name = "Acceptance-Test-Connection-{{.random}}"
 	is_domain_connection = true
-	options {
+	auth0 {
 		configuration = {
 			foo = "xxx"
 			bar = "zzz"
@@ -1194,18 +1191,18 @@ resource "auth0_connection" "my_connection" {
 }
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.configuration.%", "2"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.configuration.foo", "xxx"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.configuration.bar", "zzz"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.configuration.%", "2"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.configuration.foo", "xxx"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.configuration.bar", "zzz"),
 				),
 			},
 			{
+				// language=hcl
 				Config: random.Template(`
-
 resource "auth0_connection" "my_connection" {
 	name = "Acceptance-Test-Connection-{{.random}}"
 	is_domain_connection = true
-	options {
+	auth0 {
 		configuration = {
 			foo = "xxx"
 			bar = "yyy"
@@ -1215,10 +1212,10 @@ resource "auth0_connection" "my_connection" {
 }
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.configuration.%", "3"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.configuration.foo", "xxx"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.configuration.bar", "yyy"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.configuration.baz", "zzz"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.configuration.%", "3"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.configuration.foo", "xxx"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.configuration.bar", "yyy"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "auth0.0.configuration.baz", "zzz"),
 				),
 			},
 		},
