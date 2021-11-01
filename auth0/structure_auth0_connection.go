@@ -1,119 +1,75 @@
 package auth0
 
 import (
-	"log"
-
+	"gopkg.in/auth0.v5"
 	"gopkg.in/auth0.v5/management"
 )
 
-func flattenConnectionOptions(d ResourceData, options interface{}) []interface{} {
-
-	var m interface{}
-
-	switch o := options.(type) {
-	case *management.ConnectionOptions:
-		m = flattenConnectionOptionsAuth0(d, o)
-	case *management.ConnectionOptionsGoogleOAuth2:
-		m = flattenConnectionOptionsGoogleOAuth2(o)
-	case *management.ConnectionOptionsOAuth2:
-		m = flattenConnectionOptionsOAuth2(o)
-	case *management.ConnectionOptionsFacebook:
-		m = flattenConnectionOptionsFacebook(o)
-	case *management.ConnectionOptionsApple:
-		m = flattenConnectionOptionsApple(o)
-	case *management.ConnectionOptionsLinkedin:
-		m = flattenConnectionOptionsLinkedin(o)
-	case *management.ConnectionOptionsGitHub:
-		m = flattenConnectionOptionsGitHub(o)
-	case *management.ConnectionOptionsWindowsLive:
-		m = flattenConnectionOptionsWindowsLive(o)
-	case *management.ConnectionOptionsSalesforce:
-		m = flattenConnectionOptionsSalesforce(o)
-	case *management.ConnectionOptionsEmail:
-		m = flattenConnectionOptionsEmail(o)
-	case *management.ConnectionOptionsSMS:
-		m = flattenConnectionOptionsSMS(o)
-	case *management.ConnectionOptionsOIDC:
-		m = flattenConnectionOptionsOIDC(o)
-	case *management.ConnectionOptionsAD:
-		m = flattenConnectionOptionsAD(o)
-	case *management.ConnectionOptionsAzureAD:
-		m = flattenConnectionOptionsAzureAD(o)
-	case *management.ConnectionOptionsSAML:
-		m = flattenConnectionOptionsSAML(o)
-	}
-
-	return []interface{}{m}
-}
-
-func flattenConnectionOptionsGitHub(o *management.ConnectionOptionsGitHub) interface{} {
+func flattenConnectionOptionsGitHub(o *management.ConnectionOptionsGitHub) map[string]interface{} {
 	return map[string]interface{}{
 		"client_id":                o.GetClientID(),
 		"client_secret":            o.GetClientSecret(),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
-		"scopes":                   o.Scopes(),
 	}
 }
 
-func flattenConnectionOptionsWindowsLive(o *management.ConnectionOptionsWindowsLive) interface{} {
+func flattenConnectionOptionsWindowsLive(o *management.ConnectionOptionsWindowsLive) map[string]interface{} {
 	return map[string]interface{}{
 		"client_id":                o.GetClientID(),
 		"client_secret":            o.GetClientSecret(),
-		"scopes":                   o.Scopes(),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
 		"strategy_version":         o.GetStrategyVersion(),
 	}
 }
 
-func flattenConnectionOptionsAuth0(d ResourceData, o *management.ConnectionOptions) interface{} {
+func flattenConnectionOptionsAuth0(d ResourceData, o *management.ConnectionOptions) map[string]interface{} {
 	return map[string]interface{}{
-		"validation":                     flattenMap(o.Validation),
+		"validation":                     flattenMap(o.Validation, true),
 		"password_policy":                o.GetPasswordPolicy(),
-		"password_history":               flattenMap(o.PasswordHistory),
-		"password_no_personal_info":      flattenMap(o.PasswordNoPersonalInfo),
-		"password_dictionary":            flattenMap(o.PasswordDictionary),
-		"password_complexity_options":    flattenMap(o.PasswordComplexityOptions),
+		"password_history":               flattenMap(o.PasswordHistory, true),
+		"password_no_personal_info":      flattenMap(o.PasswordNoPersonalInfo, true),
+		"password_dictionary":            flattenMap(o.PasswordDictionary, true),
+		"password_complexity_options":    flattenMap(o.PasswordComplexityOptions, true),
 		"enabled_database_customization": o.GetEnabledDatabaseCustomization(),
 		"brute_force_protection":         o.GetBruteForceProtection(),
 		"import_mode":                    o.GetImportMode(),
 		"disable_signup":                 o.GetDisableSignup(),
 		"requires_username":              o.GetRequiresUsername(),
 		"custom_scripts":                 o.CustomScripts,
-		"mfa":                            flattenMap(o.MFA),
-		"configuration":                  Map(d, "options.0.configuration"), // does not get read back
+		"mfa_active":                     o.MFA["active"],
+		"mfa_return_enroll_settings":     o.MFA["return_enroll_settings"],
+		"configuration":                  Map(d, "auth0.0.configuration"), // does not get read back
 		"non_persistent_attrs":           o.GetNonPersistentAttrs(),
 	}
 }
 
 // flattenMap fixes the issue "source data must be an array or slice, got map"
 //
-func flattenMap(input map[string]interface{}) interface{} {
+func flattenMap(input map[string]interface{}, recursively bool) interface{} {
 	if len(input) == 0 {
 		return nil
 	}
 	for k, v := range input {
-		switch castedVal := v.(type) {
-		case map[string]interface{}:
-			input[k] = flattenMap(castedVal)
+		if castedVal, ok := v.(map[string]interface{}); ok && recursively {
+			input[k] = flattenMap(castedVal, false)
 		}
 	}
 	return []interface{}{input}
 }
 
-func flattenConnectionOptionsGoogleOAuth2(o *management.ConnectionOptionsGoogleOAuth2) interface{} {
+func flattenConnectionOptionsGoogleOAuth2(o *management.ConnectionOptionsGoogleOAuth2) map[string]interface{} {
 	return map[string]interface{}{
 		"client_id":                o.GetClientID(),
 		"client_secret":            o.GetClientSecret(),
 		"allowed_audiences":        o.AllowedAudiences,
-		"scopes":                   o.Scopes(),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
 	}
 }
 
-func flattenConnectionOptionsOAuth2(o *management.ConnectionOptionsOAuth2) interface{} {
+func flattenConnectionOptionsOAuth2(o *management.ConnectionOptionsOAuth2) map[string]interface{} {
 	return map[string]interface{}{
 		"client_id":                o.GetClientID(),
 		"client_secret":            o.GetClientSecret(),
@@ -126,51 +82,56 @@ func flattenConnectionOptionsOAuth2(o *management.ConnectionOptionsOAuth2) inter
 	}
 }
 
-func flattenConnectionOptionsFacebook(o *management.ConnectionOptionsFacebook) interface{} {
+func flattenConnectionOptionsFacebook(o *management.ConnectionOptionsFacebook) map[string]interface{} {
 	return map[string]interface{}{
 		"client_id":                o.GetClientID(),
 		"client_secret":            o.GetClientSecret(),
-		"scopes":                   o.Scopes(),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
 	}
 }
 
-func flattenConnectionOptionsApple(o *management.ConnectionOptionsApple) interface{} {
+func flattenConnectionOptionsApple(o *management.ConnectionOptionsApple) map[string]interface{} {
 	return map[string]interface{}{
 		"client_id":                o.GetClientID(),
 		"client_secret":            o.GetClientSecret(),
 		"team_id":                  o.GetTeamID(),
 		"key_id":                   o.GetKeyID(),
-		"scopes":                   o.Scopes(),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
 	}
 }
 
-func flattenConnectionOptionsLinkedin(o *management.ConnectionOptionsLinkedin) interface{} {
-	return map[string]interface{}{
+func flattenConnectionOptionsLinkedin(o *management.ConnectionOptionsLinkedin) map[string]interface{} {
+	xx := map[string]interface{}{
 		"client_id":                o.GetClientID(),
 		"client_secret":            o.GetClientSecret(),
 		"strategy_version":         o.GetStrategyVersion(),
-		"scopes":                   o.Scopes(),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
 	}
+	return xx
 }
 
-func flattenConnectionOptionsSalesforce(o *management.ConnectionOptionsSalesforce) interface{} {
-	return map[string]interface{}{
+func flattenConnectionOptionsSalesforce(o *management.ConnectionOptionsSalesforce,
+	strategy string) map[string]interface{} {
+	data := map[string]interface{}{
 		"client_id":                o.GetClientID(),
 		"client_secret":            o.GetClientSecret(),
 		"community_base_url":       o.GetCommunityBaseURL(),
-		"scopes":                   o.Scopes(),
 		"set_user_root_attributes": o.GetSetUserAttributes(),
 		"non_persistent_attrs":     o.GetNonPersistentAttrs(),
 	}
+	switch strategy {
+	case "salesforce-sandbox":
+		data["type"] = "sandbox"
+	case "salesforce-community":
+		data["type"] = "community"
+	}
+	return data
 }
 
-func flattenConnectionOptionsSMS(o *management.ConnectionOptionsSMS) interface{} {
+func flattenConnectionOptionsSMS(o *management.ConnectionOptionsSMS) map[string]interface{} {
 	return map[string]interface{}{
 		"name":                   o.GetName(),
 		"from":                   o.GetFrom(),
@@ -185,7 +146,7 @@ func flattenConnectionOptionsSMS(o *management.ConnectionOptionsSMS) interface{}
 	}
 }
 
-func flattenConnectionOptionsOIDC(o *management.ConnectionOptionsOIDC) interface{} {
+func flattenConnectionOptionsOIDC(o *management.ConnectionOptionsOIDC) map[string]interface{} {
 	return map[string]interface{}{
 		"client_id":      o.GetClientID(),
 		"client_secret":  o.GetClientSecret(),
@@ -206,7 +167,7 @@ func flattenConnectionOptionsOIDC(o *management.ConnectionOptionsOIDC) interface
 	}
 }
 
-func flattenConnectionOptionsEmail(o *management.ConnectionOptionsEmail) interface{} {
+func flattenConnectionOptionsEmail(o *management.ConnectionOptionsEmail) map[string]interface{} {
 	return map[string]interface{}{
 		"name":                     o.GetName(),
 		"from":                     o.GetEmail().GetFrom(),
@@ -225,9 +186,9 @@ func flattenTotp(otp *management.ConnectionOptionsOTP) interface{} {
 	return flattenMap(map[string]interface{}{
 		"time_step": otp.GetTimeStep(),
 		"length":    otp.GetLength(),
-	})
+	}, true)
 }
-func flattenConnectionOptionsAD(o *management.ConnectionOptionsAD) interface{} {
+func flattenConnectionOptionsAD(o *management.ConnectionOptionsAD) map[string]interface{} {
 	return map[string]interface{}{
 		"tenant_domain":            o.GetTenantDomain(),
 		"domain_aliases":           o.DomainAliases,
@@ -242,7 +203,7 @@ func flattenConnectionOptionsAD(o *management.ConnectionOptionsAD) interface{} {
 	}
 }
 
-func flattenConnectionOptionsAzureAD(o *management.ConnectionOptionsAzureAD) interface{} {
+func flattenConnectionOptionsAzureAD(o *management.ConnectionOptionsAzureAD) map[string]interface{} {
 	return map[string]interface{}{
 		"client_id":                              o.GetClientID(),
 		"client_secret":                          o.GetClientSecret(),
@@ -257,14 +218,13 @@ func flattenConnectionOptionsAzureAD(o *management.ConnectionOptionsAzureAD) int
 		"use_wsfed":                              o.GetUseWSFederation(),
 		"api_enable_users":                       o.GetEnableUsersAPI(),
 		"max_groups_to_retrieve":                 o.GetMaxGroupsToRetrieve(),
-		"scopes":                                 o.Scopes(),
 		"set_user_root_attributes":               o.GetSetUserAttributes(),
 		"non_persistent_attrs":                   o.GetNonPersistentAttrs(),
 		"should_trust_email_verified_connection": o.GetTrustEmailVerified(),
 	}
 }
 
-func flattenConnectionOptionsSAML(o *management.ConnectionOptionsSAML) interface{} {
+func flattenConnectionOptionsSAML(o *management.ConnectionOptionsSAML) map[string]interface{} {
 	return map[string]interface{}{
 		"signing_cert":     o.GetSigningCert(),
 		"protocol_binding": o.GetProtocolBinding(),
@@ -273,7 +233,7 @@ func flattenConnectionOptionsSAML(o *management.ConnectionOptionsSAML) interface
 			"client_id":              o.IdpInitiated.GetClientID(),
 			"client_protocol":        o.IdpInitiated.GetClientProtocol(),
 			"client_authorize_query": o.IdpInitiated.GetClientAuthorizeQuery(),
-		}),
+		}, false),
 		"tenant_domain":            o.GetTenantDomain(),
 		"domain_aliases":           o.DomainAliases,
 		"sign_in_endpoint":         o.GetSignInEndpoint(),
@@ -297,53 +257,78 @@ func expandConnection(d ResourceData) *management.Connection {
 	c := &management.Connection{
 		Name:               String(d, "name", IsNewResource()),
 		DisplayName:        String(d, "display_name"),
-		Strategy:           String(d, "strategy", IsNewResource()),
 		IsDomainConnection: Bool(d, "is_domain_connection"),
 		EnabledClients:     Set(d, "enabled_clients").List(),
 		Realms:             Slice(d, "realms", IsNewResource(), HasChange()),
 	}
 
-	s := d.Get("strategy").(string)
-
-	List(d, "options").Elem(func(d ResourceData) {
-		switch s {
-		case management.ConnectionStrategyAuth0:
-			c.Options = expandConnectionOptionsAuth0(d)
-		case management.ConnectionStrategyGoogleOAuth2:
-			c.Options = expandConnectionOptionsGoogleOAuth2(d)
-		case management.ConnectionStrategyOAuth2:
-			c.Options = expandConnectionOptionsOAuth2(d)
-		case management.ConnectionStrategyFacebook:
-			c.Options = expandConnectionOptionsFacebook(d)
-		case management.ConnectionStrategyApple:
-			c.Options = expandConnectionOptionsApple(d)
-		case management.ConnectionStrategyLinkedin:
-			c.Options = expandConnectionOptionsLinkedin(d)
-		case management.ConnectionStrategyGitHub:
-			c.Options = expandConnectionOptionsGitHub(d)
-		case management.ConnectionStrategyWindowsLive:
-			c.Options = expandConnectionOptionsWindowsLive(d)
-		case management.ConnectionStrategySalesforce,
-			management.ConnectionStrategySalesforceCommunity,
-			management.ConnectionStrategySalesforceSandbox:
-			c.Options = expandConnectionOptionsSalesforce(d)
-		case management.ConnectionStrategySMS:
-			c.Options = expandConnectionOptionsSMS(d)
-		case management.ConnectionStrategyOIDC:
-			c.Options = expandConnectionOptionsOIDC(d)
-		case management.ConnectionStrategyAD:
-			c.Options = expandConnectionOptionsAD(d)
-		case management.ConnectionStrategyAzureAD:
-			c.Options = expandConnectionOptionsAzureAD(d)
-		case management.ConnectionStrategyEmail:
-			c.Options = expandConnectionOptionsEmail(d)
-		case management.ConnectionStrategySAML:
-			c.Options = expandConnectionOptionsSAML(d)
-		default:
-			log.Printf("[WARN]: Unsupported connection strategy %s", s)
-			log.Printf("[WARN]: Raise an issue with the auth0 provider in order to support it:")
-			log.Printf("[WARN]: 	https://github.com/alekc/terraform-provider-auth0/issues/new")
+	List(d, management.ConnectionStrategyAuth0).Elem(func(d ResourceData) {
+		c.Strategy = auth0.String(management.ConnectionStrategyAuth0)
+		c.Options = expandConnectionOptionsAuth0(d)
+	})
+	List(d, "google_oauth2").Elem(func(d ResourceData) {
+		c.Strategy = auth0.String(management.ConnectionStrategyGoogleOAuth2)
+		c.Options = expandConnectionOptionsGoogleOAuth2(d)
+	})
+	List(d, management.ConnectionStrategyOAuth2).Elem(func(d ResourceData) {
+		c.Strategy = auth0.String(management.ConnectionStrategyOAuth2)
+		c.Options = expandConnectionOptionsOAuth2(d)
+	})
+	List(d, management.ConnectionStrategyFacebook).Elem(func(d ResourceData) {
+		c.Strategy = auth0.String(management.ConnectionStrategyFacebook)
+		c.Options = expandConnectionOptionsFacebook(d)
+	})
+	List(d, management.ConnectionStrategyApple).Elem(func(d ResourceData) {
+		c.Strategy = auth0.String(management.ConnectionStrategyApple)
+		c.Options = expandConnectionOptionsApple(d)
+	})
+	List(d, management.ConnectionStrategyLinkedin).Elem(func(d ResourceData) {
+		c.Strategy = auth0.String(management.ConnectionStrategyLinkedin)
+		c.Options = expandConnectionOptionsLinkedin(d)
+	})
+	List(d, management.ConnectionStrategyGitHub).Elem(func(d ResourceData) {
+		c.Strategy = auth0.String(management.ConnectionStrategyGitHub)
+		c.Options = expandConnectionOptionsGitHub(d)
+	})
+	List(d, management.ConnectionStrategyWindowsLive).Elem(func(d ResourceData) {
+		c.Strategy = auth0.String(management.ConnectionStrategyWindowsLive)
+		c.Options = expandConnectionOptionsWindowsLive(d)
+	})
+	List(d, "salesforce").Elem(func(d ResourceData) {
+		salesforceType := String(d, "type")
+		switch {
+		case salesforceType == nil:
+			c.Strategy = auth0.String(management.ConnectionStrategySalesforce)
+		case *salesforceType == "community":
+			c.Strategy = auth0.String(management.ConnectionStrategySalesforceCommunity)
+		case *salesforceType == "sandbox":
+			c.Strategy = auth0.String(management.ConnectionStrategySalesforceSandbox)
 		}
+		c.Options = expandConnectionOptionsSalesforce(d)
+	})
+	List(d, management.ConnectionStrategySMS).Elem(func(d ResourceData) {
+		c.Strategy = auth0.String(management.ConnectionStrategySMS)
+		c.Options = expandConnectionOptionsSMS(d)
+	})
+	List(d, management.ConnectionStrategyOIDC).Elem(func(d ResourceData) {
+		c.Strategy = auth0.String(management.ConnectionStrategyOIDC)
+		c.Options = expandConnectionOptionsOIDC(d)
+	})
+	List(d, management.ConnectionStrategyAD).Elem(func(d ResourceData) {
+		c.Strategy = auth0.String(management.ConnectionStrategyAD)
+		c.Options = expandConnectionOptionsAD(d)
+	})
+	List(d, management.ConnectionStrategyAzureAD).Elem(func(d ResourceData) {
+		c.Strategy = auth0.String(management.ConnectionStrategyAzureAD)
+		c.Options = expandConnectionOptionsAzureAD(d)
+	})
+	List(d, management.ConnectionStrategyEmail).Elem(func(d ResourceData) {
+		c.Strategy = auth0.String(management.ConnectionStrategyEmail)
+		c.Options = expandConnectionOptionsEmail(d)
+	})
+	List(d, management.ConnectionStrategySAML).Elem(func(d ResourceData) {
+		c.Strategy = auth0.String(management.ConnectionStrategySAML)
+		c.Options = expandConnectionOptionsSAML(d)
 	})
 
 	return c
@@ -357,8 +342,6 @@ func expandConnectionOptionsGitHub(d ResourceData) *management.ConnectionOptions
 		SetUserAttributes:  String(d, "set_user_root_attributes"),
 		NonPersistentAttrs: castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 	}
-
-	expandConnectionOptionsScopes(d, o)
 
 	return o
 }
@@ -402,11 +385,9 @@ func expandConnectionOptionsAuth0(d ResourceData) *management.ConnectionOptions 
 		o.PasswordComplexityOptions["min_length"] = Int(d, "min_length")
 	})
 
-	List(d, "mfa").Elem(func(d ResourceData) {
-		o.MFA = make(map[string]interface{})
-		o.MFA["active"] = Bool(d, "active")
-		o.MFA["return_enroll_settings"] = Bool(d, "return_enroll_settings")
-	})
+	o.MFA = make(map[string]interface{})
+	o.MFA["active"] = Bool(d, "mfa_active")
+	o.MFA["return_enroll_settings"] = Bool(d, "mfa_return_enroll_settings")
 
 	o.EnabledDatabaseCustomization = Bool(d, "enabled_database_customization")
 	o.BruteForceProtection = Bool(d, "brute_force_protection")
@@ -428,8 +409,6 @@ func expandConnectionOptionsGoogleOAuth2(d ResourceData) *management.ConnectionO
 		SetUserAttributes:  String(d, "set_user_root_attributes"),
 		NonPersistentAttrs: castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 	}
-
-	expandConnectionOptionsScopes(d, o)
 
 	return o
 }
@@ -459,8 +438,6 @@ func expandConnectionOptionsFacebook(d ResourceData) *management.ConnectionOptio
 		NonPersistentAttrs: castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 	}
 
-	expandConnectionOptionsScopes(d, o)
-
 	return o
 }
 
@@ -475,8 +452,6 @@ func expandConnectionOptionsApple(d ResourceData) *management.ConnectionOptionsA
 		NonPersistentAttrs: castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 	}
 
-	expandConnectionOptionsScopes(d, o)
-
 	return o
 }
 
@@ -489,8 +464,6 @@ func expandConnectionOptionsLinkedin(d ResourceData) *management.ConnectionOptio
 		SetUserAttributes:  String(d, "set_user_root_attributes"),
 		NonPersistentAttrs: castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 	}
-
-	expandConnectionOptionsScopes(d, o)
 
 	return o
 }
@@ -505,8 +478,6 @@ func expandConnectionOptionsSalesforce(d ResourceData) *management.ConnectionOpt
 		NonPersistentAttrs: castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 	}
 
-	expandConnectionOptionsScopes(d, o)
-
 	return o
 }
 
@@ -519,8 +490,6 @@ func expandConnectionOptionsWindowsLive(d ResourceData) *management.ConnectionOp
 		SetUserAttributes:  String(d, "set_user_root_attributes"),
 		NonPersistentAttrs: castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 	}
-
-	expandConnectionOptionsScopes(d, o)
 
 	return o
 }
@@ -622,8 +591,6 @@ func expandConnectionOptionsAzureAD(d ResourceData) *management.ConnectionOption
 		NonPersistentAttrs:  castToListOfStrings(Set(d, "non_persistent_attrs").List()),
 		TrustEmailVerified:  String(d, "should_trust_email_verified_connection"),
 	}
-
-	expandConnectionOptionsScopes(d, o)
 
 	return o
 }
