@@ -1232,11 +1232,12 @@ func TestAccConnection_SAML(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				// language=hcl
 				Config: random.Template(`
 resource "auth0_connection" "my_connection" {
 	name = "Acceptance-Test-SAML-{{.random}}"
 	display_name = "Acceptance-Test-SAML-{{.random}}"
-	options {
+	samlp {
 		signing_cert = <<EOF
 -----BEGIN CERTIFICATE-----
 MIID6TCCA1ICAQEwDQYJKoZIhvcNAQEFBQAwgYsxCzAJBgNVBAYTAlVTMRMwEQYD
@@ -1264,8 +1265,10 @@ ZsUkLw2I7zI/dNlWdB8Xp7v+3w9sX5N3J/WuJ1KOO5m26kRlHQo7EzT3974g
 EOF
 		sign_in_endpoint = "https://saml.provider/sign_in"
 		sign_out_endpoint = "https://saml.provider/sign_out"
+		debug = true
 		user_id_attribute = "https://saml.provider/imi/ns/identity-200810"
 		tenant_domain = "example.com"
+		sign_saml_request = true
 		domain_aliases = ["example.com", "example.coz"]
 		protocol_binding = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Post"
 		request_template = "<samlp:AuthnRequest xmlns:samlp=\"urn:oasis:names:tc:SAML:2.0:protocol\"\n@@AssertServiceURLAndDestination@@\n    ID=\"@@ID@@\"\n    IssueInstant=\"@@IssueInstant@@\"\n    ProtocolBinding=\"@@ProtocolBinding@@\" Version=\"2.0\">\n    <saml:Issuer xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\">@@Issuer@@</saml:Issuer>\n</samlp:AuthnRequest>"
@@ -1287,61 +1290,36 @@ EOF
 				Check: resource.ComposeAggregateTestCheckFunc(
 					random.TestCheckResourceAttr("auth0_connection.my_connection", "name", "Acceptance-Test-SAML-{{.random}}", rand),
 					random.TestCheckResourceAttr("auth0_connection.my_connection", "display_name", "Acceptance-Test-SAML-{{.random}}", rand),
-				),
-			},
-			{
-				Config: random.Template(`
-resource "auth0_connection" "my_connection" {
-	name = "Acceptance-Test-SAML-{{.random}}"
-	display_name = "Acceptance-Test-SAML-{{.random}}"
-	options {
-		signing_cert = <<EOF
------BEGIN CERTIFICATE-----
-MIID6TCCA1ICAQEwDQYJKoZIhvcNAQEFBQAwgYsxCzAJBgNVBAYTAlVTMRMwEQYD
-VQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1TYW4gRnJhbmNpc2NvMRQwEgYDVQQK
-EwtHb29nbGUgSW5jLjEMMAoGA1UECxMDRW5nMQwwCgYDVQQDEwNhZ2wxHTAbBgkq
-hkiG9w0BCQEWDmFnbEBnb29nbGUuY29tMB4XDTA5MDkwOTIyMDU0M1oXDTEwMDkw
-OTIyMDU0M1owajELMAkGA1UEBhMCQVUxEzARBgNVBAgTClNvbWUtU3RhdGUxITAf
-BgNVBAoTGEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZDEjMCEGA1UEAxMaZXVyb3Bh
-LnNmby5jb3JwLmdvb2dsZS5jb20wggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIK
-AoICAQC6pgYt7/EibBDumASF+S0qvqdL/f+nouJw2T1Qc8GmXF/iiUcrsgzh/Fd8
-pDhz/T96Qg9IyR4ztuc2MXrmPra+zAuSf5bevFReSqvpIt8Duv0HbDbcqs/XKPfB
-uMDe+of7a9GCywvAZ4ZUJcp0thqD9fKTTjUWOBzHY1uNE4RitrhmJCrbBGXbJ249
-bvgmb7jgdInH2PU7PT55hujvOoIsQW2osXBFRur4pF1wmVh4W4lTLD6pjfIMUcML
-ICHEXEN73PDic8KS3EtNYCwoIld+tpIBjE1QOb1KOyuJBNW6Esw9ALZn7stWdYcE
-qAwvv20egN2tEXqj7Q4/1ccyPZc3PQgC3FJ8Be2mtllM+80qf4dAaQ/fWvCtOrQ5
-pnfe9juQvCo8Y0VGlFcrSys/MzSg9LJ/24jZVgzQved/Qupsp89wVidwIzjt+WdS
-fyWfH0/v1aQLvu5cMYuW//C0W2nlYziL5blETntM8My2ybNARy3ICHxCBv2RNtPI
-WQVm+E9/W5rwh2IJR4DHn2LHwUVmT/hHNTdBLl5Uhwr4Wc7JhE7AVqb14pVNz1lr
-5jxsp//ncIwftb7mZQ3DF03Yna+jJhpzx8CQoeLT6aQCHyzmH68MrHHT4MALPyUs
-Pomjn71GNTtDeWAXibjCgdL6iHACCF6Htbl0zGlG0OAK+bdn0QIDAQABMA0GCSqG
-SIb3DQEBBQUAA4GBAOKnQDtqBV24vVqvesL5dnmyFpFPXBn3WdFfwD6DzEb21UVG
-5krmJiu+ViipORJPGMkgoL6BjU21XI95VQbun5P8vvg8Z+FnFsvRFY3e1CCzAVQY
-ZsUkLw2I7zI/dNlWdB8Xp7v+3w9sX5N3J/WuJ1KOO5m26kRlHQo7EzT3974g
------END CERTIFICATE-----
-EOF
-		sign_in_endpoint = "https://saml.provider/sign_in"
-		sign_out_endpoint = ""
-		tenant_domain = "example.com"
-		domain_aliases = ["example.com", "example.coz"]
-		protocol_binding = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Post"
-		signature_algorithm = "rsa-sha256"
-		digest_algorithm = "sha256"
-		fields_map = {
-			foo = "bar"
-			baz = "baa"
-		}
-		idp_initiated {
-			client_id = "client_id"
-			client_protocol = "samlp"
-			client_authorize_query = "type=code&timeout=60"
-		}
-	}
-}
-`, rand),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.idp_initiated.0.client_authorize_query", "type=code&timeout=60"),
-					resource.TestCheckResourceAttr("auth0_connection.my_connection", "options.0.sign_out_endpoint", ""),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.sign_in_endpoint", "https://saml.provider/sign_in"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.sign_out_endpoint",
+						"https://saml.provider/sign_out"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.debug",
+						"true"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.user_id_attribute", "https://saml.provider/imi/ns/identity-200810"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.tenant_domain",
+						"example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.sign_saml_request", "true"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.domain_aliases.0",
+						"example.com"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.domain_aliases.1",
+						"example.coz"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.protocol_binding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Post"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.request_template", "<samlp:AuthnRequest xmlns:samlp=\"urn:oasis:names:tc:SAML:2.0:protocol\"\n@@AssertServiceURLAndDestination@@\n    ID=\"@@ID@@\"\n    IssueInstant=\"@@IssueInstant@@\"\n    ProtocolBinding=\"@@ProtocolBinding@@\" Version=\"2.0\">\n    <saml:Issuer xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\">@@Issuer@@</saml:Issuer>\n</samlp:AuthnRequest>"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.signature_algorithm", "rsa-sha256"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.digest_algorithm", "sha256"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.icon_url", "https://example.com/logo.svg"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.fields_map.%", "2"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.fields_map.foo", "bar"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection", "samlp.0.fields_map.baz", "baa"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"samlp.0.idp_initiated.0.client_id",
+						"client_id"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"samlp.0.idp_initiated.0.client_protocol",
+						"samlp"),
+					resource.TestCheckResourceAttr("auth0_connection.my_connection",
+						"samlp.0.idp_initiated.0.client_authorize_query",
+						"type=code&timeout=30"),
 				),
 			},
 		},

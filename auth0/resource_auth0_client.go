@@ -775,7 +775,7 @@ func flattenAddons(addons map[string]interface{}) []interface{} {
 				samplpMap["logout"] = flattenMap(map[string]interface{}{
 					"callback":    logoutData["callback"],
 					"slo_enabled": logoutData["slo_enabled"],
-				})
+				}, false)
 			}
 		}
 		result["samlp"] = []interface{}{samplpMap}

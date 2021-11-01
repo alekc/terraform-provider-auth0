@@ -233,7 +233,7 @@ func flattenConnectionOptionsSAML(o *management.ConnectionOptionsSAML) map[strin
 			"client_id":              o.IdpInitiated.GetClientID(),
 			"client_protocol":        o.IdpInitiated.GetClientProtocol(),
 			"client_authorize_query": o.IdpInitiated.GetClientAuthorizeQuery(),
-		}, true),
+		}, false),
 		"tenant_domain":            o.GetTenantDomain(),
 		"domain_aliases":           o.DomainAliases,
 		"sign_in_endpoint":         o.GetSignInEndpoint(),

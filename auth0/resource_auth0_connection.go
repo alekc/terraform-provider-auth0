@@ -915,7 +915,7 @@ func readConnection(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	case *management.ConnectionOptionsAzureAD:
 		_ = d.Set(management.ConnectionStrategyAzureAD, flattenMap(flattenConnectionOptionsAzureAD(o), true))
 	case *management.ConnectionOptionsSAML:
-		_ = d.Set(management.ConnectionStrategySAML, flattenMap(flattenConnectionOptionsSAML(o), true))
+		_ = d.Set(management.ConnectionStrategySAML, flattenMap(flattenConnectionOptionsSAML(o), false))
 	}
 
 	return nil
