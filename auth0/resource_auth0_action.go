@@ -24,6 +24,10 @@ func newAction() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Description: `
 Actions are secure, tenant-specific, versioned functions written in Node.
 js that execute at certain points during the Auth0 runtime. 
@@ -192,6 +196,16 @@ func flattenSecrets(d *schema.ResourceData, triggers []management.ActionSecret, 
 	return result
 }
 
+func actionStateConf(d *schema.ResourceData, api *management.Management) *resource.StateChangeConf {
+	return &resource.StateChangeConf{
+		Pending:    []string{"pending", "building"},
+		Target:     []string{"built"},
+		Refresh:    resourceActionStateRefreshFunc(d.Id(), api),
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		MinTimeout: 10 * time.Second,
+	}
+}
+
 func createAction(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := buildAction(d)
 	api := m.(*management.Management)
@@ -199,12 +213,31 @@ func createAction(ctx context.Context, d *schema.ResourceData, m interface{}) di
 		return diag.FromErr(err)
 	}
 	d.SetId(auth0.StringValue(c.ID))
-	d.Partial(true)
+
+	log.Printf("[INFO] Waiting for the action (%s) to be built", d.Id())
+	_, err := actionStateConf(d, api).WaitForStateContext(ctx)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	if err := deployAction(ctx, api, *c.ID, d.Get("deploy").(bool)); err != nil {
 		return err
 	}
-	d.Partial(false)
 	return readAction(ctx, d, m)
+}
+
+func resourceActionStateRefreshFunc(id string, api *management.Management) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		v, err := api.Action.Read(id)
+		switch {
+		case err != nil:
+			log.Printf("Error on retrieving action when waiting: %s", err)
+			return nil, "", err
+		case v == nil:
+			return nil, "", nil
+		}
+		return v, v.GetStatus(), nil
+	}
 }
 
 func deployAction(ctx context.Context, api *management.Management, ID string, deploy bool) diag.Diagnostics {
@@ -251,6 +284,13 @@ func updateAction(ctx context.Context, d *schema.ResourceData, m interface{}) di
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	log.Printf("[INFO] Waiting for the action (%s) to be built", d.Id())
+	_, err = actionStateConf(d, api).WaitForStateContext(ctx)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	log.Printf("[INFO] Deploying action (%s)", d.Id())
 	if err := deployAction(ctx, api, *c.ID, d.Get("deploy").(bool)); err != nil {
 		return err
 	}
