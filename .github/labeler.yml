@@ -1,3 +1,7 @@
+resource/auth0_action:
+  - '**/*action.go'
+  - '**/*action_test.go'
+  -
 resource/auth0_client:
   - '**/*client.go'
   - '**/*client_test.go'
@@ -17,6 +21,10 @@ resource/auth0_custom_domain:
 resource/auth0_email:
   - '**/*email.go'
   - '**/*email_test.go'
+
+resource/auth0_flow:
+  - '**/*flow.go'
+  - '**/*flow_test.go'
 
 resource/auth0_email_template:
   - '**/*email_template.go'

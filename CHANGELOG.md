@@ -1,3 +1,7 @@
+## 1.1.3 (Unreleased)
+IMPROVEMENTS:
+* Added custom timeout and waiting logic for auth0_action. [#30](https://github.com/alekc/terraform-provider-auth0/issues/30)
+
 ## 1.1.2
 FIXES:
 * logout property of samlp addon is not serialized properly. [#28](https://github.com/alekc/terraform-provider-auth0/issues/28)
