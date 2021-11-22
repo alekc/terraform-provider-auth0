@@ -198,7 +198,7 @@ func flattenSecrets(d *schema.ResourceData, triggers []management.ActionSecret, 
 
 func actionStateConf(d *schema.ResourceData, api *management.Management) *resource.StateChangeConf {
 	return &resource.StateChangeConf{
-		Pending:    []string{"pending", "building"},
+		Pending:    []string{"pending", "building", "packaged"},
 		Target:     []string{"built"},
 		Refresh:    resourceActionStateRefreshFunc(d.Id(), api),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
