@@ -1,4 +1,4 @@
-## 1.1.3 (Unreleased)
+## 1.1.3
 IMPROVEMENTS:
 * Added custom timeout and waiting logic for auth0_action. [#30](https://github.com/alekc/terraform-provider-auth0/issues/30)
 
