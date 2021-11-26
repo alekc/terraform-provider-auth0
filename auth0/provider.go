@@ -67,6 +67,10 @@ func init() {
 			"auth0_action":          newAction(),
 			"auth0_flow":            newFlow(),
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"auth0_resource_server": dataSourceResourceServer(),
+		},
+
 		ConfigureContextFunc: Configure,
 	}
 }
