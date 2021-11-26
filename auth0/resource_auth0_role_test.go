@@ -81,6 +81,9 @@ resource auth0_role the_one {
 					random.TestCheckResourceAttr("auth0_role.the_one", "name", "The One - Acceptance Test - {{.random}}", rand),
 					resource.TestCheckResourceAttr("auth0_role.the_one", "description", "The One - Acceptance Test"),
 					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.#", "1"),
+					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.0.name", "stop:bullets"),
+					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.0.description", "Stop bullets"),
+					random.TestCheckResourceAttr("auth0_role.the_one", "permissions.0.resource_server_name", "Role - Acceptance Test - {{.random}}", rand),
 				),
 			},
 			{
@@ -115,6 +118,12 @@ resource auth0_role the_one {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("auth0_role.the_one", "description", "The One who will bring peace - Acceptance Test"),
 					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.#", "2"),
+					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.1.name", "stop:bullets"),
+					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.1.description", "Stop bullets"),
+					random.TestCheckResourceAttr("auth0_role.the_one", "permissions.1.resource_server_name", "Role - Acceptance Test - {{.random}}", rand),
+					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.0.name", "bring:peace"),
+					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.0.description", "Bring peace"),
+					random.TestCheckResourceAttr("auth0_role.the_one", "permissions.0.resource_server_name", "Role - Acceptance Test - {{.random}}", rand),
 				),
 			},
 		},
