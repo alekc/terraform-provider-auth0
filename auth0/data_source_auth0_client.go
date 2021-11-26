@@ -15,8 +15,8 @@ func dataSourceAuth0Client() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"client_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
 				Description: "The ID of the client",
 			},
 			"id": {
