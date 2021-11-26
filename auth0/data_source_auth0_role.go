@@ -10,7 +10,7 @@ import (
 func dataSourceRole() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceRoleRead,
-		Description: "TODO",
+		Description: "Retrieve an auth0 role",
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,
