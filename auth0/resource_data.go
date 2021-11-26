@@ -31,7 +31,7 @@ type ResourceData interface {
 	// GetOk returns the data for the given key and whether or not the key
 	// has been set to a non-zero value at some point.
 	//
-	// The first result will not necessarilly be nil if the value doesn't exist.
+	// The first result will not necessarily be nil if the value doesn't exist.
 	// The second result should be checked to determine this information.
 	GetOk(key string) (interface{}, bool)
 
