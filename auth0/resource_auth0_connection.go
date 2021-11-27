@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
+	v "github.com/alekc/terraform-provider-auth0/auth0/internal/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -65,25 +66,10 @@ var connectionSchema = map[string]*schema.Schema{
 		Description: "Indicates whether or not the connection is domain level",
 	},
 	"strategy": {
-		Type:     schema.TypeString,
-		Required: true,
-		ValidateFunc: validation.StringInSlice([]string{
-			"ad", "adfs", "amazon", "apple", "dropbox", "bitbucket", "aol",
-			"auth0-adldap", "auth0-oidc", "auth0", "baidu", "bitly",
-			"box", "custom", "daccount", "dwolla", "email",
-			"evernote-sandbox", "evernote", "exact", "facebook",
-			"fitbit", "flickr", "github", "google-apps",
-			"google-oauth2", "guardian", "instagram", "ip", "linkedin",
-			"miicard", "oauth1", "oauth2", "office365", "oidc", "paypal",
-			"paypal-sandbox", "pingfederate", "planningcenter",
-			"renren", "salesforce-community", "salesforce-sandbox",
-			"salesforce", "samlp", "sharepoint", "shopify", "sms",
-			"soundcloud", "thecity-sandbox", "thecity",
-			"thirtysevensignals", "twitter", "untappd", "vkontakte",
-			"waad", "weibo", "windowslive", "wordpress", "yahoo",
-			"yammer", "yandex", "line",
-		}, true),
-		ForceNew: true,
+		Type:         schema.TypeString,
+		Required:     true,
+		ValidateFunc: v.IsAuth0Strategy,
+		ForceNew:     true,
 		Description: "Type of the connection, which indicates the identity provider. Options include `ad`, `adfs`, " +
 			"`amazon`, `apple`, `dropbox`, `bitbucket`, `aol`,`auth0-adldap`, `auth0-oidc`, `auth0`, `baidu`, " +
 			"`bitly`,`box`, `custom`, `daccount`, `dwolla`, `email`,`evernote-sandbox`, `evernote`, `exact`, " +

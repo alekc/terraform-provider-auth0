@@ -3,6 +3,8 @@ package validation
 import (
 	"fmt"
 	"net/url"
+
+	tfv "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 // IsURLWithNoFragment is a SchemaValidateFunc which tests if the provided value
@@ -36,4 +38,23 @@ func IsURLWithNoFragment(i interface{}, k string) (warnings []string, errors []e
 	}
 
 	return
+}
+
+func IsAuth0Strategy(i interface{}, k string) (warnings []string, errors []error) {
+	return tfv.StringInSlice([]string{
+		"ad", "adfs", "amazon", "apple", "dropbox", "bitbucket", "aol",
+		"auth0-adldap", "auth0-oidc", "auth0", "baidu", "bitly",
+		"box", "custom", "daccount", "dwolla", "email",
+		"evernote-sandbox", "evernote", "exact", "facebook",
+		"fitbit", "flickr", "github", "google-apps",
+		"google-oauth2", "guardian", "instagram", "ip", "linkedin",
+		"miicard", "oauth1", "oauth2", "office365", "oidc", "paypal",
+		"paypal-sandbox", "pingfederate", "planningcenter",
+		"renren", "salesforce-community", "salesforce-sandbox",
+		"salesforce", "samlp", "sharepoint", "shopify", "sms",
+		"soundcloud", "thecity-sandbox", "thecity",
+		"thirtysevensignals", "twitter", "untappd", "vkontakte",
+		"waad", "weibo", "windowslive", "wordpress", "yahoo",
+		"yammer", "yandex", "line",
+	}, true)(i, k)
 }

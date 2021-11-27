@@ -36,3 +36,10 @@ func TemplateMap(tpl string, values map[string]string) string {
 func TestCheckResourceAttr(name, key, value, rand string) resource.TestCheckFunc {
 	return resource.TestCheckResourceAttr(name, key, Template(value, rand))
 }
+
+func TestCheckTypeSetElemNestedAttrs(name, attr string, values map[string]string, rand string) resource.TestCheckFunc {
+	for k, v := range values {
+		values[k] = Template(v, rand)
+	}
+	return resource.TestCheckTypeSetElemNestedAttrs(name, attr, values)
+}
