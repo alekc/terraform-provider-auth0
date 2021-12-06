@@ -11,12 +11,16 @@ import (
 func init() {
 	resource.AddTestSweepers("auth0_email_template", &resource.Sweeper{
 		Name: "auth0_email_template",
-		F: func(_ string) (err error) {
+		F: func(_ string) (error) {
 			api := testAuth0ApiClient()
-			err = api.EmailTemplate.Update("welcome_email", &management.EmailTemplate{
+			err := api.EmailTemplate.Update("welcome_email", &management.EmailTemplate{
 				Enabled: auth0.Bool(false),
 			})
-			return
+			// suppress error in case of 404
+			if err != nil && err.Error() == "404 Not Found: The template does not exist and cannot be updated." {
+				return nil
+			}
+			return err
 		},
 	})
 }
