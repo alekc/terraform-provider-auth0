@@ -65,6 +65,9 @@ func CreateClientConnection(
 	connectionID := d.Get("connection_id").(string)
 
 	c, err := api.Connection.Read(connectionID, management.Context(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	c.EnabledClients = append(c.EnabledClients, d.Get("client_id"))
 
 	err = api.Connection.Update(connectionID, getPatchObject(c), management.Context(ctx))
