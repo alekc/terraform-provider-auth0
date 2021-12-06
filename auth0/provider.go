@@ -69,8 +69,8 @@ func init() {
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"auth0_resource_server": dataSourceResourceServer(),
+			"auth0_role":            dataSourceRole(),
 		},
-
 		ConfigureContextFunc: Configure,
 	}
 }
