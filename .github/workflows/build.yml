@@ -55,8 +55,8 @@ jobs:
       event_pr_sha: ${{ github.event.client_payload.pull_request.head.sha }}
       event_slash_sha: ${{ github.event.client_payload.slash_command.sha }}
     steps:
-      - name: env
-        run: env
+      - name: Dump context
+        uses: crazy-max/ghaction-dump-context@v1
 
   build-fork:
     name: Build from fork
