@@ -50,10 +50,20 @@ func newRole() *schema.Resource {
 							Required:    true,
 							Description: "Name of the permission (scope)",
 						},
+						"description": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Description of the permission",
+						},
 						"resource_server_identifier": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "Unique identifier for the resource server",
+						},
+						"resource_server_name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource server name",
 						},
 					},
 				},
@@ -197,7 +207,9 @@ func flattenRolePermissions(permissions []*management.Permission) []interface{} 
 	for _, permission := range permissions {
 		v = append(v, map[string]interface{}{
 			"name":                       permission.Name,
+			"description":                permission.Description,
 			"resource_server_identifier": permission.ResourceServerIdentifier,
+			"resource_server_name":       permission.ResourceServerName,
 		})
 	}
 	return v
