@@ -46,6 +46,18 @@ jobs:
         AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
         AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
 
+  debug-ok-to-test:
+    name: debug
+    runs-on: ubuntu-latest
+    env:
+      event_name: ${{ github.event_name }}
+      event_sha: ${{ github.event.client_payload.slash_command.sha }}
+      event_pr_sha: ${{ github.event.client_payload.pull_request.head.sha }}
+      event_slash_sha: ${{ github.event.client_payload.slash_command.sha }}
+    steps:
+      - name: env
+        run: env
+
   build-fork:
     name: Build from fork
     runs-on: ubuntu-latest
