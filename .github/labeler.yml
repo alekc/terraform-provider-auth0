@@ -1,7 +1,7 @@
 resource/auth0_action:
   - '**/*action.go'
   - '**/*action_test.go'
-  -
+
 resource/auth0_client:
   - '**/*client.go'
   - '**/*client_test.go'

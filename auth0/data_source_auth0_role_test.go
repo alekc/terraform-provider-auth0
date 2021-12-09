@@ -1,20 +1,18 @@
 package auth0
 
 import (
+	"github.com/alekc/terraform-provider-auth0/auth0/internal/random"
+	"github.com/hashicorp/go-multierror"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"gopkg.in/auth0.v5/management"
 	"log"
 	"strings"
 	"testing"
-
-	"github.com/hashicorp/go-multierror"
-	"gopkg.in/auth0.v5/management"
-
-	"github.com/alekc/terraform-provider-auth0/auth0/internal/random"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func init() {
-	resource.AddTestSweepers("auth0_role", &resource.Sweeper{
-		Name: "auth0_role",
+	resource.AddTestSweepers("data_auth0_role", &resource.Sweeper{
+		Name: "data_auth0_role",
 		F: func(_ string) error {
 			api := testAuth0ApiClient()
 			var page int
@@ -45,7 +43,7 @@ func init() {
 	})
 }
 
-func TestAccRole(t *testing.T) {
+func TestAccDataSourceRole(t *testing.T) {
 
 	rand := random.String(6)
 
@@ -76,14 +74,18 @@ resource auth0_role the_one {
     resource_server_identifier = auth0_resource_server.matrix.identifier
   }
 }
+
+data auth0_role the_one {
+  id = auth0_role.the_one.id
+}
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					random.TestCheckResourceAttr("auth0_role.the_one", "name", "The One - Acceptance Test - {{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_role.the_one", "description", "The One - Acceptance Test"),
-					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.#", "1"),
-					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.0.name", "stop:bullets"),
-					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.0.description", "Stop bullets"),
-					random.TestCheckResourceAttr("auth0_role.the_one", "permissions.0.resource_server_name", "Role - Acceptance Test - {{.random}}", rand),
+					random.TestCheckResourceAttr("data.auth0_role.the_one", "name", "The One - Acceptance Test - {{.random}}", rand),
+					resource.TestCheckResourceAttr("data.auth0_role.the_one", "description", "The One - Acceptance Test"),
+					resource.TestCheckResourceAttr("data.auth0_role.the_one", "permissions.#", "1"),
+					resource.TestCheckResourceAttr("data.auth0_role.the_one", "permissions.0.name", "stop:bullets"),
+					resource.TestCheckResourceAttr("data.auth0_role.the_one", "permissions.0.description", "Stop bullets"),
+					random.TestCheckResourceAttr("data.auth0_role.the_one", "permissions.0.resource_server_name", "Role - Acceptance Test - {{.random}}", rand),
 				),
 			},
 			{
@@ -114,23 +116,29 @@ resource auth0_role the_one {
     resource_server_identifier = auth0_resource_server.matrix.identifier
   }
 }
+
+data auth0_role the_one {
+  id = auth0_role.the_one.id
+}
+
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("auth0_role.the_one", "description", "The One who will bring peace - Acceptance Test"),
-					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.#", "2"),
-					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.1.name", "stop:bullets"),
-					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.1.description", "Stop bullets"),
-					random.TestCheckResourceAttr("auth0_role.the_one", "permissions.1.resource_server_name", "Role - Acceptance Test - {{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.0.name", "bring:peace"),
-					resource.TestCheckResourceAttr("auth0_role.the_one", "permissions.0.description", "Bring peace"),
-					random.TestCheckResourceAttr("auth0_role.the_one", "permissions.0.resource_server_name", "Role - Acceptance Test - {{.random}}", rand),
+					random.TestCheckResourceAttr("data.auth0_role.the_one", "name", "The One - Acceptance Test - {{.random}}", rand),
+					resource.TestCheckResourceAttr("data.auth0_role.the_one", "description", "The One who will bring peace - Acceptance Test"),
+					resource.TestCheckResourceAttr("data.auth0_role.the_one", "permissions.#", "2"),
+					resource.TestCheckResourceAttr("data.auth0_role.the_one", "permissions.1.name", "stop:bullets"),
+					resource.TestCheckResourceAttr("data.auth0_role.the_one", "permissions.1.description", "Stop bullets"),
+					random.TestCheckResourceAttr("data.auth0_role.the_one", "permissions.1.resource_server_name", "Role - Acceptance Test - {{.random}}", rand),
+					resource.TestCheckResourceAttr("data.auth0_role.the_one", "permissions.0.name", "bring:peace"),
+					resource.TestCheckResourceAttr("data.auth0_role.the_one", "permissions.0.description", "Bring peace"),
+					random.TestCheckResourceAttr("data.auth0_role.the_one", "permissions.0.resource_server_name", "Role - Acceptance Test - {{.random}}", rand),
 				),
 			},
 		},
 	})
 }
 
-func TestAccRolePermissions(t *testing.T) {
+func TestAccDataSourceRolePermissions(t *testing.T) {
 
 	rand := random.String(6)
 
@@ -229,11 +237,15 @@ resource auth0_role role {
 		}
 	}
   }
+
+data auth0_role role {
+  id = auth0_role.role.id
+}
 `, rand),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					random.TestCheckResourceAttr("auth0_role.role", "name", "The One - Acceptance Test - {{.random}}", rand),
-					resource.TestCheckResourceAttr("auth0_role.role", "description", "The One - Acceptance Test"),
-					resource.TestCheckResourceAttr("auth0_role.role", "permissions.#", "58"),
+					random.TestCheckResourceAttr("data.auth0_role.role", "name", "The One - Acceptance Test - {{.random}}", rand),
+					resource.TestCheckResourceAttr("data.auth0_role.role", "description", "The One - Acceptance Test"),
+					resource.TestCheckResourceAttr("data.auth0_role.role", "permissions.#", "58"),
 				),
 			},
 		},

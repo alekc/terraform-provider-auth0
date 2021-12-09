@@ -98,7 +98,7 @@ your application to call another application's API (such as Firebase and AWS) on
 				Type:     schema.TypeList,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
-				Description: "RLs that Auth0 may call back to after a user authenticates for the client. " +
+				Description: "URLs that Auth0 may call back to after a user authenticates for the client. " +
 					"Make sure to specify the protocol (https://) otherwise the callback may fail in some cases. " +
 					"With the exception of custom URI schemes for native clients, all callbacks should use protocol https://",
 			},
@@ -183,7 +183,7 @@ your application to call another application's API (such as Firebase and AWS) on
 						"alg": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: " Algorithm used to sign JWTs",
+							Description: "Algorithm used to sign JWTs",
 						},
 					},
 				},

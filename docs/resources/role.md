@@ -70,4 +70,9 @@ Required:
 - **name** (String) Name of the permission (scope)
 - **resource_server_identifier** (String) Unique identifier for the resource server
 
+Read-Only:
+
+- **description** (String) Description of the permission
+- **resource_server_name** (String) The resource server name
+
 
