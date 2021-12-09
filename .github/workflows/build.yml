@@ -59,7 +59,6 @@ jobs:
 #        uses: crazy-max/ghaction-dump-context@v1
 
   build-fork:
-    name: Build from fork
     runs-on: ubuntu-latest
     if:
       github.event_name == 'repository_dispatch' &&
