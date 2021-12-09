@@ -11,7 +11,7 @@ import (
 func init() {
 	resource.AddTestSweepers("auth0_email_template", &resource.Sweeper{
 		Name: "auth0_email_template",
-		F: func(_ string) (error) {
+		F: func(_ string) error {
 			api := testAuth0ApiClient()
 			err := api.EmailTemplate.Update("welcome_email", &management.EmailTemplate{
 				Enabled: auth0.Bool(false),
