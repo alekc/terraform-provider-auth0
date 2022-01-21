@@ -4,31 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/alekc/terraform-provider-auth0/auth0/internal/flow"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"gopkg.in/auth0.v5/management"
 )
-
-func find(s []string, searchterm string) int {
-	sort.Strings(s)
-	i := sort.SearchStrings(s, searchterm)
-	if s[i] == searchterm {
-		return i
-	} else {
-		return -1
-	}
-}
-
-func contains(s []string, searchterm string) bool {
-	i := find(s, searchterm)
-	return i < len(s)
-}
 
 func newClientConnection() *schema.Resource {
 	return &schema.Resource{
@@ -63,18 +46,19 @@ func CreateClientConnection(
 ) diag.Diagnostics {
 	api := m.(*management.Management)
 	connectionID := d.Get("connection_id").(string)
+	clientID := d.Get("client_id").(string)
 
 	c, err := api.Connection.Read(connectionID, management.Context(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	c.EnabledClients = append(c.EnabledClients, d.Get("client_id"))
+	c.EnabledClients = append(c.EnabledClients, clientID)
 
 	err = api.Connection.Update(connectionID, getPatchObject(c), management.Context(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(resource.PrefixedUniqueId(fmt.Sprintf("%s-", connectionID)))
+	d.SetId(fmt.Sprintf("%s-%s", connectionID, clientID))
 
 	return ReadClientConnection(ctx, d, m)
 }
@@ -121,6 +105,9 @@ func DeleteClientConnection(
 	expectedClientID := d.Get("client_id").(string)
 
 	c, err := api.Connection.Read(connId, management.Context(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	enabledClients := make([]interface{}, len(c.EnabledClients)-1)
 	offset := 0
 	for i, v := range c.EnabledClients {
@@ -133,7 +120,7 @@ func DeleteClientConnection(
 
 	if len(enabledClients) == 0 {
 		// Currently we can't set enabled_clients to an empty list as it will be ignored.
-		return diag.FromErr(errors.New("Can not disable client connection as it's the only one. See: https://github.com/go-auth0/auth0/issues/241."))
+		return diag.FromErr(errors.New("can not disable client connection as it's the only one. See: https://github.com/go-auth0/auth0/issues/241"))
 	}
 
 	c.EnabledClients = enabledClients
